@@ -5905,7 +5905,7 @@ function ExpenseCategorySettings({ categories, onSave }) {
   );
 }
 
-function PersonPickerModal({ title, value, onSave, onClose }) {
+function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
   const [selected, setSelected] = useState(value || []);
   const [search, setSearch] = useState('');
@@ -5915,10 +5915,11 @@ function PersonPickerModal({ title, value, onSave, onClose }) {
     prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
   );
 
-  const filtered = Object.entries(EMPLOYEES)
+  const pool = candidates || Object.entries(EMPLOYEES)
     .filter(([, e]) => e.adminAccess)
-    .filter(([, e]) => e.name.toLowerCase().includes(search.toLowerCase()) || (e.department || '').toLowerCase().includes(search.toLowerCase()))
     .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || (e.isEmployee === false ? 'External' : ''), initials: e.initials, color: e.color }));
+
+  const filtered = pool.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || (e.dept || '').toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
@@ -6070,11 +6071,28 @@ function TeamAccessSettings() {
   );
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
-      .filter(([, u]) => u.adminAccess)
+      .filter(([id, u]) => u.adminAccess || adminAccess[id])
       .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: adminAccess[id] || u.adminAccess, isEmployee: u.isEmployee !== false })),
     [adminAccess]
   );
   const [adminModal, setAdminModal] = useState(null);
+  const [showGrantPicker, setShowGrantPicker] = useState(false);
+
+  const nonAdminCandidates = useMemo(() =>
+    Object.entries(EMPLOYEES)
+      .filter(([id, e]) => e.isEmployee !== false && !adminAccess[id])
+      .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color })),
+    [adminAccess]
+  );
+
+  const handleGrantAccess = (ids) => {
+    if (!ids.length) return;
+    setAdminAccess(prev => {
+      const next = { ...prev };
+      ids.forEach(id => { next[id] = 'limited'; });
+      return next;
+    });
+  };
 
   const handleAdminSave = (adminId, newAccess, newRoles) => {
     setAdminAccess(prev => ({ ...prev, [adminId]: newAccess }));
@@ -6098,6 +6116,15 @@ function TeamAccessSettings() {
 
   return (
     <>
+    {showGrantPicker && (
+      <PersonPickerModal
+        title="Grant admin access"
+        value={[]}
+        candidates={nonAdminCandidates}
+        onSave={handleGrantAccess}
+        onClose={() => setShowGrantPicker(false)}
+      />
+    )}
     {adminModal && (() => { const admin = admins.find(a => a.id === adminModal); return admin ? (
       <AdminAccessModal
         admin={admin}
@@ -6150,7 +6177,7 @@ function TeamAccessSettings() {
               );
             })}
           </div>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
+          <button onClick={() => setShowGrantPicker(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
             <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Grant admin access
           </button>
         </div>
