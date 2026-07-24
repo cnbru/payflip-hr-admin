@@ -2798,17 +2798,19 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                         </div>
                     }
                   </div>
-                </div>
-                {/* Employee + status strip */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: `1px solid ${P.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Avatar employeeId={choice.empId} size={28} />
-                    <div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{emp.name}</div>
-                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>Requested by</div>
+                  {/* Divider */}
+                  <div style={{ height: 1, background: P.border, margin: '16px -20px 0 -20px' }} />
+                  {/* Employee + status strip */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', marginTop: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Avatar employeeId={choice.empId} size={28} />
+                      <div>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{emp.name}</div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>Requested by</div>
+                      </div>
                     </div>
+                    <StatusPill status={choice.status || 'approved'} />
                   </div>
-                  <StatusPill status={choice.status || 'approved'} />
                 </div>
               </div>
 
