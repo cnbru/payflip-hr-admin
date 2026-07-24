@@ -6017,8 +6017,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
             { value: 'limited', label: 'Role-based',   hint: 'Operational access only — company settings are never accessible' },
           ].map(opt => (
             <div key={opt.value} onClick={() => setSelectedAccess(opt.value)}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease' }}>
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
                 {selectedAccess === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
               </div>
               <div>
@@ -6036,8 +6036,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
               const checked = selectedRoles.includes(role.key);
               return (
                 <div key={role.key} onClick={() => toggleRole(role.key)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent', transition: 'all 120ms ease' }}>
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent', transition: 'all 120ms ease', marginTop: 1 }}>
                     {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
                   </div>
                   <div>
