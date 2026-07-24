@@ -2774,16 +2774,15 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
               {/* Hero */}
               <div style={{ padding: '20px 24px 16px' }}>
                 <div style={{ background: P.bg, borderRadius: 16, padding: '20px 20px 20px', overflow: 'hidden' }}>
-                  {/* Benefit pill */}
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: P.white, border: `1px solid ${P.border}`, borderRadius: 20, padding: '4px 10px 4px 7px', marginBottom: 14 }}>
-                    <Icon name="gift" size={12} color={P.inkSoft} strokeWidth={1.75} />
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft }}>{choice.name}</span>
-                  </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16 }}>
                     {/* Text */}
                     <div style={{ flex: 1, minWidth: 0, paddingBottom: 20 }}>
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink, lineHeight: 1.35, marginBottom: 8 }}>
                         {choice.productName || choice.name}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>via</span>
+                        <img src="./assets/coolblue-logo.png" alt="Coolblue" style={{ height: 14, objectFit: 'contain', display: 'block' }} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                         <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, color: P.ink, letterSpacing: '-0.02em' }}>{choice.price.replace(' EUR', '')}</span>
