@@ -288,7 +288,7 @@ const AVATAR_COLORS = ['#bfdbfe','#ddd6fe','#fde68a','#a7f3d0','#fecdd3','#fed7a
 
 const EMPLOYEES = {
   // Admin-only (not an employee — contractor)
-  'bruno-coen':        { name: 'Bruno Coen',          initials: 'BC', color: '#c7d2fe', email: 'bruno@payflip.be', isEmployee: false, adminAccess: 'owner' },
+  'bruno-coen':        { name: 'Bruno Coen',          initials: 'BC', color: '#c7d2fe', email: 'bruno@payflip.be', isEmployee: false, adminAccess: 'full' },
   // Design
   'bram-goossens':     { name: 'Bram Goossens',     initials: 'BG', color: '#bfdbfe', entitlement: 23, department: 'Design',       email: 'bram.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 3750,  role: 'Employee', status: 'Active', gender: 'm' },
   'emma-martens':      { name: 'Emma Martens',       initials: 'EM', color: '#ddd6fe', entitlement: 29, department: 'Design',       email: 'emma.martens@lumiogroup.be',      entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f', photo: true },
@@ -6148,8 +6148,8 @@ function TeamAccessSettings() {
               const assignedRoles = ROLE_DEFS.filter(r => roleAssignments[r.key]?.includes(admin.id));
               return (
               <div key={admin.id}
-                onClick={admin.access !== 'owner' ? () => setAdminModal(admin.id) : undefined}
-                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: admin.access !== 'owner' ? 'pointer' : 'default' }}>
+                onClick={() => setAdminModal(admin.id)}
+                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: admin.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11, color: P.ink }}>{admin.initials}</span>
                 </div>
@@ -6157,9 +6157,7 @@ function TeamAccessSettings() {
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{admin.name}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{admin.email}</div>
                 </div>
-                {admin.access === 'owner'
-                  ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, background: P.bg, padding: '3px 10px', borderRadius: 20, border: `1px solid ${P.border}` }}>Owner</span>
-                  : <>
+                <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                         {admin.access === 'full'
                           ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: '#fff', background: P.action, padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
@@ -6172,7 +6170,6 @@ function TeamAccessSettings() {
                       </div>
                       <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                     </>
-                }
               </div>
               );
             })}
