@@ -2731,7 +2731,7 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
     let y = sy, m = sm;
     while (y < ey || (y === ey && m <= em)) {
       const past = y < 2026 || (y === 2026 && m < 7);
-      rows.push({ label: 'Benefit in Kind', period: `${MONTHS[m - 1]} ${y}`, amount: `${monthly} EUR`, past });
+      rows.push({ period: `${MONTHS[m - 1]} ${y}`, amount: `${monthly} EUR`, past });
       if (++m > 12) { m = 1; y++; }
     }
     return rows;
@@ -2973,20 +2973,42 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                     Benefits may affect your payslip by either boosting your gross salary with reimbursements or reducing it through deductions such as Benefit in Kind.
                   </p>
                 </div>
-                <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {payslipRows.length === 0
-                    ? <div style={{ padding: '32px 0', textAlign: 'center', color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>No payslip data available</div>
-                    : payslipRows.map((row, i) => (
-                      <div key={i} style={{ background: row.past ? P.bg : P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, textDecoration: row.past ? 'line-through' : 'none', marginBottom: 2 }}>{row.label}</div>
-                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{row.period}</div>
+                {payslipRows.length === 0
+                  ? <div style={{ padding: '32px 0', textAlign: 'center', color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>No payslip data available</div>
+                  : (() => {
+                      const todayIdx = payslipRows.findIndex(r => !r.past);
+                      return (
+                        <div style={{ paddingBottom: 24 }}>
+                          {/* Section header */}
+                          <div style={{ padding: '4px 24px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 10, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                            Benefit in Kind
+                          </div>
+                          {/* White card containing all rows */}
+                          <div style={{ margin: '0 16px', background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                            {payslipRows.map((row, i) => (
+                              <React.Fragment key={i}>
+                                {/* "Today" divider between past and future */}
+                                {i === todayIdx && todayIdx > 0 && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', margin: '0' }}>
+                                    <div style={{ flex: 1, height: 1, background: P.border }} />
+                                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 10, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>Today</span>
+                                    <div style={{ flex: 1, height: 1, background: P.border }} />
+                                  </div>
+                                )}
+                                {i > 0 && i !== todayIdx && (
+                                  <div style={{ height: 1, background: P.border, marginLeft: 16 }} />
+                                )}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px' }}>
+                                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: row.past ? P.inkFaint : P.ink }}>{row.period}</span>
+                                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: row.past ? P.inkFaint : P.ink, flexShrink: 0 }}>{row.amount}</span>
+                                </div>
+                              </React.Fragment>
+                            ))}
+                          </div>
                         </div>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, textDecoration: row.past ? 'line-through' : 'none', flexShrink: 0 }}>{row.amount}</div>
-                      </div>
-                    ))
-                  }
-                </div>
+                      );
+                    })()
+                }
               </div>
             )}
 
