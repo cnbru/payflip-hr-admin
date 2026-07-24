@@ -6017,13 +6017,13 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
             { value: 'limited', label: 'Role-based',   hint: 'Operational access only — company settings are never accessible' },
           ].map(opt => (
             <div key={opt.value} onClick={() => setSelectedAccess(opt.value)}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {selectedAccess === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease' }}>
+                {selectedAccess === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{opt.hint}</div>
               </div>
             </div>
           ))}
