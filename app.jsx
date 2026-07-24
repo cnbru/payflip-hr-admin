@@ -2846,7 +2846,7 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                     }
                   </div>
                   <div style={{ height: 1, background: P.border, margin: '16px -20px 0 -20px' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0', gap: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '16px 0 0', gap: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
                       <Icon name="user" size={14} color={P.inkSoft} strokeWidth={1.75} />
                       <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Requested by</span>
