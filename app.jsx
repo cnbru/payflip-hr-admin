@@ -2826,7 +2826,7 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                         <StatusPill status={choice.status || 'approved'} />
                       </div>
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink, lineHeight: 1.35, marginBottom: 8 }}>
-                        {choice.productName || choice.name}
+                        {choice.name}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                         <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>via</span>
