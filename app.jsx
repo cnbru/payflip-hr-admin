@@ -5978,8 +5978,8 @@ const ROLE_DEFS = [
 ];
 
 const ADMIN_ACCESS = [
-  { key: 'full',    label: 'Full access',  hint: 'Can manage all settings and data' },
-  { key: 'limited', label: 'Limited',      hint: 'Can view and approve but not change settings' },
+  { value: 'full',    label: 'Full access',  hint: 'Can manage all settings and data' },
+  { value: 'limited', label: 'Limited',      hint: 'Can view and approve but not change settings' },
 ];
 
 function TeamAccessSettings() {
@@ -6089,7 +6089,7 @@ function TeamAccessSettings() {
                 {admin.access === 'owner'
                   ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, background: P.bg, padding: '3px 10px', borderRadius: 20, border: `1px solid ${P.border}` }}>Owner</span>
                   : <>
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{ADMIN_ACCESS.find(a => a.key === admin.access)?.label}</span>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{ADMIN_ACCESS.find(a => a.value === admin.access)?.label}</span>
                       <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                     </>
                 }
