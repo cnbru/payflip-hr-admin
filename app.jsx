@@ -2878,8 +2878,8 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
               </>)}
               <SectionHeader>Dates</SectionHeader>
               <Group>
-                <TableRow label="Start date" icon="calendar">{choice.sDate}</TableRow>
-                <TableRow label="End date" icon="calendar-x">{choice.eDate}</TableRow>
+                <TableRow label="Start date" icon="calendar">{isPending ? '—' : (choice.sDate || '—')}</TableRow>
+                <TableRow label="End date" icon="calendar-x">{isPending ? '—' : (choice.eDate || '—')}</TableRow>
                 <TableRow label="Date of choice" icon="clock">{choice.cDate}</TableRow>
               </Group>
               {choice.transactions?.length > 0 && (<>
