@@ -581,7 +581,7 @@ function SalaryTab({ empId }) {
     </div>
   );
 }
-function DetailsTab({ emp, empId }) {
+function DetailsTab({ emp, empId, onNav }) {
   const ex = EMP_EXTRA[empId] || {};
   const parts = emp.name.split(' ');
   const first = parts[0], last = parts.slice(1).join(' ');
@@ -612,13 +612,14 @@ function DetailsTab({ emp, empId }) {
       </div>
       {emp.adminAccess && (
         <div>
-          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 20px' }}>Admin access</h3>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 12px' }}>Admin access</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Icon name="shield-check" size={15} color={P.inkSoft} strokeWidth={1.75} />
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>
-              {emp.adminAccess === 'owner' ? 'Owner' : emp.adminAccess === 'full' ? 'Full access' : 'Limited access'}
+              {emp.adminAccess === 'full' ? 'Full admin' : 'Role-based'}
             </span>
-            <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}> — manage in Team & access</span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>—</span>
+            <span onClick={() => onNav('settings-team')} style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Manage in Team & access</span>
           </div>
         </div>
       )}
@@ -5052,7 +5053,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
         ) : activeTab === 'salary' ? (
           <div><SalaryTab empId={employeeId} /></div>
         ) : activeTab === 'details' ? (
-          <div><DetailsTab emp={emp} empId={employeeId} /></div>
+          <div><DetailsTab emp={emp} empId={employeeId} onNav={onNav} /></div>
         ) : (
           <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: 24, maxWidth: 480, color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>
             Coming soon
