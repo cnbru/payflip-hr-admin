@@ -6162,7 +6162,7 @@ function TeamAccessSettings() {
                   : <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                         {admin.access === 'full'
-                          ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'rgba(34,10,53,0.06)', padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
+                          ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: '#fff', background: P.action, padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
                           : assignedRoles.length > 0
                           ? assignedRoles.map(r => (
                               <span key={r.key} style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, background: P.bg, padding: '3px 8px', borderRadius: 20, border: `1px solid ${P.border}`, whiteSpace: 'nowrap' }}>{r.label}</span>
