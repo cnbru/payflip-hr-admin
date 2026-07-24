@@ -2776,7 +2776,8 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                 <div style={{ background: P.bg, borderRadius: 16, padding: '20px 20px 20px', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16 }}>
                     {/* Text */}
-                    <div style={{ flex: 1, minWidth: 0, paddingBottom: 20 }}>
+                    <div style={{ flex: 1, minWidth: 0, paddingBottom: 20, display: 'flex', flexDirection: 'column' }}>
+                      <StatusPill status={choice.status || 'approved'} style={{ alignSelf: 'flex-start', marginBottom: 32 }} />
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink, lineHeight: 1.35, marginBottom: 8 }}>
                         {choice.productName || choice.name}
                       </div>
@@ -2800,8 +2801,8 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                   </div>
                   {/* Divider */}
                   <div style={{ height: 1, background: P.border, margin: '16px -20px 0 -20px' }} />
-                  {/* Employee + status strip */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', marginTop: 12 }}>
+                  {/* Employee strip */}
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '12px 0', marginTop: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Avatar employeeId={choice.empId} size={28} />
                       <div>
@@ -2809,7 +2810,6 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                         <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>Requested by</div>
                       </div>
                     </div>
-                    <StatusPill status={choice.status || 'approved'} />
                   </div>
                 </div>
               </div>
