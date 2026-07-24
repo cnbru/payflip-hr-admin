@@ -2983,28 +2983,25 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                           <div style={{ padding: '4px 24px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 10, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                             Benefit in Kind
                           </div>
-                          {/* White card containing all rows */}
-                          <div style={{ margin: '0 16px', background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'hidden' }}>
-                            {payslipRows.map((row, i) => (
-                              <React.Fragment key={i}>
-                                {/* "Today" divider between past and future */}
-                                {i === todayIdx && todayIdx > 0 && (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', margin: '0' }}>
-                                    <div style={{ flex: 1, height: 1, background: P.border }} />
-                                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 10, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>Today</span>
-                                    <div style={{ flex: 1, height: 1, background: P.border }} />
-                                  </div>
-                                )}
-                                {i > 0 && i !== todayIdx && (
-                                  <div style={{ height: 1, background: P.border, marginLeft: 16 }} />
-                                )}
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px' }}>
-                                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: row.past ? P.inkFaint : P.ink }}>{row.period}</span>
-                                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: row.past ? P.inkFaint : P.ink, flexShrink: 0 }}>{row.amount}</span>
+                          {payslipRows.map((row, i) => (
+                            <React.Fragment key={i}>
+                              {/* "Today" divider between past and future */}
+                              {i === todayIdx && todayIdx > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 24px' }}>
+                                  <div style={{ flex: 1, height: 1, background: P.border }} />
+                                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 10, color: P.inkSoft, textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>Today</span>
+                                  <div style={{ flex: 1, height: 1, background: P.border }} />
                                 </div>
-                              </React.Fragment>
-                            ))}
-                          </div>
+                              )}
+                              {i > 0 && i !== todayIdx && (
+                                <div style={{ height: 1, background: P.border, marginLeft: 24 }} />
+                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 24px' }}>
+                                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: row.past ? P.inkSoft : P.ink }}>{row.period}</span>
+                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: row.past ? 400 : 600, fontSize: 14, color: row.past ? P.inkSoft : P.ink, flexShrink: 0 }}>{row.amount}</span>
+                              </div>
+                            </React.Fragment>
+                          ))}
                         </div>
                       );
                     })()
