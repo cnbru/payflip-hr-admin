@@ -3017,24 +3017,13 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                     Track all changes and updates to this choice.
                   </p>
                 </div>
-                <div style={{ paddingBottom: 24 }}>
+                <Group>
                   {activityLog.map((event, i) => (
-                    <React.Fragment key={i}>
-                      {i > 0 && <div style={{ height: 1, background: P.border, marginLeft: 24 }} />}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 24px' }}>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Icon name={event.icon} size={13} color={P.inkSoft} strokeWidth={1.75} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 2 }}>
-                            {event.label} by <strong>{event.actor}</strong>
-                          </div>
-                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{event.date}</div>
-                        </div>
-                      </div>
-                    </React.Fragment>
+                    <TableRow key={i} icon={event.icon} label={`${event.label} by ${event.actor}`}>
+                      {event.date}
+                    </TableRow>
                   ))}
-                </div>
+                </Group>
               </div>
             )}
 
