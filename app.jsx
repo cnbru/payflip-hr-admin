@@ -5982,6 +5982,77 @@ const ADMIN_ACCESS = [
   { value: 'limited', label: 'Role-based',  hint: 'Access is limited to their assigned roles' },
 ];
 
+function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
+  const { visible, close } = useModalTransition(onClose);
+  const [selectedAccess, setSelectedAccess] = useState(access);
+  const [selectedRoles, setSelectedRoles] = useState(
+    ROLE_DEFS.filter(r => roleAssignments[r.key]?.includes(admin.id)).map(r => r.key)
+  );
+  const toggleRole = key => setSelectedRoles(prev =>
+    prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+  );
+  const save = () => { onSave(selectedAccess, selectedRoles); close(); };
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: admin.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 12, color: P.ink }}>{admin.initials}</span>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>{admin.name}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{admin.email}</div>
+            </div>
+          </div>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+        <div style={{ padding: '8px 14px' }}>
+          {ADMIN_ACCESS.map(opt => (
+            <React.Fragment key={opt.value}>
+              <div onClick={() => setSelectedAccess(opt.value)}
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {selectedAccess === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
+                  {opt.hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>}
+                </div>
+              </div>
+              {opt.value === 'limited' && selectedAccess === 'limited' && (
+                <div style={{ margin: '0 10px 8px 42px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {ROLE_DEFS.map(role => {
+                    const checked = selectedRoles.includes(role.key);
+                    return (
+                      <div key={role.key} onClick={() => toggleRole(role.key)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8, background: checked ? 'rgba(34,10,53,0.04)' : 'transparent' }}>
+                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent' }}>
+                          {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{role.label}</div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{role.hint}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TeamAccessSettings() {
   const [roleAssignments, setRoleAssignments] = useState({
     'finance-approver': ['julie-goossens'],
@@ -5999,85 +6070,44 @@ function TeamAccessSettings() {
       .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: adminAccess[id] || u.adminAccess, isEmployee: u.isEmployee !== false })),
     [adminAccess]
   );
-  const [roleModal, setRoleModal] = useState(null);
   const [adminModal, setAdminModal] = useState(null);
+
+  const handleAdminSave = (adminId, newAccess, newRoles) => {
+    setAdminAccess(prev => ({ ...prev, [adminId]: newAccess }));
+    setRoleAssignments(prev => {
+      const updated = {};
+      ROLE_DEFS.forEach(role => {
+        const current = prev[role.key] || [];
+        if (newAccess === 'limited' && newRoles.includes(role.key)) {
+          updated[role.key] = current.includes(adminId) ? current : [...current, adminId];
+        } else {
+          updated[role.key] = current.filter(id => id !== adminId);
+        }
+      });
+      return updated;
+    });
+    setAdminModal(null);
+  };
 
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
   return (
     <>
-    {roleModal && (
-      <PersonPickerModal
-        title={ROLE_DEFS.find(r => r.key === roleModal)?.label}
-        value={roleAssignments[roleModal]}
-        onSave={v => setRoleAssignments(prev => ({ ...prev, [roleModal]: v }))}
-        onClose={() => setRoleModal(null)}
-      />
-    )}
-    {adminModal && (
-      <PickModal
-        title="Access level"
-        options={ADMIN_ACCESS}
-        value={admins.find(a => a.id === adminModal)?.access || 'full'}
-        onSave={v => { setAdminAccess(prev => ({ ...prev, [adminModal]: v })); setAdminModal(null); }}
+    {adminModal && (() => { const admin = admins.find(a => a.id === adminModal); return admin ? (
+      <AdminAccessModal
+        admin={admin}
+        access={admin.access}
+        roleAssignments={roleAssignments}
+        onSave={(newAccess, newRoles) => handleAdminSave(adminModal, newAccess, newRoles)}
         onClose={() => setAdminModal(null)}
       />
-    )}
+    ) : null; })()}
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Team & access</h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage roles and administrator access for your company</p>
-        </div>
-
-        <div>
-          <div style={{ ...SL, display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            Roles
-            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: 11, color: P.inkFaint, textTransform: 'none', letterSpacing: 0 }}>— define scope for role-based admins</span>
-          </div>
-          <div style={card}>
-            {ROLE_DEFS.map((role, idx) => {
-              const assignees = roleAssignments[role.key];
-              const visible = assignees.slice(0, 3);
-              const overflow = assignees.length - 3;
-              return (
-                <div key={role.key} onClick={() => setRoleModal(role.key)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < ROLE_DEFS.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                  <Icon name={role.icon} size={18} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{role.label}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 1 }}>{role.hint}</div>
-                  </div>
-                  {assignees.length > 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'center', marginRight: 6 }}>
-                      <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
-                        {overflow > 0 && (
-                          <div style={{ width: 24, height: 24, borderRadius: '50%', background: P.bg, border: `2px solid ${P.white}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -6 }}>
-                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.inkSoft }}>+{overflow}</span>
-                          </div>
-                        )}
-                        {[...visible].reverse().map(id => {
-                          const e = EMPLOYEES[id];
-                          return e ? (
-                            <div key={id} style={{ width: 24, height: 24, borderRadius: '50%', background: e.color, border: `2px solid ${P.white}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: -6, flexShrink: 0 }}>
-                              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{e.initials}</span>
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginLeft: 10 }}>
-                        {assignees.length === 1 ? EMPLOYEES[assignees[0]]?.name.split(' ')[0] : `${assignees.length} people`}
-                      </span>
-                    </div>
-                  ) : (
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint, marginRight: 6 }}>Not assigned</span>
-                  )}
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
-              );
-            })}
-          </div>
         </div>
 
         <div>
@@ -6098,14 +6128,11 @@ function TeamAccessSettings() {
                 </div>
                 {admin.access === 'owner'
                   ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, background: P.bg, padding: '3px 10px', borderRadius: 20, border: `1px solid ${P.border}` }}>Owner</span>
-                  : admin.access === 'full'
-                  ? <>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'rgba(34,10,53,0.06)', padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
-                      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                    </>
                   : <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                        {assignedRoles.length > 0
+                        {admin.access === 'full'
+                          ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'rgba(34,10,53,0.06)', padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
+                          : assignedRoles.length > 0
                           ? assignedRoles.map(r => (
                               <span key={r.key} style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, background: P.bg, padding: '3px 8px', borderRadius: 20, border: `1px solid ${P.border}`, whiteSpace: 'nowrap' }}>{r.label}</span>
                             ))
