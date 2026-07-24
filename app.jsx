@@ -3017,19 +3017,22 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                     Track all changes and updates to this choice.
                   </p>
                 </div>
-                <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ paddingBottom: 24 }}>
                   {activityLog.map((event, i) => (
-                    <div key={i} style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Icon name={event.icon} size={15} color={P.inkSoft} strokeWidth={1.75} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 2 }}>
-                          {event.label} by <strong>{event.actor}</strong>
+                    <React.Fragment key={i}>
+                      {i > 0 && <div style={{ height: 1, background: P.border, marginLeft: 24 }} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 24px' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Icon name={event.icon} size={13} color={P.inkSoft} strokeWidth={1.75} />
                         </div>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{event.date}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 2 }}>
+                            {event.label} by <strong>{event.actor}</strong>
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{event.date}</div>
+                        </div>
                       </div>
-                    </div>
+                    </React.Fragment>
                   ))}
                 </div>
               </div>
