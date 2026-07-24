@@ -287,6 +287,8 @@ const DEPARTMENTS = ['Design','Engineering','Marketing'];
 const AVATAR_COLORS = ['#bfdbfe','#ddd6fe','#fde68a','#a7f3d0','#fecdd3','#fed7aa','#c7d2fe','#fca5a5','#d9f99d','#99f6e4'];
 
 const EMPLOYEES = {
+  // Admin-only (not an employee — contractor)
+  'bruno-coen':        { name: 'Bruno Coen',          initials: 'BC', color: '#c7d2fe', email: 'bruno@payflip.be', isEmployee: false, adminAccess: 'owner' },
   // Design
   'bram-goossens':     { name: 'Bram Goossens',     initials: 'BG', color: '#bfdbfe', entitlement: 23, department: 'Design',       email: 'bram.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 3750,  role: 'Employee', status: 'Active', gender: 'm' },
   'emma-martens':      { name: 'Emma Martens',       initials: 'EM', color: '#ddd6fe', entitlement: 29, department: 'Design',       email: 'emma.martens@lumiogroup.be',      entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f', photo: true },
@@ -304,32 +306,33 @@ const EMPLOYEES = {
   'amber-claes':         { name: 'Amber Claes',         initials: 'AC', color: '#fca5a5', entitlement: 20, department: 'Design',    email: 'amber.claes@lumiogroup.be',     entity: 'Lumio Group', budget: 2900, role: 'Employee', status: 'Active', gender: 'f' },
   'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', budget: 6000, role: 'Manager',  status: 'Active', gender: 'm' },
   // Engineering
-  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true },
+  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true, adminAccess: 'full' },
   'stijn-laurent':     { name: 'Stijn Laurent',      initials: 'SL', color: '#a7f3d0', entitlement: 29, department: 'Engineering', email: 'stijn.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 1500,  role: 'Employee', status: 'Active', gender: 'm' },
   'jana-goossens':     { name: 'Jana Goossens',      initials: 'JG', color: '#c7d2fe', entitlement: 20, department: 'Engineering', email: 'jana.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 2000,  role: 'Employee', status: 'Active', gender: 'f' },
   'laura-mertens':     { name: 'Laura Mertens',      initials: 'LM', color: '#fca5a5', entitlement: 20, department: 'Engineering', email: 'laura.mertens@lumiogroup.be',     entity: 'Lumio Group', budget: 750,   role: 'Employee', status: 'Active', gender: 'f' },
   // Marketing
-  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Manager',  status: 'Active', gender: 'm' },
+  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Manager',  status: 'Active', gender: 'm', adminAccess: 'full' },
   'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumiogroup.be',   entity: 'Lumio Group', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
-  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Manager',  status: 'Active', gender: 'f' },
+  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Manager',  status: 'Active', gender: 'f', adminAccess: 'limited' },
   'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumiogroup.be',    entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
 };
+const CURRENT_USER = EMPLOYEES['bruno-coen'];
 
 // ── Per-employee supplemental data ────────────────────────────────────────
 const EMP_EXTRA = {
-  'bram-goossens':       { payrollId: '000041', hireDate: '15/03/2023', lang: 'Dutch',   admin: false },
-  'emma-martens':        { payrollId: '000040', hireDate: '12/05/2025', lang: 'English', admin: false },
-  'mathias-de-smedt':    { payrollId: '000032', hireDate: '01/09/2022', lang: 'Dutch',   admin: false },
-  'thomas-vandenberghe': { payrollId: '000028', hireDate: '04/02/2022', lang: 'Dutch',   admin: false },
-  'thomas-janssens':     { payrollId: '000044', hireDate: '10/01/2023', lang: 'Dutch',   admin: false },
-  'david':               { payrollId: '000015', hireDate: '07/11/2020', lang: 'French',  admin: true  },
-  'stijn-laurent':       { payrollId: '000019', hireDate: '14/04/2021', lang: 'Dutch',   admin: false },
-  'jana-goossens':       { payrollId: '000033', hireDate: '02/11/2022', lang: 'Dutch',   admin: false },
-  'laura-mertens':       { payrollId: '000038', hireDate: '07/03/2024', lang: 'Dutch',   admin: false },
-  'pieter-mertens':      { payrollId: '000009', hireDate: '01/06/2019', lang: 'Dutch',   admin: true  },
-  'sarah-de-smedt':      { payrollId: '000025', hireDate: '16/08/2021', lang: 'French',  admin: false },
-  'julie-goossens':      { payrollId: '000011', hireDate: '03/09/2019', lang: 'Dutch',   admin: true  },
-  'noor-de-smedt':       { payrollId: '000043', hireDate: '22/09/2025', lang: 'Dutch',   admin: false },
+  'bram-goossens':       { payrollId: '000041', hireDate: '15/03/2023', lang: 'Dutch'   },
+  'emma-martens':        { payrollId: '000040', hireDate: '12/05/2025', lang: 'English' },
+  'mathias-de-smedt':    { payrollId: '000032', hireDate: '01/09/2022', lang: 'Dutch'   },
+  'thomas-vandenberghe': { payrollId: '000028', hireDate: '04/02/2022', lang: 'Dutch'   },
+  'thomas-janssens':     { payrollId: '000044', hireDate: '10/01/2023', lang: 'Dutch'   },
+  'david':               { payrollId: '000015', hireDate: '07/11/2020', lang: 'French'  },
+  'stijn-laurent':       { payrollId: '000019', hireDate: '14/04/2021', lang: 'Dutch'   },
+  'jana-goossens':       { payrollId: '000033', hireDate: '02/11/2022', lang: 'Dutch'   },
+  'laura-mertens':       { payrollId: '000038', hireDate: '07/03/2024', lang: 'Dutch'   },
+  'pieter-mertens':      { payrollId: '000009', hireDate: '01/06/2019', lang: 'Dutch'   },
+  'sarah-de-smedt':      { payrollId: '000025', hireDate: '16/08/2021', lang: 'French'  },
+  'julie-goossens':      { payrollId: '000011', hireDate: '03/09/2019', lang: 'Dutch'   },
+  'noor-de-smedt':       { payrollId: '000043', hireDate: '22/09/2025', lang: 'Dutch'   },
 };
 function _eseed(id, s) { let h = 0; const k = id + s; for (let i = 0; i < k.length; i++) h = ((h * 31) + k.charCodeAt(i)) >>> 0; return h; }
 function _eur(n) { const [i, d] = (n / 100).toFixed(2).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + d + ' EUR'; }
@@ -607,15 +610,18 @@ function DetailsTab({ emp, empId }) {
           <label style={labelStyle}>Employee Payroll ID *</label><div style={fieldStyle}>{ex.payrollId || '—'}</div>
         </div>
       </div>
-      <div>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 20px' }}>Admin settings</h3>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 18, height: 18, borderRadius: 4, background: ex.admin ? P.accent : P.white, border: ex.admin ? 'none' : `1.5px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {ex.admin && <Icon name="Check" size={12} color="#fff" strokeWidth={3} />}
+      {emp.adminAccess && (
+        <div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 20px' }}>Admin access</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Icon name="shield-check" size={15} color={P.inkSoft} strokeWidth={1.75} />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>
+              {emp.adminAccess === 'owner' ? 'Owner' : emp.adminAccess === 'full' ? 'Full access' : 'Limited access'}
+            </span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}> — manage in Team & access</span>
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>Admin</span>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -849,12 +855,12 @@ function AdminProfileFooter() {
   return (
     <div style={{ borderTop: `1px solid ${P.border}`, padding: '10px 20px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
       <div style={{
-        width: 28, height: 28, borderRadius: '50%', background: '#ddd6fe', flexShrink: 0,
+        width: 28, height: 28, borderRadius: '50%', background: CURRENT_USER.color, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink,
-      }}>BC</div>
+      }}>{CURRENT_USER.initials}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>Bruno Coen</span>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>{CURRENT_USER.name}</span>
         <button style={{
           border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', textAlign: 'left',
           fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: 11, color: P.inkFaint,
@@ -4533,7 +4539,8 @@ function EmployeesScreen({ requests, onNav }) {
   const [statusFilter, setStatusFilter] = useState('Active');
 
   const empList = useMemo(() => {
-    return Object.entries(EMPLOYEES).map(([id, emp]) => ({ id, ...emp }))
+    return Object.entries(EMPLOYEES).filter(([, emp]) => emp.isEmployee !== false)
+      .map(([id, emp]) => ({ id, ...emp }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, []);
 
@@ -4575,7 +4582,6 @@ function EmployeesScreen({ requests, onNav }) {
             <option value="All">Role: All</option>
             <option value="Employee">Role: Employee</option>
             <option value="Manager">Role: Manager</option>
-            <option value="Admin">Role: Admin</option>
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectStyle}>
             <option value="All">Status: All</option>
@@ -5910,8 +5916,9 @@ function PersonPickerModal({ title, value, onSave, onClose }) {
   );
 
   const filtered = Object.entries(EMPLOYEES)
-    .filter(([, e]) => e.name.toLowerCase().includes(search.toLowerCase()) || e.department.toLowerCase().includes(search.toLowerCase()))
-    .map(([key, e]) => ({ value: key, name: e.name, dept: e.department, initials: e.initials, color: e.color }));
+    .filter(([, e]) => e.adminAccess)
+    .filter(([, e]) => e.name.toLowerCase().includes(search.toLowerCase()) || (e.department || '').toLowerCase().includes(search.toLowerCase()))
+    .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || (e.isEmployee === false ? 'External' : ''), initials: e.initials, color: e.color }));
 
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
@@ -5981,9 +5988,12 @@ function TeamAccessSettings() {
     'hr-manager': [],
     'payroll-admin': [],
   });
-  const [admins, setAdmins] = useState([
-    { id: 'bruno-coen', name: 'Bruno Coen', initials: 'BC', color: '#c7d2fe', email: 'bruno@payflip.be', access: 'owner' },
-  ]);
+  const admins = useMemo(() =>
+    Object.entries(EMPLOYEES)
+      .filter(([, u]) => u.adminAccess)
+      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: u.adminAccess, isEmployee: u.isEmployee !== false })),
+    []
+  );
   const [roleModal, setRoleModal] = useState(null);
   const [adminModal, setAdminModal] = useState(null);
 
@@ -6005,7 +6015,7 @@ function TeamAccessSettings() {
         title="Access level"
         options={ADMIN_ACCESS}
         value={admins.find(a => a.id === adminModal)?.access || 'full'}
-        onSave={v => setAdmins(prev => prev.map(a => a.id === adminModal ? { ...a, access: v } : a))}
+        onSave={() => {}}
         onClose={() => setAdminModal(null)}
       />
     )}
@@ -6087,7 +6097,7 @@ function TeamAccessSettings() {
             ))}
           </div>
           <button style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
-            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Invite admin
+            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Grant admin access
           </button>
         </div>
 
