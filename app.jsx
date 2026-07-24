@@ -6089,7 +6089,7 @@ function TeamAccessSettings() {
     if (!ids.length) return;
     setAdminAccess(prev => {
       const next = { ...prev };
-      ids.forEach(id => { next[id] = 'limited'; });
+      ids.forEach(id => { next[id] = 'full'; });
       return next;
     });
   };
