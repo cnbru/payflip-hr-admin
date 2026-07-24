@@ -3206,13 +3206,13 @@ function AddExpenseModal({ categories, onClose, onSave }) {
   const selectStyle = (hasErr) => ({
     width: '100%', padding: '9px 12px', borderRadius: 8,
     border: `1px solid ${hasErr ? '#ef4444' : P.border}`,
-    background: P.bg, fontFamily: 'var(--font-body)', fontSize: 14,
+    background: P.white, fontFamily: 'var(--font-body)', fontSize: 14,
     color: P.ink, outline: 'none', appearance: 'none', cursor: 'pointer',
   });
   const inputStyle = (hasErr) => ({
     width: '100%', padding: '9px 12px', borderRadius: 8,
     border: `1px solid ${hasErr ? '#ef4444' : P.border}`,
-    background: P.bg, fontFamily: 'var(--font-body)', fontSize: 14,
+    background: P.white, fontFamily: 'var(--font-body)', fontSize: 14,
     color: P.ink, outline: 'none', boxSizing: 'border-box',
   });
   const labelStyle = { fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, marginBottom: 6, display: 'block' };
