@@ -5978,13 +5978,13 @@ const ROLE_DEFS = [
 ];
 
 const ADMIN_ACCESS = [
-  { value: 'full',    label: 'Full access',  hint: 'Can manage all settings and data' },
-  { value: 'limited', label: 'Limited',      hint: 'Can view and approve but not change settings' },
+  { value: 'full',    label: 'Full admin',  hint: 'Can access and configure everything in the tool' },
+  { value: 'limited', label: 'Role-based',  hint: 'Access is limited to their assigned roles' },
 ];
 
 function TeamAccessSettings() {
   const [roleAssignments, setRoleAssignments] = useState({
-    'finance-approver': [],
+    'finance-approver': ['julie-goossens'],
     'hr-manager': [],
     'payroll-admin': [],
   });
@@ -6027,7 +6027,10 @@ function TeamAccessSettings() {
         </div>
 
         <div>
-          <div style={SL}>Roles</div>
+          <div style={{ ...SL, display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            Roles
+            <span style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: 11, color: P.inkFaint, textTransform: 'none', letterSpacing: 0 }}>— define scope for role-based admins</span>
+          </div>
           <div style={card}>
             {ROLE_DEFS.map((role, idx) => {
               const assignees = roleAssignments[role.key];
@@ -6075,7 +6078,9 @@ function TeamAccessSettings() {
         <div>
           <div style={SL}>Administrators</div>
           <div style={card}>
-            {admins.map((admin, idx) => (
+            {admins.map((admin, idx) => {
+              const assignedRoles = ROLE_DEFS.filter(r => roleAssignments[r.key]?.includes(admin.id));
+              return (
               <div key={admin.id}
                 onClick={admin.access !== 'owner' ? () => setAdminModal(admin.id) : undefined}
                 style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: admin.access !== 'owner' ? 'pointer' : 'default' }}>
@@ -6088,13 +6093,26 @@ function TeamAccessSettings() {
                 </div>
                 {admin.access === 'owner'
                   ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, background: P.bg, padding: '3px 10px', borderRadius: 20, border: `1px solid ${P.border}` }}>Owner</span>
+                  : admin.access === 'full'
+                  ? <>
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'rgba(34,10,53,0.06)', padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
+                      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                    </>
                   : <>
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{ADMIN_ACCESS.find(a => a.value === admin.access)?.label}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        {assignedRoles.length > 0
+                          ? assignedRoles.map(r => (
+                              <span key={r.key} style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, background: P.bg, padding: '3px 8px', borderRadius: 20, border: `1px solid ${P.border}`, whiteSpace: 'nowrap' }}>{r.label}</span>
+                            ))
+                          : <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint }}>No roles assigned</span>
+                        }
+                      </div>
                       <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                     </>
                 }
               </div>
-            ))}
+              );
+            })}
           </div>
           <button style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
             <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Grant admin access
