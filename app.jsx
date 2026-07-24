@@ -5988,11 +5988,16 @@ function TeamAccessSettings() {
     'hr-manager': [],
     'payroll-admin': [],
   });
+  const [adminAccess, setAdminAccess] = useState(() =>
+    Object.entries(EMPLOYEES)
+      .filter(([, u]) => u.adminAccess)
+      .reduce((acc, [id, u]) => ({ ...acc, [id]: u.adminAccess }), {})
+  );
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
       .filter(([, u]) => u.adminAccess)
-      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: u.adminAccess, isEmployee: u.isEmployee !== false })),
-    []
+      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: adminAccess[id] || u.adminAccess, isEmployee: u.isEmployee !== false })),
+    [adminAccess]
   );
   const [roleModal, setRoleModal] = useState(null);
   const [adminModal, setAdminModal] = useState(null);
@@ -6015,7 +6020,7 @@ function TeamAccessSettings() {
         title="Access level"
         options={ADMIN_ACCESS}
         value={admins.find(a => a.id === adminModal)?.access || 'full'}
-        onSave={() => {}}
+        onSave={v => { setAdminAccess(prev => ({ ...prev, [adminModal]: v })); setAdminModal(null); }}
         onClose={() => setAdminModal(null)}
       />
     )}
