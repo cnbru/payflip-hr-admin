@@ -5974,8 +5974,8 @@ function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
 
 const ROLE_DEFS = [
   { key: 'finance-approver', label: 'Finance approver', icon: 'banknote',    hint: 'Reviews and approves expense submissions' },
-  { key: 'hr-manager',       label: 'HR manager',       icon: 'user-check',  hint: 'Manages time off, people, and HR settings' },
-  { key: 'payroll-admin',    label: 'Payroll admin',    icon: 'calculator',  hint: 'Runs payroll and accesses salary data' },
+  { key: 'hr-manager',       label: 'HR manager',       icon: 'user-check',  hint: 'Manages time off requests and employee records' },
+  { key: 'payroll-admin',    label: 'Payroll admin',    icon: 'calculator',  hint: 'Processes payroll and views salary data' },
 ];
 
 const ADMIN_ACCESS = [
@@ -6013,8 +6013,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
         <div style={{ padding: '8px 14px 0' }}>
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Access level</div>
           {[
-            { value: 'full',    label: 'Full admin',   hint: 'Can configure company settings, entities, billing — plus all operational roles' },
-            { value: 'limited', label: 'Role-based',   hint: 'Operational access only — company settings are never accessible' },
+            { value: 'full',    label: 'Full admin',   hint: 'Full access to all settings, tools, and approvals' },
+            { value: 'limited', label: 'Role-based',   hint: 'Can only access what\'s assigned to them' },
           ].map(opt => (
             <div key={opt.value} onClick={() => setSelectedAccess(opt.value)}
               style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
@@ -6031,7 +6031,7 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
         <div style={{ overflow: 'hidden', maxHeight: selectedAccess === 'limited' ? 300 : 0, opacity: selectedAccess === 'limited' ? 1 : 0, transition: 'max-height 220ms cubic-bezier(0.22,1,0.36,1), opacity 180ms ease' }}>
           <div style={{ margin: '0 14px', borderTop: `1px solid ${P.border}` }} />
           <div style={{ padding: '6px 14px 14px' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Operational roles</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Roles</div>
             {ROLE_DEFS.map(role => {
               const checked = selectedRoles.includes(role.key);
               return (
