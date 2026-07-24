@@ -6009,40 +6009,41 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '8px 14px' }}>
-          {ADMIN_ACCESS.map(opt => (
-            <React.Fragment key={opt.value}>
-              <div onClick={() => setSelectedAccess(opt.value)}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {selectedAccess === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+        <div style={{ padding: '8px 14px 0' }}>
+          {[
+            { value: 'full',    label: 'Full admin',   hint: 'Can configure company settings, entities, billing — plus all operational roles' },
+            { value: 'limited', label: 'Role-based',   hint: 'Operational access only — company settings are never accessible' },
+          ].map(opt => (
+            <div key={opt.value} onClick={() => setSelectedAccess(opt.value)}
+              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {selectedAccess === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ margin: '4px 14px 0', borderTop: `1px solid ${P.border}` }} />
+        <div style={{ padding: '6px 14px 14px', opacity: selectedAccess === 'full' ? 0.35 : 1, pointerEvents: selectedAccess === 'full' ? 'none' : 'auto', transition: 'opacity 150ms ease' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Operational roles</div>
+          {ROLE_DEFS.map(role => {
+            const checked = selectedRoles.includes(role.key);
+            return (
+              <div key={role.key} onClick={() => toggleRole(role.key)}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8, background: checked ? 'rgba(34,10,53,0.04)' : 'transparent' }}>
+                <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent', transition: 'all 120ms ease' }}>
+                  {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
                 </div>
                 <div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
-                  {opt.hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>}
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{role.label}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{role.hint}</div>
                 </div>
               </div>
-              {opt.value === 'limited' && selectedAccess === 'limited' && (
-                <div style={{ margin: '0 10px 8px 42px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {ROLE_DEFS.map(role => {
-                    const checked = selectedRoles.includes(role.key);
-                    return (
-                      <div key={role.key} onClick={() => toggleRole(role.key)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8, background: checked ? 'rgba(34,10,53,0.04)' : 'transparent' }}>
-                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent' }}>
-                          {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
-                        </div>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{role.label}</div>
-                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{role.hint}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </React.Fragment>
-          ))}
+            );
+          })}
         </div>
         <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
