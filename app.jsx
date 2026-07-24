@@ -6010,6 +6010,7 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
           </button>
         </div>
         <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Access level</div>
           {[
             { value: 'full',    label: 'Full admin',   hint: 'Can configure company settings, entities, billing — plus all operational roles' },
             { value: 'limited', label: 'Role-based',   hint: 'Operational access only — company settings are never accessible' },
