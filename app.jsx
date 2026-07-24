@@ -304,16 +304,16 @@ const EMPLOYEES = {
   'sara-verbeke':        { name: 'Sara Verbeke',        initials: 'SV', color: '#bfdbfe', entitlement: 20, department: 'Design',    email: 'sara.verbeke@lumiogroup.be',    entity: 'Lumio Group', budget: 3100, role: 'Employee', status: 'Active', gender: 'f' },
   'wout-desmet':         { name: 'Wout Desmet',         initials: 'WD', color: '#99f6e4', entitlement: 22, department: 'Design',    email: 'wout.desmet@lumiogroup.be',     entity: 'Lumio Group', budget: 4200, role: 'Employee', status: 'Active', gender: 'm' },
   'amber-claes':         { name: 'Amber Claes',         initials: 'AC', color: '#fca5a5', entitlement: 20, department: 'Design',    email: 'amber.claes@lumiogroup.be',     entity: 'Lumio Group', budget: 2900, role: 'Employee', status: 'Active', gender: 'f' },
-  'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', budget: 6000, role: 'Manager',  status: 'Active', gender: 'm' },
+  'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', budget: 6000, role: 'Admin',  status: 'Active', gender: 'm' },
   // Engineering
   'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true, adminAccess: 'full' },
   'stijn-laurent':     { name: 'Stijn Laurent',      initials: 'SL', color: '#a7f3d0', entitlement: 29, department: 'Engineering', email: 'stijn.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 1500,  role: 'Employee', status: 'Active', gender: 'm' },
   'jana-goossens':     { name: 'Jana Goossens',      initials: 'JG', color: '#c7d2fe', entitlement: 20, department: 'Engineering', email: 'jana.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 2000,  role: 'Employee', status: 'Active', gender: 'f' },
   'laura-mertens':     { name: 'Laura Mertens',      initials: 'LM', color: '#fca5a5', entitlement: 20, department: 'Engineering', email: 'laura.mertens@lumiogroup.be',     entity: 'Lumio Group', budget: 750,   role: 'Employee', status: 'Active', gender: 'f' },
   // Marketing
-  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Manager',  status: 'Active', gender: 'm', adminAccess: 'full' },
+  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm', adminAccess: 'full' },
   'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumiogroup.be',   entity: 'Lumio Group', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
-  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Manager',  status: 'Active', gender: 'f', adminAccess: 'limited' },
+  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f', adminAccess: 'limited' },
   'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumiogroup.be',    entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
 };
 const CURRENT_USER = EMPLOYEES['bruno-coen'];
@@ -4581,7 +4581,7 @@ function EmployeesScreen({ requests, onNav }) {
           <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={selectStyle}>
             <option value="All">Role: All</option>
             <option value="Employee">Role: Employee</option>
-            <option value="Manager">Role: Manager</option>
+            <option value="Admin">Role: Admin</option>
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectStyle}>
             <option value="All">Status: All</option>
