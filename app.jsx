@@ -2777,7 +2777,9 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16 }}>
                     {/* Text */}
                     <div style={{ flex: 1, minWidth: 0, paddingBottom: 20, display: 'flex', flexDirection: 'column' }}>
-                      <StatusPill status={choice.status || 'approved'} style={{ alignSelf: 'flex-start', marginBottom: 32 }} />
+                      <div style={{ marginBottom: 32 }}>
+                        <StatusPill status={choice.status || 'approved'} />
+                      </div>
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink, lineHeight: 1.35, marginBottom: 8 }}>
                         {choice.productName || choice.name}
                       </div>
