@@ -6022,8 +6022,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
                 {selectedAccess === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{opt.hint}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
               </div>
             </div>
           ))}
@@ -6041,8 +6041,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
                     {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, fontWeight: 500 }}>{role.label}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{role.hint}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{role.label}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{role.hint}</div>
                   </div>
                 </div>
               );
