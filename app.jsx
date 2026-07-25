@@ -5781,8 +5781,9 @@ const REIMBURSE_OPTS = [
   { value: 'manual',  label: 'Manual (on request)', hint: 'Finance triggers payment manually' },
 ];
 const APPROVAL_OPTS = [
-  { value: 'manager', label: 'Direct manager', hint: 'Employee\'s line manager receives the request' },
+  { value: 'manager', label: 'Direct manager',   hint: 'Employee\'s line manager receives the request' },
   { value: 'finance', label: 'Finance approver', hint: 'Person assigned in Team & access' },
+  { value: 'dept',    label: 'By department',    hint: 'Assign a dedicated approver per department' },
   { value: 'auto',    label: 'Auto-approve under threshold', hint: 'Expenses below the receipt threshold auto-approve' },
 ];
 
@@ -5795,6 +5796,8 @@ function ExpenseCategorySettings({ categories, onSave }) {
   const [receiptThreshold, setReceiptThreshold] = useState(25);
   const [approvalRouting, setApprovalRouting] = useState('manager');
   const [spendingLimits, setSpendingLimits] = useState({});
+  const [deptApprovers, setDeptApprovers] = useState({ Design: null, Engineering: null, Marketing: null });
+  const [deptPickerDept, setDeptPickerDept] = useState(null);
 
   const handleCatSave = (val, limit) => {
     const next = catModal.idx === 'new'
@@ -5852,6 +5855,21 @@ function ExpenseCategorySettings({ categories, onSave }) {
     {settingModal === 'approval' && (
       <PickModal title="Approval routing" options={APPROVAL_OPTS} value={approvalRouting} onSave={setApprovalRouting} onClose={() => setSettingModal(null)} />
     )}
+    {deptPickerDept && (() => {
+      const allCandidates = Object.entries(EMPLOYEES)
+        .filter(([, e]) => e.isEmployee !== false)
+        .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color }));
+      return (
+        <PersonPickerModal
+          title={`Approver — ${deptPickerDept}`}
+          value={deptApprovers[deptPickerDept]}
+          candidates={allCandidates}
+          singleSelect
+          onSave={id => setDeptApprovers(prev => ({ ...prev, [deptPickerDept]: id }))}
+          onClose={() => setDeptPickerDept(null)}
+        />
+      );
+    })()}
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
@@ -5896,7 +5914,24 @@ function ExpenseCategorySettings({ categories, onSave }) {
         <div>
           <div style={SL}>Approval</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalLabel, true)}
+            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalLabel, approvalRouting !== 'dept')}
+            {approvalRouting === 'dept' && DEPARTMENTS.map((dept, idx) => {
+              const assigneeId = deptApprovers[dept];
+              const assigneeName = assigneeId ? (EMPLOYEES[assigneeId] || {}).name : null;
+              return (
+                <div key={dept} onClick={() => setDeptPickerDept(dept)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '13px 20px 13px 52px', borderTop: `1px solid ${P.border}`, cursor: 'pointer', animation: `screenEnter 150ms ${EASE_OUT}` }}>
+                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{dept}</span>
+                  {assigneeId && (
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: (EMPLOYEES[assigneeId] || {}).color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 8, color: P.ink }}>{(EMPLOYEES[assigneeId] || {}).initials}</span>
+                    </div>
+                  )}
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: assigneeName ? P.inkSoft : P.inkFaint, marginRight: 6 }}>{assigneeName || 'Not assigned'}</span>
+                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -5906,15 +5941,16 @@ function ExpenseCategorySettings({ categories, onSave }) {
   );
 }
 
-function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
+function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
-  const [selected, setSelected] = useState(value || []);
+  const [selected, setSelected] = useState(singleSelect ? (value ? [value] : []) : (value || []));
   const [search, setSearch] = useState('');
   const save = () => { onSave(selected); close(); };
 
-  const toggle = (key) => setSelected(prev =>
-    prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-  );
+  const toggle = (key) => {
+    if (singleSelect) { onSave(key); close(); return; }
+    setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
 
   const pool = candidates || Object.entries(EMPLOYEES)
     .filter(([, e]) => e.adminAccess)
@@ -5928,7 +5964,7 @@ function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</div>
-            {selected.length > 0 && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{selected.length} selected</div>}
+            {!singleSelect && selected.length > 0 && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{selected.length} selected</div>}
           </div>
           <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
@@ -5947,9 +5983,14 @@ function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
             return (
               <div key={emp.value} onClick={() => toggle(emp.value)}
                 style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${on ? P.action : P.border}`, background: on ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `background 120ms, border-color 120ms` }}>
-                  {on && <Icon name="check" size={11} color="#fff" strokeWidth={3} />}
-                </div>
+                {singleSelect
+                  ? <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${on ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `border-color 120ms` }}>
+                      {on && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+                    </div>
+                  : <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${on ? P.action : P.border}`, background: on ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `background 120ms, border-color 120ms` }}>
+                      {on && <Icon name="check" size={11} color="#fff" strokeWidth={3} />}
+                    </div>
+                }
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
                 </div>
@@ -5964,10 +6005,17 @@ function PersonPickerModal({ title, value, candidates, onSave, onClose }) {
             <div style={{ padding: '20px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, textAlign: 'center' }}>No results</div>
           )}
         </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-        </div>
+        {!singleSelect && (
+          <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
+            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+            <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+          </div>
+        )}
+        {singleSelect && (
+          <div style={{ padding: '10px 22px', borderTop: `1px solid ${P.border}`, flexShrink: 0 }}>
+            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -6187,9 +6235,10 @@ function TeamAccessSettings() {
 }
 
 const TIMEOFF_APPROVAL_OPTS = [
-  { value: 'manager', label: 'Direct manager',  hint: "Employee's line manager receives the request" },
-  { value: 'hr',      label: 'HR manager',       hint: 'Person assigned in Team & access' },
-  { value: 'auto',    label: 'Auto-approve',     hint: 'Requests under 3 days are approved automatically' },
+  { value: 'manager', label: 'Direct manager', hint: "Employee's line manager receives the request" },
+  { value: 'hr',      label: 'HR manager',     hint: 'Person assigned in Team & access' },
+  { value: 'dept',    label: 'By department',  hint: 'Assign a dedicated approver per department' },
+  { value: 'auto',    label: 'Auto-approve',   hint: 'Requests under 3 days are approved automatically' },
 ];
 const ENTITLEMENT_OPTS = [
   { value: 'legal',   label: 'Legal minimum',    hint: 'Belgian statutory: 20 days for full-time, prorated for part-time' },
@@ -6272,6 +6321,8 @@ function TimeOffSettings() {
   const [approval, setApproval] = useState('manager');
   const [leaveModal, setLeaveModal] = useState(null);
   const [settingModal, setSettingModal] = useState(null);
+  const [deptApprovers, setDeptApprovers] = useState({ Design: null, Engineering: null, Marketing: null });
+  const [deptPickerDept, setDeptPickerDept] = useState(null);
 
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
@@ -6300,6 +6351,21 @@ function TimeOffSettings() {
     {settingModal === 'entitlement' && <PickModal title="Entitlement" options={ENTITLEMENT_OPTS} value={entitlement} onSave={(val, extra) => { setEntitlement(val); if (extra !== undefined) setCompanyDays(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'company', label: 'Days', defaultValue: companyDays, suffix: 'days', min: 20 }} />}
     {settingModal === 'carryover' && <PickModal title="Unused days" options={CARRYOVER_OPTS} value={carryover} onSave={(val, extra) => { setCarryover(val); if (extra !== undefined) setCarryoverCap(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'cap', label: 'Max', defaultValue: carryoverCap, suffix: 'days', min: 1 }} />}
     {settingModal === 'approval' && <PickModal title="Who approves?" options={TIMEOFF_APPROVAL_OPTS} value={approval} onSave={setApproval} onClose={() => setSettingModal(null)} />}
+    {deptPickerDept && (() => {
+      const allCandidates = Object.entries(EMPLOYEES)
+        .filter(([, e]) => e.isEmployee !== false)
+        .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color }));
+      return (
+        <PersonPickerModal
+          title={`Approver — ${deptPickerDept}`}
+          value={deptApprovers[deptPickerDept]}
+          candidates={allCandidates}
+          singleSelect
+          onSave={id => setDeptApprovers(prev => ({ ...prev, [deptPickerDept]: id }))}
+          onClose={() => setDeptPickerDept(null)}
+        />
+      );
+    })()}
 
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -6338,7 +6404,24 @@ function TimeOffSettings() {
         <div>
           <div style={SL}>Approval</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', (TIMEOFF_APPROVAL_OPTS.find(o => o.value === approval) || {}).label, true)}
+            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', (TIMEOFF_APPROVAL_OPTS.find(o => o.value === approval) || {}).label, approval !== 'dept')}
+            {approval === 'dept' && DEPARTMENTS.map((dept, idx) => {
+              const assigneeId = deptApprovers[dept];
+              const assigneeName = assigneeId ? (EMPLOYEES[assigneeId] || {}).name : null;
+              return (
+                <div key={dept} onClick={() => setDeptPickerDept(dept)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '13px 20px 13px 52px', borderTop: `1px solid ${P.border}`, cursor: 'pointer', animation: `screenEnter 150ms ${EASE_OUT}` }}>
+                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{dept}</span>
+                  {assigneeId && (
+                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: (EMPLOYEES[assigneeId] || {}).color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 8, color: P.ink }}>{(EMPLOYEES[assigneeId] || {}).initials}</span>
+                    </div>
+                  )}
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: assigneeName ? P.inkSoft : P.inkFaint, marginRight: 6 }}>{assigneeName || 'Not assigned'}</span>
+                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
