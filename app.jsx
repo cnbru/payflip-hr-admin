@@ -6091,6 +6091,7 @@ function TeamAccessSettings() {
   );
   const [adminModal, setAdminModal] = useState(null);
   const [showGrantPicker, setShowGrantPicker] = useState(false);
+  const [pendingGrantId, setPendingGrantId] = useState(null);
 
   const nonAdminCandidates = useMemo(() =>
     Object.entries(EMPLOYEES)
@@ -6098,15 +6099,6 @@ function TeamAccessSettings() {
       .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color })),
     [adminAccess]
   );
-
-  const handleGrantAccess = (ids) => {
-    if (!ids.length) return;
-    setAdminAccess(prev => {
-      const next = { ...prev };
-      ids.forEach(id => { next[id] = 'full'; });
-      return next;
-    });
-  };
 
   const handleAdminSave = (adminId, newAccess, newRoles) => {
     setAdminAccess(prev => ({ ...prev, [adminId]: newAccess }));
@@ -6133,12 +6125,27 @@ function TeamAccessSettings() {
     {showGrantPicker && (
       <PersonPickerModal
         title="Grant admin access"
-        value={[]}
+        value={null}
         candidates={nonAdminCandidates}
-        onSave={handleGrantAccess}
+        singleSelect
+        onSave={id => { setShowGrantPicker(false); setPendingGrantId(id); }}
         onClose={() => setShowGrantPicker(false)}
       />
     )}
+    {pendingGrantId && (() => {
+      const emp = EMPLOYEES[pendingGrantId];
+      if (!emp) return null;
+      const pendingAdmin = { id: pendingGrantId, name: emp.name, initials: emp.initials, color: emp.color, email: emp.email || '', access: 'full', isEmployee: emp.isEmployee !== false };
+      return (
+        <AdminAccessModal
+          admin={pendingAdmin}
+          access="full"
+          roleAssignments={roleAssignments}
+          onSave={(newAccess, newRoles) => { handleAdminSave(pendingGrantId, newAccess, newRoles); setPendingGrantId(null); }}
+          onClose={() => setPendingGrantId(null)}
+        />
+      );
+    })()}
     {adminModal && (() => { const admin = admins.find(a => a.id === adminModal); return admin ? (
       <AdminAccessModal
         admin={admin}
