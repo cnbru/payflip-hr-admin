@@ -6053,15 +6053,20 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
         {step === 1 && (
           <div style={{ padding: '8px 14px 4px' }}>
             <div onClick={() => { onSave('full'); close(); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${access === 'full' ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                {access === 'full' && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Full admin</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Full access to all settings, tools, and approvals</div>
               </div>
-              {access === 'full' && <Icon name="check" size={16} color={P.action} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
             </div>
             <div onClick={() => setStep(2)}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${Array.isArray(access) ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                {Array.isArray(access) && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Limited access</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
@@ -6070,7 +6075,7 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
                     : 'Select which areas to manage'}
                 </div>
               </div>
-              <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 2 }} />
             </div>
           </div>
         )}
