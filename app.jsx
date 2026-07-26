@@ -5997,168 +5997,33 @@ const ADMIN_ACCESS = [
   { value: 'limited', label: 'Role-based',  hint: 'Access is limited to their assigned roles' },
 ];
 
-function GrantAdminModal({ candidates, onSave, onClose }) {
+const ADMIN_AREAS = [
+  { value: 'time-off',  label: 'Time off',  hint: 'Approve and manage time off requests' },
+  { value: 'expenses',  label: 'Expenses',  hint: 'Review and approve expense submissions' },
+  { value: 'payroll',   label: 'Payroll',   hint: 'Process payroll and view salary data' },
+];
+
+function AdminAccessModal({ admin, access, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
-  const [step, setStep] = useState(1);
-  const [pickedId, setPickedId] = useState(null);
-  const [selectedRoles, setSelectedRoles] = useState(['full']);
-  const [search, setSearch] = useState('');
-  const [sliding, setSliding] = useState(false);
+  const initType = Array.isArray(access) ? 'limited' : (access === 'full' || !access ? 'full' : 'full');
+  const initAreas = Array.isArray(access) ? access : [];
+  const [accessType, setAccessType] = useState(initType);
+  const [selectedAreas, setSelectedAreas] = useState(initAreas);
+  const [revoking, setRevoking] = useState(false);
 
-  const filtered = candidates.filter(e =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    (e.dept || '').toLowerCase().includes(search.toLowerCase())
-  );
-
-  const pickPerson = (id) => {
-    setPickedId(id);
-    setSliding(true);
-    setTimeout(() => { setStep(2); setSliding(false); }, 0);
+  const toggleArea = (value) => {
+    setSelectedAreas(prev => {
+      const next = prev.includes(value) ? prev.filter(a => a !== value) : [...prev, value];
+      return next.length === 0 ? prev : next;
+    });
   };
 
-  const goBack = () => {
-    setStep(1);
-    setPickedId(null);
-    setSelectedRoles(['full']);
-  };
-
-  const toggleRole = (value) => {
-    if (value === 'full') {
-      setSelectedRoles(['full']);
-    } else {
-      setSelectedRoles(prev => {
-        const without = prev.filter(r => r !== 'full' && r !== value);
-        const adding = !prev.includes(value);
-        const next = adding ? [...without, value] : without;
-        return next.length === 0 ? prev : next;
-      });
-    }
-  };
-
+  const canSave = accessType === 'full' || selectedAreas.length > 0;
   const save = () => {
-    onSave(pickedId, selectedRoles);
+    onSave(accessType === 'full' ? 'full' : selectedAreas);
     close();
   };
 
-  const picked = pickedId ? candidates.find(c => c.value === pickedId) : null;
-
-  return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, maxHeight: '70vh', boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden', ...modalPanelStyle(visible) }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {step === 2 && (
-              <button onClick={goBack} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)', flexShrink: 0 }}>
-                <Icon name="chevron-left" size={15} color={P.ink} strokeWidth={2.5} />
-              </button>
-            )}
-            {step === 1
-              ? <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>Grant admin access</div>
-              : <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: picked?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{picked?.initials}</span>
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{picked?.name}</div>
-                </div>
-            }
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Step 1: person picker */}
-        {step === 1 && <>
-          <div style={{ padding: '12px 16px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: P.bg, borderRadius: 8, padding: '8px 12px' }}>
-              <Icon name="search" size={14} color={P.inkSoft} strokeWidth={2} />
-              <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or department"
-                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }} />
-            </div>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
-            {filtered.map(emp => (
-              <div key={emp.value} onClick={() => pickPerson(emp.value)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
-                </div>
-                <div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{emp.name}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{emp.dept}</div>
-                </div>
-                <Icon name="chevron-right" size={15} color={P.inkFaint} strokeWidth={1.75} style={{ marginLeft: 'auto', flexShrink: 0 }} />
-              </div>
-            ))}
-            {filtered.length === 0 && (
-              <div style={{ padding: '20px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, textAlign: 'center' }}>No results</div>
-            )}
-          </div>
-        </>}
-
-        {/* Step 2: role picker */}
-        {step === 2 && <>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 4px' }}>
-            {ADMIN_ROLE_OPTS.map(opt => {
-              const active = selectedRoles.includes(opt.value);
-              const isFull = opt.value === 'full';
-              return (
-              <div key={opt.value} onClick={() => toggleRole(opt.value)}
-                style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                {isFull
-                  ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${active ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
-                      {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-                    </div>
-                  : <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${active ? P.action : P.border}`, background: active ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 1 }}>
-                      {active && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
-                    </div>
-                }
-                <div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
-                </div>
-              </div>
-              );
-            })}
-          </div>
-          <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
-            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-            <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Grant access</button>
-          </div>
-        </>}
-      </div>
-    </div>
-  );
-}
-
-const ADMIN_ROLE_OPTS = [
-  { value: 'full',             label: 'Full admin',       hint: 'Full access to all settings, tools, and approvals' },
-  { value: 'finance-approver', label: 'Finance approver', hint: 'Reviews and approves expense submissions' },
-  { value: 'hr-manager',       label: 'HR manager',       hint: 'Manages time off requests and employee records' },
-  { value: 'payroll-admin',    label: 'Payroll admin',    hint: 'Processes payroll and views salary data' },
-];
-
-function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
-  const initRoles = Array.isArray(access) ? access : (access ? [access] : ['full']);
-  const [selectedRoles, setSelectedRoles] = useState(initRoles);
-  const [revoking, setRevoking] = useState(false);
-  const toggleRole = (value) => {
-    if (value === 'full') {
-      setSelectedRoles(['full']);
-    } else {
-      setSelectedRoles(prev => {
-        const without = prev.filter(r => r !== 'full' && r !== value);
-        const adding = !prev.includes(value);
-        const next = adding ? [...without, value] : without;
-        return next.length === 0 ? prev : next;
-      });
-    }
-  };
-  const save = () => { onSave(selectedRoles); close(); };
-  const confirmRevoke = () => { onRevoke(); close(); };
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
       <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
@@ -6176,29 +6041,50 @@ function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
+
         <div style={{ padding: '8px 14px 4px' }}>
-          {ADMIN_ROLE_OPTS.map(opt => {
-            const active = selectedRoles.includes(opt.value);
-            const isFull = opt.value === 'full';
-            return (
-            <div key={opt.value} onClick={() => toggleRole(opt.value)}
-              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              {isFull
-                ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${active ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
-                    {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-                  </div>
-                : <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${active ? P.action : P.border}`, background: active ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 1 }}>
-                    {active && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
-                  </div>
-              }
-              <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
-              </div>
+          {/* Full admin row */}
+          <div onClick={() => setAccessType('full')} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${accessType === 'full' ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 2 }}>
+              {accessType === 'full' && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
             </div>
-            );
-          })}
+            <div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Full admin</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Full access to all settings, tools, and approvals</div>
+            </div>
+          </div>
+
+          {/* Limited access row */}
+          <div onClick={() => { setAccessType('limited'); if (selectedAreas.length === 0) setSelectedAreas(['time-off']); }} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${accessType === 'limited' ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 2 }}>
+              {accessType === 'limited' && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Limited access</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Can only manage specific areas</div>
+              {accessType === 'limited' && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {ADMIN_AREAS.map(area => {
+                    const checked = selectedAreas.includes(area.value);
+                    return (
+                      <div key={area.value} onClick={e => { e.stopPropagation(); toggleArea(area.value); }}
+                        style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '7px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                        <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, background: checked ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 1 }}>
+                          {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{area.label}</div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{area.hint}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
         {!revoking
           ? <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center' }}>
               <button onClick={() => setRevoking(true)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626' }}>
@@ -6206,12 +6092,12 @@ function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
               </button>
               <div style={{ flex: 1 }} />
               <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, marginRight: 8 }}>Cancel</button>
-              <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+              <button onClick={save} disabled={!canSave} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: canSave ? P.action : P.border, color: '#fff', cursor: canSave ? 'pointer' : 'default', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
             </div>
           : <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Remove {admin.name.split(' ')[0]}'s admin access?</span>
               <button onClick={() => setRevoking(false)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft }}>Cancel</button>
-              <button onClick={confirmRevoke} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Revoke</button>
+              <button onClick={() => { onSave(null); close(); }} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Revoke</button>
             </div>
         }
       </div>
@@ -6226,50 +6112,35 @@ function TeamAccessSettings() {
       .filter(([, u]) => u.adminAccess)
       .reduce((acc, [id, u]) => ({ ...acc, [id]: u.adminAccess }), {})
   );
+
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
-      .filter(([id, u]) => u.adminAccess || id in adminAccess)
-      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: id in adminAccess ? adminAccess[id] : u.adminAccess, isEmployee: u.isEmployee !== false })),
+      .filter(([, u]) => u.role === 'Admin' || u.isEmployee === false)
+      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: id in adminAccess ? adminAccess[id] : (u.adminAccess || null) })),
     [adminAccess]
   );
-  const [adminModal, setAdminModal] = useState(null);
-  const [showGrantPicker, setShowGrantPicker] = useState(false);
 
-  const nonAdminCandidates = useMemo(() =>
-    Object.entries(EMPLOYEES)
-      .filter(([id, e]) => e.isEmployee !== false && !(id in adminAccess))
-      .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color })),
-    [adminAccess]
-  );
+  const [adminModal, setAdminModal] = useState(null);
 
   const handleAdminSave = (adminId, newAccess) => {
-    setAdminAccess(prev => ({ ...prev, [adminId]: newAccess }));
+    setAdminAccess(prev => {
+      if (newAccess === null) { const next = { ...prev }; delete next[adminId]; return next; }
+      return { ...prev, [adminId]: newAccess };
+    });
     setAdminModal(null);
   };
 
-  const handleRevoke = (adminId) => {
-    setAdminAccess(prev => { const next = { ...prev }; delete next[adminId]; return next; });
-    setAdminModal(null);
-  };
-
+  const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
   return (
     <>
-    {showGrantPicker && (
-      <GrantAdminModal
-        candidates={nonAdminCandidates}
-        onSave={(id, role) => setAdminAccess(prev => ({ ...prev, [id]: role }))}
-        onClose={() => setShowGrantPicker(false)}
-      />
-    )}
     {adminModal && (() => { const admin = admins.find(a => a.id === adminModal); return admin ? (
       <AdminAccessModal
         admin={admin}
         access={admin.access}
         onSave={newAccess => handleAdminSave(adminModal, newAccess)}
-        onRevoke={() => handleRevoke(adminModal)}
         onClose={() => setAdminModal(null)}
       />
     ) : null; })()}
@@ -6277,22 +6148,21 @@ function TeamAccessSettings() {
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Team & access</h1>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage roles and administrator access for your company</p>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Configure access levels for your admin team</p>
         </div>
 
         <div>
           <div style={SL}>Administrators</div>
           <div style={card}>
             {admins.map((admin, idx) => {
-              const ROLE_LABELS = { 'full': 'Full admin', 'finance-approver': 'Finance approver', 'hr-manager': 'HR manager', 'payroll-admin': 'Payroll admin' };
-              const roles = Array.isArray(admin.access) ? admin.access : (admin.access ? [admin.access] : null);
-              const badge = roles
-                ? roles.includes('full')
-                  ? { label: 'Full admin', filled: true }
-                  : roles.length === 1
-                    ? { label: ROLE_LABELS[roles[0]] || roles[0], filled: false }
-                    : { label: `${roles.length} roles`, filled: false }
-                : null;
+              const areas = Array.isArray(admin.access) ? admin.access : null;
+              const badge = admin.access === 'full'
+                ? { label: 'Full admin', filled: true }
+                : areas && areas.length > 0
+                  ? areas.length === 1
+                    ? { label: AREA_LABELS[areas[0]] || areas[0], filled: false }
+                    : { label: `${areas.length} areas`, filled: false }
+                  : null;
               return (
               <div key={admin.id}
                 onClick={() => setAdminModal(admin.id)}
@@ -6306,16 +6176,13 @@ function TeamAccessSettings() {
                 </div>
                 {badge
                   ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
-                  : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'transparent', padding: '3px 10px', borderRadius: 20, border: `1.5px solid ${P.action}`, whiteSpace: 'nowrap', flexShrink: 0 }}>Assign role</span>
+                  : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'transparent', padding: '3px 10px', borderRadius: 20, border: `1.5px solid ${P.action}`, whiteSpace: 'nowrap', flexShrink: 0 }}>Assign access</span>
                 }
                 <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
               </div>
               );
             })}
           </div>
-          <button onClick={() => setShowGrantPicker(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
-            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Grant admin access
-          </button>
         </div>
 
       </div>
