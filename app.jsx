@@ -6118,10 +6118,12 @@ const ADMIN_ROLE_OPTS = [
   { value: 'payroll-admin',    label: 'Payroll admin',    hint: 'Processes payroll and views salary data' },
 ];
 
-function AdminAccessModal({ admin, access, onSave, onClose }) {
+function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
   const { visible, close } = useModalTransition(onClose);
   const [selected, setSelected] = useState(access || 'full');
+  const [revoking, setRevoking] = useState(false);
   const save = () => { onSave(selected); close(); };
+  const confirmRevoke = () => { onRevoke(); close(); };
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
       <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
@@ -6153,10 +6155,21 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
             </div>
           ))}
         </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-        </div>
+        {!revoking
+          ? <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center' }}>
+              <button onClick={() => setRevoking(true)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626' }}>
+                Revoke access
+              </button>
+              <div style={{ flex: 1 }} />
+              <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, marginRight: 8 }}>Cancel</button>
+              <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+            </div>
+          : <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Remove {admin.name.split(' ')[0]}'s admin access?</span>
+              <button onClick={() => setRevoking(false)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft }}>Cancel</button>
+              <button onClick={confirmRevoke} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Revoke</button>
+            </div>
+        }
       </div>
     </div>
   );
@@ -6190,6 +6203,11 @@ function TeamAccessSettings() {
     setAdminModal(null);
   };
 
+  const handleRevoke = (adminId) => {
+    setAdminAccess(prev => { const next = { ...prev }; delete next[adminId]; return next; });
+    setAdminModal(null);
+  };
+
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
@@ -6207,6 +6225,7 @@ function TeamAccessSettings() {
         admin={admin}
         access={admin.access}
         onSave={newAccess => handleAdminSave(adminModal, newAccess)}
+        onRevoke={() => handleRevoke(adminModal)}
         onClose={() => setAdminModal(null)}
       />
     ) : null; })()}
