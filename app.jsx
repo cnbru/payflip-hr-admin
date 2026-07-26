@@ -5997,6 +5997,120 @@ const ADMIN_ACCESS = [
   { value: 'limited', label: 'Role-based',  hint: 'Access is limited to their assigned roles' },
 ];
 
+function GrantAdminModal({ candidates, onSave, onClose }) {
+  const { visible, close } = useModalTransition(onClose);
+  const [step, setStep] = useState(1);
+  const [pickedId, setPickedId] = useState(null);
+  const [selectedRole, setSelectedRole] = useState('full');
+  const [search, setSearch] = useState('');
+  const [sliding, setSliding] = useState(false);
+
+  const filtered = candidates.filter(e =>
+    e.name.toLowerCase().includes(search.toLowerCase()) ||
+    (e.dept || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  const pickPerson = (id) => {
+    setPickedId(id);
+    setSliding(true);
+    setTimeout(() => { setStep(2); setSliding(false); }, 0);
+  };
+
+  const goBack = () => {
+    setStep(1);
+    setPickedId(null);
+    setSelectedRole('full');
+  };
+
+  const save = () => {
+    onSave(pickedId, selectedRole);
+    close();
+  };
+
+  const picked = pickedId ? candidates.find(c => c.value === pickedId) : null;
+
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, maxHeight: '70vh', boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden', ...modalPanelStyle(visible) }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {step === 2 && (
+              <button onClick={goBack} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)', flexShrink: 0 }}>
+                <Icon name="chevron-left" size={15} color={P.ink} strokeWidth={2.5} />
+              </button>
+            )}
+            {step === 1
+              ? <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>Grant admin access</div>
+              : <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: picked?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{picked?.initials}</span>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{picked?.name}</div>
+                </div>
+            }
+          </div>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        {/* Step 1: person picker */}
+        {step === 1 && <>
+          <div style={{ padding: '12px 16px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: P.bg, borderRadius: 8, padding: '8px 12px' }}>
+              <Icon name="search" size={14} color={P.inkSoft} strokeWidth={2} />
+              <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or department"
+                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }} />
+            </div>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+            {filtered.map(emp => (
+              <div key={emp.value} onClick={() => pickPerson(emp.value)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{emp.name}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{emp.dept}</div>
+                </div>
+                <Icon name="chevron-right" size={15} color={P.inkFaint} strokeWidth={1.75} style={{ marginLeft: 'auto', flexShrink: 0 }} />
+              </div>
+            ))}
+            {filtered.length === 0 && (
+              <div style={{ padding: '20px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, textAlign: 'center' }}>No results</div>
+            )}
+          </div>
+        </>}
+
+        {/* Step 2: role picker */}
+        {step === 2 && <>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 4px' }}>
+            {ADMIN_ROLE_OPTS.map(opt => (
+              <div key={opt.value} onClick={() => setSelectedRole(opt.value)}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedRole === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
+                  {selectedRole === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
+            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+            <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Grant access</button>
+          </div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
 const ADMIN_ROLE_OPTS = [
   { value: 'full',             label: 'Full admin',       hint: 'Full access to all settings, tools, and approvals' },
   { value: 'finance-approver', label: 'Finance approver', hint: 'Reviews and approves expense submissions' },
@@ -6082,12 +6196,9 @@ function TeamAccessSettings() {
   return (
     <>
     {showGrantPicker && (
-      <PersonPickerModal
-        title="Grant admin access"
-        value={null}
+      <GrantAdminModal
         candidates={nonAdminCandidates}
-        singleSelect
-        onSave={id => { setAdminAccess(prev => ({ ...prev, [id]: null })); setShowGrantPicker(false); }}
+        onSave={(id, role) => setAdminAccess(prev => ({ ...prev, [id]: role }))}
         onClose={() => setShowGrantPicker(false)}
       />
     )}
