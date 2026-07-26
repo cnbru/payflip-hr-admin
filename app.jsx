@@ -5997,16 +5997,17 @@ const ADMIN_ACCESS = [
   { value: 'limited', label: 'Role-based',  hint: 'Access is limited to their assigned roles' },
 ];
 
-function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
+const ADMIN_ROLE_OPTS = [
+  { value: 'full',             label: 'Full admin',       hint: 'Full access to all settings, tools, and approvals' },
+  { value: 'finance-approver', label: 'Finance approver', hint: 'Reviews and approves expense submissions' },
+  { value: 'hr-manager',       label: 'HR manager',       hint: 'Manages time off requests and employee records' },
+  { value: 'payroll-admin',    label: 'Payroll admin',    hint: 'Processes payroll and views salary data' },
+];
+
+function AdminAccessModal({ admin, access, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
-  const [selectedAccess, setSelectedAccess] = useState(access);
-  const [selectedRoles, setSelectedRoles] = useState(
-    ROLE_DEFS.filter(r => roleAssignments[r.key]?.includes(admin.id)).map(r => r.key)
-  );
-  const toggleRole = key => setSelectedRoles(prev =>
-    prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-  );
-  const save = () => { onSave(selectedAccess, selectedRoles); close(); };
+  const [selected, setSelected] = useState(access || 'full');
+  const save = () => { onSave(selected); close(); };
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
       <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
@@ -6024,16 +6025,12 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '8px 14px 0' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Access level</div>
-          {[
-            { value: 'full',    label: 'Full admin',   hint: 'Full access to all settings, tools, and approvals' },
-            { value: 'limited', label: 'Role-based',   hint: 'Can only access what\'s assigned to them' },
-          ].map(opt => (
-            <div key={opt.value} onClick={() => setSelectedAccess(opt.value)}
+        <div style={{ padding: '8px 14px 4px' }}>
+          {ADMIN_ROLE_OPTS.map(opt => (
+            <div key={opt.value} onClick={() => setSelected(opt.value)}
               style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedAccess === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
-                {selectedAccess === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selected === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
+                {selected === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
               </div>
               <div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
@@ -6041,27 +6038,6 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
               </div>
             </div>
           ))}
-        </div>
-        <div style={{ overflow: 'hidden', maxHeight: selectedAccess === 'limited' ? 300 : 0, opacity: selectedAccess === 'limited' ? 1 : 0, transition: 'max-height 220ms cubic-bezier(0.22,1,0.36,1), opacity 180ms ease' }}>
-          <div style={{ margin: '0 14px', borderTop: `1px solid ${P.border}` }} />
-          <div style={{ padding: '6px 14px 14px' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Roles</div>
-            {ROLE_DEFS.map(role => {
-              const checked = selectedRoles.includes(role.key);
-              return (
-                <div key={role.key} onClick={() => toggleRole(role.key)}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: checked ? P.action : 'transparent', transition: 'all 120ms ease', marginTop: 1 }}>
-                    {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{role.label}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{role.hint}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
         <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
@@ -6072,12 +6048,8 @@ function AdminAccessModal({ admin, access, roleAssignments, onSave, onClose }) {
   );
 }
 
+
 function TeamAccessSettings() {
-  const [roleAssignments, setRoleAssignments] = useState({
-    'finance-approver': ['julie-goossens'],
-    'hr-manager': [],
-    'payroll-admin': [],
-  });
   const [adminAccess, setAdminAccess] = useState(() =>
     Object.entries(EMPLOYEES)
       .filter(([, u]) => u.adminAccess)
@@ -6085,35 +6057,22 @@ function TeamAccessSettings() {
   );
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
-      .filter(([id, u]) => u.adminAccess || adminAccess[id])
-      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: adminAccess[id] || u.adminAccess, isEmployee: u.isEmployee !== false })),
+      .filter(([id, u]) => u.adminAccess || id in adminAccess)
+      .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: id in adminAccess ? adminAccess[id] : u.adminAccess, isEmployee: u.isEmployee !== false })),
     [adminAccess]
   );
   const [adminModal, setAdminModal] = useState(null);
   const [showGrantPicker, setShowGrantPicker] = useState(false);
-  const [pendingGrantId, setPendingGrantId] = useState(null);
 
   const nonAdminCandidates = useMemo(() =>
     Object.entries(EMPLOYEES)
-      .filter(([id, e]) => e.isEmployee !== false && !adminAccess[id])
+      .filter(([id, e]) => e.isEmployee !== false && !(id in adminAccess))
       .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color })),
     [adminAccess]
   );
 
-  const handleAdminSave = (adminId, newAccess, newRoles) => {
+  const handleAdminSave = (adminId, newAccess) => {
     setAdminAccess(prev => ({ ...prev, [adminId]: newAccess }));
-    setRoleAssignments(prev => {
-      const updated = {};
-      ROLE_DEFS.forEach(role => {
-        const current = prev[role.key] || [];
-        if (newAccess === 'limited' && newRoles.includes(role.key)) {
-          updated[role.key] = current.includes(adminId) ? current : [...current, adminId];
-        } else {
-          updated[role.key] = current.filter(id => id !== adminId);
-        }
-      });
-      return updated;
-    });
     setAdminModal(null);
   };
 
@@ -6128,30 +6087,15 @@ function TeamAccessSettings() {
         value={null}
         candidates={nonAdminCandidates}
         singleSelect
-        onSave={id => { setShowGrantPicker(false); setPendingGrantId(id); }}
+        onSave={id => { setAdminAccess(prev => ({ ...prev, [id]: null })); setShowGrantPicker(false); }}
         onClose={() => setShowGrantPicker(false)}
       />
     )}
-    {pendingGrantId && (() => {
-      const emp = EMPLOYEES[pendingGrantId];
-      if (!emp) return null;
-      const pendingAdmin = { id: pendingGrantId, name: emp.name, initials: emp.initials, color: emp.color, email: emp.email || '', access: 'full', isEmployee: emp.isEmployee !== false };
-      return (
-        <AdminAccessModal
-          admin={pendingAdmin}
-          access="full"
-          roleAssignments={roleAssignments}
-          onSave={(newAccess, newRoles) => { handleAdminSave(pendingGrantId, newAccess, newRoles); setPendingGrantId(null); }}
-          onClose={() => setPendingGrantId(null)}
-        />
-      );
-    })()}
     {adminModal && (() => { const admin = admins.find(a => a.id === adminModal); return admin ? (
       <AdminAccessModal
         admin={admin}
         access={admin.access}
-        roleAssignments={roleAssignments}
-        onSave={(newAccess, newRoles) => handleAdminSave(adminModal, newAccess, newRoles)}
+        onSave={newAccess => handleAdminSave(adminModal, newAccess)}
         onClose={() => setAdminModal(null)}
       />
     ) : null; })()}
@@ -6166,7 +6110,10 @@ function TeamAccessSettings() {
           <div style={SL}>Administrators</div>
           <div style={card}>
             {admins.map((admin, idx) => {
-              const assignedRoles = ROLE_DEFS.filter(r => roleAssignments[r.key]?.includes(admin.id));
+              const ROLE_LABELS = { 'full': 'Full admin', 'finance-approver': 'Finance approver', 'hr-manager': 'HR manager', 'payroll-admin': 'Payroll admin' };
+              const badge = admin.access
+                ? { label: ROLE_LABELS[admin.access] || admin.access, filled: admin.access === 'full' }
+                : null;
               return (
               <div key={admin.id}
                 onClick={() => setAdminModal(admin.id)}
@@ -6178,19 +6125,11 @@ function TeamAccessSettings() {
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{admin.name}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{admin.email}</div>
                 </div>
-                <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                        {admin.access === 'full'
-                          ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: '#fff', background: P.action, padding: '3px 10px', borderRadius: 20 }}>Full admin</span>
-                          : assignedRoles.length > 0
-                          ? assignedRoles.map(r => (
-                              <span key={r.key} style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, background: P.bg, padding: '3px 8px', borderRadius: 20, border: `1px solid ${P.border}`, whiteSpace: 'nowrap' }}>{r.label}</span>
-                            ))
-                          : <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint }}>No roles assigned</span>
-                        }
-                      </div>
-                      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                    </>
+                {badge
+                  ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
+                  : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'transparent', padding: '3px 10px', borderRadius: 20, border: `1.5px solid ${P.action}`, whiteSpace: 'nowrap', flexShrink: 0 }}>Assign role</span>
+                }
+                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
               </div>
               );
             })}
