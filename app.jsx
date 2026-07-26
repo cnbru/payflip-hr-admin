@@ -6001,7 +6001,7 @@ function GrantAdminModal({ candidates, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
   const [step, setStep] = useState(1);
   const [pickedId, setPickedId] = useState(null);
-  const [selectedRole, setSelectedRole] = useState('full');
+  const [selectedRoles, setSelectedRoles] = useState(['full']);
   const [search, setSearch] = useState('');
   const [sliding, setSliding] = useState(false);
 
@@ -6019,11 +6019,24 @@ function GrantAdminModal({ candidates, onSave, onClose }) {
   const goBack = () => {
     setStep(1);
     setPickedId(null);
-    setSelectedRole('full');
+    setSelectedRoles(['full']);
+  };
+
+  const toggleRole = (value) => {
+    if (value === 'full') {
+      setSelectedRoles(['full']);
+    } else {
+      setSelectedRoles(prev => {
+        const without = prev.filter(r => r !== 'full' && r !== value);
+        const adding = !prev.includes(value);
+        const next = adding ? [...without, value] : without;
+        return next.length === 0 ? prev : next;
+      });
+    }
   };
 
   const save = () => {
-    onSave(pickedId, selectedRole);
+    onSave(pickedId, selectedRoles);
     close();
   };
 
@@ -6088,18 +6101,27 @@ function GrantAdminModal({ candidates, onSave, onClose }) {
         {/* Step 2: role picker */}
         {step === 2 && <>
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px 4px' }}>
-            {ADMIN_ROLE_OPTS.map(opt => (
-              <div key={opt.value} onClick={() => setSelectedRole(opt.value)}
+            {ADMIN_ROLE_OPTS.map(opt => {
+              const active = selectedRoles.includes(opt.value);
+              const isFull = opt.value === 'full';
+              return (
+              <div key={opt.value} onClick={() => toggleRole(opt.value)}
                 style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selectedRole === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
-                  {selectedRole === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-                </div>
+                {isFull
+                  ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${active ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
+                      {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+                    </div>
+                  : <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${active ? P.action : P.border}`, background: active ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 1 }}>
+                      {active && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
+                    </div>
+                }
                 <div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
           <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
             <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
@@ -6120,9 +6142,22 @@ const ADMIN_ROLE_OPTS = [
 
 function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
   const { visible, close } = useModalTransition(onClose);
-  const [selected, setSelected] = useState(access || 'full');
+  const initRoles = Array.isArray(access) ? access : (access ? [access] : ['full']);
+  const [selectedRoles, setSelectedRoles] = useState(initRoles);
   const [revoking, setRevoking] = useState(false);
-  const save = () => { onSave(selected); close(); };
+  const toggleRole = (value) => {
+    if (value === 'full') {
+      setSelectedRoles(['full']);
+    } else {
+      setSelectedRoles(prev => {
+        const without = prev.filter(r => r !== 'full' && r !== value);
+        const adding = !prev.includes(value);
+        const next = adding ? [...without, value] : without;
+        return next.length === 0 ? prev : next;
+      });
+    }
+  };
+  const save = () => { onSave(selectedRoles); close(); };
   const confirmRevoke = () => { onRevoke(); close(); };
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
@@ -6142,18 +6177,27 @@ function AdminAccessModal({ admin, access, onSave, onRevoke, onClose }) {
           </button>
         </div>
         <div style={{ padding: '8px 14px 4px' }}>
-          {ADMIN_ROLE_OPTS.map(opt => (
-            <div key={opt.value} onClick={() => setSelected(opt.value)}
+          {ADMIN_ROLE_OPTS.map(opt => {
+            const active = selectedRoles.includes(opt.value);
+            const isFull = opt.value === 'full';
+            return (
+            <div key={opt.value} onClick={() => toggleRole(opt.value)}
               style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${selected === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
-                {selected === opt.value && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-              </div>
+              {isFull
+                ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${active ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease', marginTop: 1 }}>
+                    {active && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
+                  </div>
+                : <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${active ? P.action : P.border}`, background: active ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 1 }}>
+                    {active && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
+                  </div>
+              }
               <div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{opt.label}</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{opt.hint}</div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         {!revoking
           ? <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center' }}>
@@ -6241,8 +6285,13 @@ function TeamAccessSettings() {
           <div style={card}>
             {admins.map((admin, idx) => {
               const ROLE_LABELS = { 'full': 'Full admin', 'finance-approver': 'Finance approver', 'hr-manager': 'HR manager', 'payroll-admin': 'Payroll admin' };
-              const badge = admin.access
-                ? { label: ROLE_LABELS[admin.access] || admin.access, filled: admin.access === 'full' }
+              const roles = Array.isArray(admin.access) ? admin.access : (admin.access ? [admin.access] : null);
+              const badge = roles
+                ? roles.includes('full')
+                  ? { label: 'Full admin', filled: true }
+                  : roles.length === 1
+                    ? { label: ROLE_LABELS[roles[0]] || roles[0], filled: false }
+                    : { label: `${roles.length} roles`, filled: false }
                 : null;
               return (
               <div key={admin.id}
