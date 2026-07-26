@@ -306,14 +306,14 @@ const EMPLOYEES = {
   'amber-claes':         { name: 'Amber Claes',         initials: 'AC', color: '#fca5a5', entitlement: 20, department: 'Design',    email: 'amber.claes@lumiogroup.be',     entity: 'Lumio Group', budget: 2900, role: 'Employee', status: 'Active', gender: 'f' },
   'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', budget: 6000, role: 'Admin',  status: 'Active', gender: 'm' },
   // Engineering
-  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true, adminAccess: 'full' },
+  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true },
   'stijn-laurent':     { name: 'Stijn Laurent',      initials: 'SL', color: '#a7f3d0', entitlement: 29, department: 'Engineering', email: 'stijn.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 1500,  role: 'Employee', status: 'Active', gender: 'm' },
   'jana-goossens':     { name: 'Jana Goossens',      initials: 'JG', color: '#c7d2fe', entitlement: 20, department: 'Engineering', email: 'jana.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 2000,  role: 'Employee', status: 'Active', gender: 'f' },
   'laura-mertens':     { name: 'Laura Mertens',      initials: 'LM', color: '#fca5a5', entitlement: 20, department: 'Engineering', email: 'laura.mertens@lumiogroup.be',     entity: 'Lumio Group', budget: 750,   role: 'Employee', status: 'Active', gender: 'f' },
   // Marketing
-  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm', adminAccess: 'full' },
+  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm' },
   'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumiogroup.be',   entity: 'Lumio Group', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
-  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f', adminAccess: 'limited' },
+  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f' },
   'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumiogroup.be',    entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
 };
 const CURRENT_USER = EMPLOYEES['bruno-coen'];
@@ -5783,7 +5783,6 @@ const REIMBURSE_OPTS = [
 const APPROVAL_OPTS = [
   { value: 'manager', label: 'Direct manager',   hint: 'Employee\'s line manager receives the request' },
   { value: 'finance', label: 'Finance approver', hint: 'Person assigned in Team & access' },
-  { value: 'dept',    label: 'By department',    hint: 'Assign a dedicated approver per department' },
   { value: 'auto',    label: 'Auto-approve under threshold', hint: 'Expenses below the receipt threshold auto-approve' },
 ];
 
@@ -5796,8 +5795,6 @@ function ExpenseCategorySettings({ categories, onSave }) {
   const [receiptThreshold, setReceiptThreshold] = useState(25);
   const [approvalRouting, setApprovalRouting] = useState('manager');
   const [spendingLimits, setSpendingLimits] = useState({});
-  const [deptApprovers, setDeptApprovers] = useState({ Design: null, Engineering: null, Marketing: null });
-  const [deptPickerDept, setDeptPickerDept] = useState(null);
 
   const handleCatSave = (val, limit) => {
     const next = catModal.idx === 'new'
@@ -5855,21 +5852,6 @@ function ExpenseCategorySettings({ categories, onSave }) {
     {settingModal === 'approval' && (
       <PickModal title="Approval routing" options={APPROVAL_OPTS} value={approvalRouting} onSave={setApprovalRouting} onClose={() => setSettingModal(null)} />
     )}
-    {deptPickerDept && (() => {
-      const allCandidates = Object.entries(EMPLOYEES)
-        .filter(([, e]) => e.isEmployee !== false)
-        .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color }));
-      return (
-        <PersonPickerModal
-          title={`Approver — ${deptPickerDept}`}
-          value={deptApprovers[deptPickerDept]}
-          candidates={allCandidates}
-          singleSelect
-          onSave={id => setDeptApprovers(prev => ({ ...prev, [deptPickerDept]: id }))}
-          onClose={() => setDeptPickerDept(null)}
-        />
-      );
-    })()}
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
@@ -5914,24 +5896,7 @@ function ExpenseCategorySettings({ categories, onSave }) {
         <div>
           <div style={SL}>Approval</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalLabel, approvalRouting !== 'dept')}
-            {approvalRouting === 'dept' && DEPARTMENTS.map((dept, idx) => {
-              const assigneeId = deptApprovers[dept];
-              const assigneeName = assigneeId ? (EMPLOYEES[assigneeId] || {}).name : null;
-              return (
-                <div key={dept} onClick={() => setDeptPickerDept(dept)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '13px 20px 13px 52px', borderTop: `1px solid ${P.border}`, cursor: 'pointer', animation: `screenEnter 150ms ${EASE_OUT}` }}>
-                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{dept}</span>
-                  {assigneeId && (
-                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: (EMPLOYEES[assigneeId] || {}).color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 8, color: P.ink }}>{(EMPLOYEES[assigneeId] || {}).initials}</span>
-                    </div>
-                  )}
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: assigneeName ? P.inkSoft : P.inkFaint, marginRight: 6 }}>{assigneeName || 'Not assigned'}</span>
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
-              );
-            })}
+            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalLabel, true)}
           </div>
         </div>
 
@@ -6237,7 +6202,6 @@ function TeamAccessSettings() {
 const TIMEOFF_APPROVAL_OPTS = [
   { value: 'manager', label: 'Direct manager', hint: "Employee's line manager receives the request" },
   { value: 'hr',      label: 'HR manager',     hint: 'Person assigned in Team & access' },
-  { value: 'dept',    label: 'By department',  hint: 'Assign a dedicated approver per department' },
   { value: 'auto',    label: 'Auto-approve',   hint: 'Requests under 3 days are approved automatically' },
 ];
 const ENTITLEMENT_OPTS = [
@@ -6321,8 +6285,6 @@ function TimeOffSettings() {
   const [approval, setApproval] = useState('manager');
   const [leaveModal, setLeaveModal] = useState(null);
   const [settingModal, setSettingModal] = useState(null);
-  const [deptApprovers, setDeptApprovers] = useState({ Design: null, Engineering: null, Marketing: null });
-  const [deptPickerDept, setDeptPickerDept] = useState(null);
 
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
@@ -6351,21 +6313,6 @@ function TimeOffSettings() {
     {settingModal === 'entitlement' && <PickModal title="Entitlement" options={ENTITLEMENT_OPTS} value={entitlement} onSave={(val, extra) => { setEntitlement(val); if (extra !== undefined) setCompanyDays(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'company', label: 'Days', defaultValue: companyDays, suffix: 'days', min: 20 }} />}
     {settingModal === 'carryover' && <PickModal title="Unused days" options={CARRYOVER_OPTS} value={carryover} onSave={(val, extra) => { setCarryover(val); if (extra !== undefined) setCarryoverCap(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'cap', label: 'Max', defaultValue: carryoverCap, suffix: 'days', min: 1 }} />}
     {settingModal === 'approval' && <PickModal title="Who approves?" options={TIMEOFF_APPROVAL_OPTS} value={approval} onSave={setApproval} onClose={() => setSettingModal(null)} />}
-    {deptPickerDept && (() => {
-      const allCandidates = Object.entries(EMPLOYEES)
-        .filter(([, e]) => e.isEmployee !== false)
-        .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || '', initials: e.initials, color: e.color }));
-      return (
-        <PersonPickerModal
-          title={`Approver — ${deptPickerDept}`}
-          value={deptApprovers[deptPickerDept]}
-          candidates={allCandidates}
-          singleSelect
-          onSave={id => setDeptApprovers(prev => ({ ...prev, [deptPickerDept]: id }))}
-          onClose={() => setDeptPickerDept(null)}
-        />
-      );
-    })()}
 
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -6404,24 +6351,7 @@ function TimeOffSettings() {
         <div>
           <div style={SL}>Approval</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', (TIMEOFF_APPROVAL_OPTS.find(o => o.value === approval) || {}).label, approval !== 'dept')}
-            {approval === 'dept' && DEPARTMENTS.map((dept, idx) => {
-              const assigneeId = deptApprovers[dept];
-              const assigneeName = assigneeId ? (EMPLOYEES[assigneeId] || {}).name : null;
-              return (
-                <div key={dept} onClick={() => setDeptPickerDept(dept)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '13px 20px 13px 52px', borderTop: `1px solid ${P.border}`, cursor: 'pointer', animation: `screenEnter 150ms ${EASE_OUT}` }}>
-                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{dept}</span>
-                  {assigneeId && (
-                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: (EMPLOYEES[assigneeId] || {}).color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 8, color: P.ink }}>{(EMPLOYEES[assigneeId] || {}).initials}</span>
-                    </div>
-                  )}
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: assigneeName ? P.inkSoft : P.inkFaint, marginRight: 6 }}>{assigneeName || 'Not assigned'}</span>
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
-              );
-            })}
+            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', (TIMEOFF_APPROVAL_OPTS.find(o => o.value === approval) || {}).label, true)}
           </div>
         </div>
 
