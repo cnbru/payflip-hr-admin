@@ -1063,7 +1063,7 @@ function Sidebar({ active, onNav, pendingCount, sidebarMode, onSetSidebarMode, a
 
   return (
     <div style={{
-      width: 216, flexShrink: 0, background: P.white,
+      width: 255, flexShrink: 0, background: P.white,
       borderRight: `1px solid ${P.border}`,
       display: 'flex', flexDirection: 'column',
       height: '100vh', position: 'sticky', top: 0,
@@ -7234,7 +7234,7 @@ function Toast({ toast, onDone }) {
 
   return (
     <div style={{
-      position: 'fixed', bottom: 24, left: 'calc((100vw + 216px) / 2)',
+      position: 'fixed', bottom: 24, left: 'calc((100vw + 255px) / 2)',
       transform: exiting ? 'translateX(-50%) translateY(8px)' : 'translateX(-50%) translateY(0)',
       opacity: exiting ? 0 : 1,
       transition: exiting ? `opacity 180ms ${EASE_OUT}, transform 180ms ${EASE_OUT}` : 'none',
