@@ -376,13 +376,13 @@ function genBudgets(id) {
 }
 const _CPOOL = [
   { name: 'Smartphone accessories via Coolblue', price: '249,00 EUR', cDate: '24/06/2026', sDate: '24/06/2026', eDate: '24/06/2028' },
-  { name: 'L&D expenses (Payflip)', price: '158,60 EUR', cDate: '19/06/2026', sDate: '19/06/2026', eDate: '—', illustration: '../assets/benefit-learn.png' },
-  { name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', illustration: '../assets/benefit-tablet.png' },
-  { name: 'Individual pension savings', price: '939,96 EUR', cDate: '02/03/2026', sDate: '05/03/2026', eDate: '01/01/2027', illustration: '../assets/benefit-pension.png' },
+  { name: 'L&D expenses (Payflip)', price: '158,60 EUR', cDate: '19/06/2026', sDate: '19/06/2026', eDate: '—', illustration: 'assets/benefit-learn.png' },
+  { name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', illustration: 'assets/benefit-tablet.png' },
+  { name: 'Individual pension savings', price: '939,96 EUR', cDate: '02/03/2026', sDate: '05/03/2026', eDate: '01/01/2027', illustration: 'assets/benefit-pension.png' },
   { name: 'Alan', price: '1 467,60 EUR', cDate: '26/01/2026', sDate: '01/01/2026', eDate: '31/12/2026' },
-  { name: 'L&D expenses (Payflip)', price: '21,78 EUR', cDate: '23/01/2026', sDate: '23/01/2026', eDate: '—', illustration: '../assets/benefit-learn.png' },
+  { name: 'L&D expenses (Payflip)', price: '21,78 EUR', cDate: '23/01/2026', sDate: '23/01/2026', eDate: '—', illustration: 'assets/benefit-learn.png' },
   { name: 'Mortgage', price: '844,90 EUR', cDate: '01/01/2026', sDate: '01/01/2026', eDate: '31/12/2026' },
-  { name: 'Bike lease via Cowboy', price: '89,00 EUR', cDate: '01/04/2026', sDate: '01/04/2026', eDate: '01/04/2028', illustration: '../assets/benefit-bike.png' },
+  { name: 'Bike lease via Cowboy', price: '89,00 EUR', cDate: '01/04/2026', sDate: '01/04/2026', eDate: '01/04/2028', illustration: 'assets/benefit-bike.png' },
   { name: 'Company car (Tesla Model 3)', price: '620,00 EUR', cDate: '01/01/2026', sDate: '01/01/2026', eDate: '01/01/2029' },
   { name: 'Public transport pass', price: '285,40 EUR', cDate: '01/02/2026', sDate: '01/02/2026', eDate: '—' },
 ];
@@ -398,7 +398,7 @@ function genChoices(id) {
 }
 const CHOICES_SEED = (() => {
   const hardcoded = [
-    { id: 'tablet-coolblue-approved', empId: 'charlotte-pieters', name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', status: 'approved', illustration: '../assets/benefit-tablet.png', productName: 'Apple iPad (2025) 11 Pouces 128 Go Wifi Argent', productUrl: 'https://www.coolblue.be/nl/product/960489', productNumber: '960489', orderId: '97190251', orderDate: '13/05/2026', depreciation: 24, transactions: [{ label: 'Home office budget', amount: '233,73 EUR', date: '13/05/2026' }, { label: 'End of year premium', amount: '180,55 EUR', date: '13/05/2026' }] },
+    { id: 'tablet-coolblue-approved', empId: 'charlotte-pieters', name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', status: 'approved', illustration: 'assets/benefit-tablet.png', productName: 'Apple iPad (2025) 11 Pouces 128 Go Wifi Argent', productUrl: 'https://www.coolblue.be/nl/product/960489', productNumber: '960489', orderId: '97190251', orderDate: '13/05/2026', depreciation: 24, transactions: [{ label: 'Home office budget', amount: '233,73 EUR', date: '13/05/2026' }, { label: 'End of year premium', amount: '180,55 EUR', date: '13/05/2026' }] },
   ];
   const generated = Object.entries(EMPLOYEES).flatMap(([empId]) =>
     genChoices(empId).map((c, i) => ({ ...c, empId, id: `${empId}-cho-${i}` }))
@@ -2923,7 +2923,7 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                         <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>via</span>
-                        <img src="../assets/coolblue-logo.png" alt="Coolblue" style={{ height: 14, objectFit: 'contain', display: 'block' }} />
+                        <img src="assets/coolblue-logo.png" alt="Coolblue" style={{ height: 14, objectFit: 'contain', display: 'block' }} />
                         <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>Coolblue</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
