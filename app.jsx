@@ -921,18 +921,31 @@ function AdminProfileFooter() {
 
 function EntitySwitcher({ value, onChange, mode }) {
   const [open, setOpen] = useState(false);
+  const btnRef = React.useRef(null);
+  const popRef = React.useRef(null);
   const selected = value ? ENTITIES.find(e => e.id === value) : null;
   const isSettings = mode === 'settings';
   const defaultLabel = isSettings ? 'Company defaults' : 'All entities';
   const defaultSub = isSettings ? 'All entities inherit' : 'Show data across entities';
   const defaultIcon = isSettings ? 'building-2' : 'layers';
 
+  React.useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (!popRef.current?.contains(e.target) && !btnRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const rect = btnRef.current?.getBoundingClientRect();
+
   return (
     <React.Fragment>
-      <button onClick={() => setOpen(o => !o)} style={{
+      <button ref={btnRef} onClick={() => setOpen(o => !o)} style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '16px 20px', width: '100%', border: 'none',
-        borderBottom: open ? 'none' : `1px solid ${P.border}`,
+        borderBottom: `1px solid ${P.border}`,
         background: 'transparent', cursor: 'pointer', textAlign: 'left',
       }}>
         <Icon name={defaultIcon} size={14} color={selected ? P.ink : P.inkSoft} strokeWidth={1.75} />
@@ -941,36 +954,45 @@ function EntitySwitcher({ value, onChange, mode }) {
             {selected ? selected.name : defaultLabel}
           </div>
         </div>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P.ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: open ? 'scaleY(-1)' : 'scaleY(1)', transition: `transform 200ms ${EASE_OUT}` }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P.ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      <SidebarAccordion open={open}>
-        <div style={{ padding: '4px 12px 8px 34px', borderBottom: `1px solid ${P.border}` }}>
-          <button onClick={() => { onChange(null); setOpen(false); }} style={{
-            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 8px', border: 'none', borderRadius: 6,
-            background: 'transparent', cursor: 'pointer', textAlign: 'left',
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink }}>{defaultLabel}</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: P.inkSoft }}>{defaultSub}</div>
-            </div>
-            {!value && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
-          </button>
-          {ENTITIES.map(ent => (
-            <button key={ent.id} onClick={() => { onChange(ent.id); setOpen(false); }} style={{
-              display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 8px', border: 'none', borderRadius: 6,
-              background: 'transparent', cursor: 'pointer', textAlign: 'left',
+      {open && rect && (
+        <div ref={popRef} style={{
+          position: 'fixed', top: rect.top, left: rect.right + 8, zIndex: 500,
+          background: P.white, border: `1px solid ${P.border}`, borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(15,13,40,0.12)', minWidth: 230, overflow: 'hidden',
+        }}>
+          <div style={{ padding: '12px 14px 6px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 11, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Entities
+          </div>
+          <div style={{ padding: '0 8px 8px' }}>
+            <button onClick={() => { onChange(null); setOpen(false); }} style={{
+              display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 8px', border: 'none', borderRadius: 8,
+              background: !value ? P.bg : 'transparent', cursor: 'pointer', textAlign: 'left',
             }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink }}>{ent.name}</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: P.inkSoft }}>{ent.employeeCount} employees</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{defaultLabel}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{defaultSub}</div>
               </div>
-              {value === ent.id && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+              {!value && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
             </button>
-          ))}
+            {ENTITIES.map(ent => (
+              <button key={ent.id} onClick={() => { onChange(ent.id); setOpen(false); }} style={{
+                display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 8px', border: 'none', borderRadius: 8,
+                background: value === ent.id ? P.bg : 'transparent', cursor: 'pointer', textAlign: 'left',
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{ent.name}</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{ent.employeeCount} employees</div>
+                </div>
+                {value === ent.id && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+              </button>
+            ))}
+          </div>
         </div>
-      </SidebarAccordion>
+      )}
     </React.Fragment>
   );
 }
