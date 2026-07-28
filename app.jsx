@@ -282,6 +282,13 @@ const HOLIDAY_ICON = {
   'Christmas Day':     { emoji: '🎄' },
 };
 
+// ── Entity data ───────────────────────────────────────────────────────────
+const ENTITIES = [
+  { id: 'lumio-group',  name: 'Lumio Group',       jc: 'PC 200', payrollProvider: 'SD Worx', integrationId: 'SDWX-4821',  country: 'Belgium',     employeeCount: 15 },
+  { id: 'lumio-france', name: 'Lumio France',      jc: 'CCN 66', payrollProvider: 'ADP',     integrationId: 'ADP-FR-1192', country: 'France',      employeeCount: 4  },
+  { id: 'lumio-nl',     name: 'Lumio Netherlands', jc: null,     payrollProvider: 'Visma',   integrationId: null,          country: 'Netherlands', employeeCount: 4  },
+];
+
 // ── Employee data ──────────────────────────────────────────────────────────
 const DEPARTMENTS = ['Design','Engineering','Marketing'];
 const AVATAR_COLORS = ['#bfdbfe','#ddd6fe','#fde68a','#a7f3d0','#fecdd3','#fed7aa','#c7d2fe','#fca5a5','#d9f99d','#99f6e4'];
@@ -289,32 +296,32 @@ const AVATAR_COLORS = ['#bfdbfe','#ddd6fe','#fde68a','#a7f3d0','#fecdd3','#fed7a
 const EMPLOYEES = {
   // Admin-only (not an employee — contractor)
   'bruno-coen':        { name: 'Bruno Coen',          initials: 'BC', color: '#c7d2fe', email: 'bruno@payflip.be', isEmployee: false, adminAccess: 'full' },
-  // Design
-  'bram-goossens':     { name: 'Bram Goossens',     initials: 'BG', color: '#bfdbfe', entitlement: 23, department: 'Design',       email: 'bram.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 3750,  role: 'Employee', status: 'Active', gender: 'm' },
-  'emma-martens':      { name: 'Emma Martens',       initials: 'EM', color: '#ddd6fe', entitlement: 29, department: 'Design',       email: 'emma.martens@lumiogroup.be',      entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f', photo: true },
-  'mathias-de-smedt':  { name: 'Mathias De Smedt',  initials: 'MD', color: '#fde68a', entitlement: 23, department: 'Design',       email: 'mathias.de-smedt@lumiogroup.be', entity: 'Lumio Group', budget: 6250,  role: 'Employee', status: 'Active', gender: 'm' },
-  'thomas-vandenberghe': { name: 'Thomas Vandenberghe', initials: 'TV', color: '#99f6e4', entitlement: 20, department: 'Design',    email: 'thomas.vandenberghe@lumiogroup.be', entity: 'Lumio Group', budget: 0, role: 'Employee', status: 'Active', gender: 'm' },
-  'thomas-janssens':     { name: 'Thomas Janssens',    initials: 'TJ', color: '#d9f99d', entitlement: 23, department: 'Design',    email: 'thomas.janssens@lumiogroup.be', entity: 'Lumio Group', budget: 3000, role: 'Employee', status: 'Active', gender: 'm' },
-  'charlotte-pieters':   { name: 'Charlotte Pieters',  initials: 'CP', color: '#fecdd3', entitlement: 20, department: 'Design',    email: 'charlotte.pieters@lumiogroup.be', entity: 'Lumio Group', budget: 2500, role: 'Employee', status: 'Active', gender: 'f' },
-  'lasse-willems':       { name: 'Lasse Willems',      initials: 'LW', color: '#c7d2fe', entitlement: 23, department: 'Design',    email: 'lasse.willems@lumiogroup.be',   entity: 'Lumio Group', budget: 4000, role: 'Employee', status: 'Active', gender: 'm' },
-  'nathalie-cox':        { name: 'Nathalie Cox',        initials: 'NC', color: '#a7f3d0', entitlement: 20, department: 'Design',    email: 'nathalie.cox@lumiogroup.be',    entity: 'Lumio Group', budget: 3200, role: 'Employee', status: 'Active', gender: 'f' },
-  'ruben-declercq':      { name: 'Ruben Declercq',     initials: 'RD', color: '#fed7aa', entitlement: 25, department: 'Design',    email: 'ruben.declercq@lumiogroup.be',  entity: 'Lumio Group', budget: 5500, role: 'Employee', status: 'Active', gender: 'm' },
-  'ines-baert':          { name: 'Inès Baert',          initials: 'IB', color: '#ddd6fe', entitlement: 20, department: 'Design',    email: 'ines.baert@lumiogroup.be',      entity: 'Lumio Group', budget: 2800, role: 'Employee', status: 'Active', gender: 'f' },
-  'joachim-nijs':        { name: 'Joachim Nijs',        initials: 'JN', color: '#fde68a', entitlement: 23, department: 'Design',    email: 'joachim.nijs@lumiogroup.be',    entity: 'Lumio Group', budget: 4800, role: 'Employee', status: 'Active', gender: 'm' },
-  'sara-verbeke':        { name: 'Sara Verbeke',        initials: 'SV', color: '#bfdbfe', entitlement: 20, department: 'Design',    email: 'sara.verbeke@lumiogroup.be',    entity: 'Lumio Group', budget: 3100, role: 'Employee', status: 'Active', gender: 'f' },
-  'wout-desmet':         { name: 'Wout Desmet',         initials: 'WD', color: '#99f6e4', entitlement: 22, department: 'Design',    email: 'wout.desmet@lumiogroup.be',     entity: 'Lumio Group', budget: 4200, role: 'Employee', status: 'Active', gender: 'm' },
-  'amber-claes':         { name: 'Amber Claes',         initials: 'AC', color: '#fca5a5', entitlement: 20, department: 'Design',    email: 'amber.claes@lumiogroup.be',     entity: 'Lumio Group', budget: 2900, role: 'Employee', status: 'Active', gender: 'f' },
-  'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', budget: 6000, role: 'Admin',  status: 'Active', gender: 'm' },
-  // Engineering
-  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true },
-  'stijn-laurent':     { name: 'Stijn Laurent',      initials: 'SL', color: '#a7f3d0', entitlement: 29, department: 'Engineering', email: 'stijn.laurent@lumiogroup.be',     entity: 'Lumio Group', budget: 1500,  role: 'Employee', status: 'Active', gender: 'm' },
-  'jana-goossens':     { name: 'Jana Goossens',      initials: 'JG', color: '#c7d2fe', entitlement: 20, department: 'Engineering', email: 'jana.goossens@lumiogroup.be',     entity: 'Lumio Group', budget: 2000,  role: 'Employee', status: 'Active', gender: 'f' },
-  'laura-mertens':     { name: 'Laura Mertens',      initials: 'LM', color: '#fca5a5', entitlement: 20, department: 'Engineering', email: 'laura.mertens@lumiogroup.be',     entity: 'Lumio Group', budget: 750,   role: 'Employee', status: 'Active', gender: 'f' },
-  // Marketing
-  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumiogroup.be',    entity: 'Lumio Group', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm' },
-  'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumiogroup.be',   entity: 'Lumio Group', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
-  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumiogroup.be',    entity: 'Lumio Group', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f' },
-  'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumiogroup.be',    entity: 'Lumio Group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
+  // Design → Lumio Group (BE)
+  'bram-goossens':     { name: 'Bram Goossens',     initials: 'BG', color: '#bfdbfe', entitlement: 23, department: 'Design',       email: 'bram.goossens@lumiogroup.be',     entity: 'Lumio Group', entityId: 'lumio-group', budget: 3750,  role: 'Employee', status: 'Active', gender: 'm' },
+  'emma-martens':      { name: 'Emma Martens',       initials: 'EM', color: '#ddd6fe', entitlement: 29, department: 'Design',       email: 'emma.martens@lumiogroup.be',      entity: 'Lumio Group', entityId: 'lumio-group', budget: 0,     role: 'Employee', status: 'Active', gender: 'f', photo: true },
+  'mathias-de-smedt':  { name: 'Mathias De Smedt',  initials: 'MD', color: '#fde68a', entitlement: 23, department: 'Design',       email: 'mathias.de-smedt@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 6250,  role: 'Employee', status: 'Active', gender: 'm' },
+  'thomas-vandenberghe': { name: 'Thomas Vandenberghe', initials: 'TV', color: '#99f6e4', entitlement: 20, department: 'Design',    email: 'thomas.vandenberghe@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 0, role: 'Employee', status: 'Active', gender: 'm' },
+  'thomas-janssens':     { name: 'Thomas Janssens',    initials: 'TJ', color: '#d9f99d', entitlement: 23, department: 'Design',    email: 'thomas.janssens@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 3000, role: 'Employee', status: 'Active', gender: 'm' },
+  'charlotte-pieters':   { name: 'Charlotte Pieters',  initials: 'CP', color: '#fecdd3', entitlement: 20, department: 'Design',    email: 'charlotte.pieters@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 2500, role: 'Employee', status: 'Active', gender: 'f' },
+  'lasse-willems':       { name: 'Lasse Willems',      initials: 'LW', color: '#c7d2fe', entitlement: 23, department: 'Design',    email: 'lasse.willems@lumiogroup.be',   entity: 'Lumio Group', entityId: 'lumio-group', budget: 4000, role: 'Employee', status: 'Active', gender: 'm' },
+  'nathalie-cox':        { name: 'Nathalie Cox',        initials: 'NC', color: '#a7f3d0', entitlement: 20, department: 'Design',    email: 'nathalie.cox@lumiogroup.be',    entity: 'Lumio Group', entityId: 'lumio-group', budget: 3200, role: 'Employee', status: 'Active', gender: 'f' },
+  'ruben-declercq':      { name: 'Ruben Declercq',     initials: 'RD', color: '#fed7aa', entitlement: 25, department: 'Design',    email: 'ruben.declercq@lumiogroup.be',  entity: 'Lumio Group', entityId: 'lumio-group', budget: 5500, role: 'Employee', status: 'Active', gender: 'm' },
+  'ines-baert':          { name: 'Inès Baert',          initials: 'IB', color: '#ddd6fe', entitlement: 20, department: 'Design',    email: 'ines.baert@lumiogroup.be',      entity: 'Lumio Group', entityId: 'lumio-group', budget: 2800, role: 'Employee', status: 'Active', gender: 'f' },
+  'joachim-nijs':        { name: 'Joachim Nijs',        initials: 'JN', color: '#fde68a', entitlement: 23, department: 'Design',    email: 'joachim.nijs@lumiogroup.be',    entity: 'Lumio Group', entityId: 'lumio-group', budget: 4800, role: 'Employee', status: 'Active', gender: 'm' },
+  'sara-verbeke':        { name: 'Sara Verbeke',        initials: 'SV', color: '#bfdbfe', entitlement: 20, department: 'Design',    email: 'sara.verbeke@lumiogroup.be',    entity: 'Lumio Group', entityId: 'lumio-group', budget: 3100, role: 'Employee', status: 'Active', gender: 'f' },
+  'wout-desmet':         { name: 'Wout Desmet',         initials: 'WD', color: '#99f6e4', entitlement: 22, department: 'Design',    email: 'wout.desmet@lumiogroup.be',     entity: 'Lumio Group', entityId: 'lumio-group', budget: 4200, role: 'Employee', status: 'Active', gender: 'm' },
+  'amber-claes':         { name: 'Amber Claes',         initials: 'AC', color: '#fca5a5', entitlement: 20, department: 'Design',    email: 'amber.claes@lumiogroup.be',     entity: 'Lumio Group', entityId: 'lumio-group', budget: 2900, role: 'Employee', status: 'Active', gender: 'f' },
+  'pieter-verheyen':     { name: 'Pieter Verheyen',     initials: 'PV', color: '#d9f99d', entitlement: 25, department: 'Design',    email: 'pieter.verheyen@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 6000, role: 'Admin',  status: 'Active', gender: 'm' },
+  // Engineering → Lumio France
+  'david':             { name: 'David Laurent',      initials: 'DL', color: '#fecdd3', entitlement: 20, department: 'Engineering', email: 'david.laurent@lumio.fr',          entity: 'Lumio France', entityId: 'lumio-france', budget: 4500,  role: 'Employee', status: 'Active', gender: 'm', photo: true },
+  'stijn-laurent':     { name: 'Stijn Laurent',      initials: 'SL', color: '#a7f3d0', entitlement: 29, department: 'Engineering', email: 'stijn.laurent@lumio.fr',          entity: 'Lumio France', entityId: 'lumio-france', budget: 1500,  role: 'Employee', status: 'Active', gender: 'm' },
+  'jana-goossens':     { name: 'Jana Goossens',      initials: 'JG', color: '#c7d2fe', entitlement: 20, department: 'Engineering', email: 'jana.goossens@lumio.fr',          entity: 'Lumio France', entityId: 'lumio-france', budget: 2000,  role: 'Employee', status: 'Active', gender: 'f' },
+  'laura-mertens':     { name: 'Laura Mertens',      initials: 'LM', color: '#fca5a5', entitlement: 20, department: 'Engineering', email: 'laura.mertens@lumio.fr',          entity: 'Lumio France', entityId: 'lumio-france', budget: 750,   role: 'Employee', status: 'Active', gender: 'f' },
+  // Marketing → Lumio Netherlands
+  'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm' },
+  'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
+  'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f' },
+  'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumio.nl',          entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
 };
 const CURRENT_USER = EMPLOYEES['bruno-coen'];
 
@@ -369,13 +376,13 @@ function genBudgets(id) {
 }
 const _CPOOL = [
   { name: 'Smartphone accessories via Coolblue', price: '249,00 EUR', cDate: '24/06/2026', sDate: '24/06/2026', eDate: '24/06/2028' },
-  { name: 'L&D expenses (Payflip)', price: '158,60 EUR', cDate: '19/06/2026', sDate: '19/06/2026', eDate: '—', illustration: './assets/benefit-learn.png' },
-  { name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', illustration: './assets/benefit-tablet.png' },
-  { name: 'Individual pension savings', price: '939,96 EUR', cDate: '02/03/2026', sDate: '05/03/2026', eDate: '01/01/2027', illustration: './assets/benefit-pension.png' },
+  { name: 'L&D expenses (Payflip)', price: '158,60 EUR', cDate: '19/06/2026', sDate: '19/06/2026', eDate: '—', illustration: '../assets/benefit-learn.png' },
+  { name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', illustration: '../assets/benefit-tablet.png' },
+  { name: 'Individual pension savings', price: '939,96 EUR', cDate: '02/03/2026', sDate: '05/03/2026', eDate: '01/01/2027', illustration: '../assets/benefit-pension.png' },
   { name: 'Alan', price: '1 467,60 EUR', cDate: '26/01/2026', sDate: '01/01/2026', eDate: '31/12/2026' },
-  { name: 'L&D expenses (Payflip)', price: '21,78 EUR', cDate: '23/01/2026', sDate: '23/01/2026', eDate: '—', illustration: './assets/benefit-learn.png' },
+  { name: 'L&D expenses (Payflip)', price: '21,78 EUR', cDate: '23/01/2026', sDate: '23/01/2026', eDate: '—', illustration: '../assets/benefit-learn.png' },
   { name: 'Mortgage', price: '844,90 EUR', cDate: '01/01/2026', sDate: '01/01/2026', eDate: '31/12/2026' },
-  { name: 'Bike lease via Cowboy', price: '89,00 EUR', cDate: '01/04/2026', sDate: '01/04/2026', eDate: '01/04/2028', illustration: './assets/benefit-bike.png' },
+  { name: 'Bike lease via Cowboy', price: '89,00 EUR', cDate: '01/04/2026', sDate: '01/04/2026', eDate: '01/04/2028', illustration: '../assets/benefit-bike.png' },
   { name: 'Company car (Tesla Model 3)', price: '620,00 EUR', cDate: '01/01/2026', sDate: '01/01/2026', eDate: '01/01/2029' },
   { name: 'Public transport pass', price: '285,40 EUR', cDate: '01/02/2026', sDate: '01/02/2026', eDate: '—' },
 ];
@@ -391,7 +398,7 @@ function genChoices(id) {
 }
 const CHOICES_SEED = (() => {
   const hardcoded = [
-    { id: 'tablet-coolblue-approved', empId: 'charlotte-pieters', name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', status: 'approved', illustration: './assets/benefit-tablet.png', productName: 'Apple iPad (2025) 11 Pouces 128 Go Wifi Argent', productUrl: 'https://www.coolblue.be/nl/product/960489', productNumber: '960489', orderId: '97190251', orderDate: '13/05/2026', depreciation: 24, transactions: [{ label: 'Home office budget', amount: '233,73 EUR', date: '13/05/2026' }, { label: 'End of year premium', amount: '180,55 EUR', date: '13/05/2026' }] },
+    { id: 'tablet-coolblue-approved', empId: 'charlotte-pieters', name: 'Tablet via Coolblue', price: '369,00 EUR', cDate: '13/05/2026', sDate: '13/05/2026', eDate: '13/05/2028', status: 'approved', illustration: '../assets/benefit-tablet.png', productName: 'Apple iPad (2025) 11 Pouces 128 Go Wifi Argent', productUrl: 'https://www.coolblue.be/nl/product/960489', productNumber: '960489', orderId: '97190251', orderDate: '13/05/2026', depreciation: 24, transactions: [{ label: 'Home office budget', amount: '233,73 EUR', date: '13/05/2026' }, { label: 'End of year premium', amount: '180,55 EUR', date: '13/05/2026' }] },
   ];
   const generated = Object.entries(EMPLOYEES).flatMap(([empId]) =>
     genChoices(empId).map((c, i) => ({ ...c, empId, id: `${empId}-cho-${i}` }))
@@ -537,7 +544,7 @@ function SalaryTab({ empId }) {
                 <td style={{ padding: '12px 16px', color: P.inkSoft }}>{row.start}</td>
                 <td style={{ padding: '12px 16px', color: P.inkSoft }}>{row.end}</td>
                 <td style={{ padding: '12px 16px' }}>
-                  <span style={{ background: row.active ? '#dcfce7' : P.bg, color: row.active ? '#16a34a' : P.inkSoft, borderRadius: 6, padding: '3px 8px', fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 600 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', background: row.active ? '#f0fdf4' : P.white, color: row.active ? '#16a34a' : P.inkSoft, border: `1px solid ${row.active ? '#bbf7d0' : P.border}`, borderRadius: 6, padding: '2px 6px', fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500 }}>
                     {row.active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
@@ -581,7 +588,8 @@ function SalaryTab({ empId }) {
     </div>
   );
 }
-function DetailsTab({ emp, empId, onNav }) {
+function DetailsTab({ emp, empId, onNav, adminAccess, onAdminSave }) {
+  const [isEmployeeLocal, setIsEmployeeLocal] = React.useState(emp.isEmployee !== false);
   const ex = EMP_EXTRA[empId] || {};
   const parts = emp.name.split(' ');
   const first = parts[0], last = parts.slice(1).join(' ');
@@ -610,19 +618,54 @@ function DetailsTab({ emp, empId, onNav }) {
           <label style={labelStyle}>Employee Payroll ID *</label><div style={fieldStyle}>{ex.payrollId || '—'}</div>
         </div>
       </div>
-      {emp.adminAccess && (
-        <div>
-          <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 12px' }}>Admin access</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Icon name="shield-check" size={15} color={P.inkSoft} strokeWidth={1.75} />
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>
-              {emp.adminAccess === 'full' ? 'Full admin' : 'Role-based'}
-            </span>
-            <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>—</span>
-            <span onClick={() => onNav('settings-team')} style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Manage in Team & access</span>
+      {(() => {
+        const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
+        const isEmployee = isEmployeeLocal;
+        const explicitlyRevoked = adminAccess && adminAccess[empId] === 'revoked';
+        const isAdmin = !explicitlyRevoked && ((adminAccess && empId in adminAccess && adminAccess[empId] !== 'revoked') || emp.role === 'Admin');
+        const currentAccess = adminAccess ? (adminAccess[empId] ?? emp.adminAccess ?? null) : (emp.adminAccess ?? null);
+        const accessLabel = currentAccess === 'full'
+          ? 'Full admin'
+          : Array.isArray(currentAccess) && currentAccess.length > 0
+            ? currentAccess.map(a => AREA_LABELS[a] || a).join(' · ')
+            : null;
+        const cbBox = (checked) => (
+          <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, background: checked ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 2 }}>
+            {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
           </div>
-        </div>
-      )}
+        );
+        return (
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 4px' }}>Roles</h3>
+            <div onClick={() => setIsEmployeeLocal(v => !v)}
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 0', borderRadius: 8, cursor: 'pointer' }}>
+              {cbBox(isEmployee)}
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500, marginTop: 1 }}>Employee</div>
+            </div>
+            <div onClick={() => isAdmin ? onAdminSave(empId, 'revoke') : onAdminSave(empId, null)}
+              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 0', borderRadius: 8, cursor: 'pointer' }}>
+              {cbBox(isAdmin, true)}
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Admin</div>
+                {isAdmin && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+                    {accessLabel ? (
+                      <span>
+                        <span style={{ color: P.inkSoft }}>{accessLabel}</span>
+                        <span style={{ color: P.inkSoft }}> · </span>
+                        <span onClick={e => { e.stopPropagation(); onNav('settings-team'); }} style={{ color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Manage in Team & access</span>
+                      </span>
+                    ) : (
+                      <span onClick={e => { e.stopPropagation(); onNav('settings-team'); }} style={{ color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Assign access level</span>
+                    )
+                    }
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -876,27 +919,72 @@ function AdminProfileFooter() {
   );
 }
 
+function EntitySwitcher({ value, onChange, mode }) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? ENTITIES.find(e => e.id === value) : null;
+  const isSettings = mode === 'settings';
+  const defaultLabel = isSettings ? 'Company defaults' : 'All entities';
+  const defaultSub = isSettings ? 'All entities inherit' : 'Show data across entities';
+  const defaultIcon = isSettings ? 'building-2' : 'layers';
+
+  return (
+    <React.Fragment>
+      <button onClick={() => setOpen(o => !o)} style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 20px 10px', width: '100%', border: 'none',
+        borderBottom: open ? 'none' : `1px solid ${P.border}`,
+        background: 'transparent', cursor: 'pointer', textAlign: 'left',
+      }}>
+        <Icon name={defaultIcon} size={14} color={selected ? P.ink : P.inkSoft} strokeWidth={1.75} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: selected ? P.ink : P.inkSoft, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {selected ? selected.name : defaultLabel}
+          </div>
+        </div>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P.ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: open ? 'scaleY(-1)' : 'scaleY(1)', transition: `transform 200ms ${EASE_OUT}` }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <SidebarAccordion open={open}>
+        <div style={{ padding: '4px 12px 8px 34px', borderBottom: `1px solid ${P.border}` }}>
+          <button onClick={() => { onChange(null); setOpen(false); }} style={{
+            display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 8px', border: 'none', borderRadius: 6,
+            background: 'transparent', cursor: 'pointer', textAlign: 'left',
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink }}>{defaultLabel}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: P.inkSoft }}>{defaultSub}</div>
+            </div>
+            {!value && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+          </button>
+          {ENTITIES.map(ent => (
+            <button key={ent.id} onClick={() => { onChange(ent.id); setOpen(false); }} style={{
+              display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 8px', border: 'none', borderRadius: 6,
+              background: 'transparent', cursor: 'pointer', textAlign: 'left',
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink }}>{ent.name}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 10, color: P.inkSoft }}>{ent.employeeCount} employees</div>
+              </div>
+              {value === ent.id && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+            </button>
+          ))}
+        </div>
+      </SidebarAccordion>
+    </React.Fragment>
+  );
+}
+
 function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
   const [timeoffOpen, setTimeoffOpen] = useState(active === 'requests' || active === 'team-absences');
   const [payrollOpen, setPayrollOpen] = useState(active === 'payroll-overview' || active === 'payroll-reports');
 
   return (
     <React.Fragment>
-      <button onClick={() => {}} style={{
-        padding: '10px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', border: 'none', borderBottom: `1px solid ${P.border}`,
-        background: 'transparent', cursor: 'pointer', textAlign: 'left',
-      }}>
-        <div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint }}>Entity view for</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, letterSpacing: '-0.01em' }}>Payflip</div>
-        </div>
-        <Icon name="chevrons-up-down" size={14} color={P.inkFaint} />
-      </button>
 
-      <nav style={{ flex: 1, padding: '10px 0', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'auto' }}>
+      <nav style={{ flex: 1, padding: '0 0 10px', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'auto' }}>
         <SidebarItem icon="house" label="Home" isActive={active === 'dashboard'} onClick={() => onNav('dashboard')} />
-        <SidebarItem icon="users" label="People" isActive={active === 'employees' || active?.startsWith('employee-detail')} onClick={() => onNav('employees')} />
+        <SidebarItem icon="users" label="People" isActive={active === 'employees' || active === 'employees:admin' || active?.startsWith('employee-detail')} onClick={() => onNav('employees')} />
         <SidebarItem icon="list-checks" label="Choices" isActive={active === 'choices'} onClick={() => onNav('choices')} badgeDot={pendingCount?.choices || null} />
 
         <SidebarItem icon="calendar-days" label="Time off" onClick={() => setTimeoffOpen(o => !o)} chevron chevronOpen={timeoffOpen} isActive={active === 'requests' || active === 'team-absences'} badgeDot={!timeoffOpen && (pendingCount?.requests ?? pendingCount) > 0 ? (pendingCount?.requests ?? pendingCount) : null} />
@@ -926,23 +1014,12 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
 const PERSONAL_IDS = ['settings-notifications', 'settings-account'];
 const COMPANY_IDS  = ['settings-entities','settings-budgets','settings-benefits','settings-packages','settings-documents','settings-timeoff','settings-payroll','settings-expenses','settings-cardrules','settings-integrations','settings-team'];
 
-function SettingsModeSidebar({ active, onNav, onBack }) {
-  const [personalOpen, setPersonalOpen] = useState(() => PERSONAL_IDS.includes(active));
-  const [companyOpen,  setCompanyOpen]  = useState(() => COMPANY_IDS.includes(active));
+function SettingsModeSidebar({ active, onNav }) {
+  const [personalOpen, setPersonalOpen] = useState(true);
+  const [companyOpen,  setCompanyOpen]  = useState(true);
 
   return (
     <React.Fragment>
-      <button onClick={onBack} style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '7px 20px', width: '100%', border: 'none',
-        borderBottom: `1px solid ${P.border}`,
-        background: 'transparent', cursor: 'pointer', textAlign: 'left',
-        transition: `background 120ms ${EASE_OUT}`,
-      }}>
-        <Icon name="arrow-left" size={14} color={P.inkSoft} strokeWidth={1.75} />
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.inkSoft, flex: 1 }}>Back to app</span>
-      </button>
-
       <nav style={{ flex: 1, padding: '10px 0', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'auto' }}>
         <SidebarItem icon="user" label="Personal" onClick={() => setPersonalOpen(o => !o)} chevron chevronOpen={personalOpen} isActive={PERSONAL_IDS.includes(active)} />
         <SidebarAccordion open={personalOpen}>
@@ -975,7 +1052,7 @@ function SettingsModeSidebar({ active, onNav, onBack }) {
 }
 
 const PANEL_DUR = 280;
-function Sidebar({ active, onNav, pendingCount, sidebarMode, onSetSidebarMode }) {
+function Sidebar({ active, onNav, pendingCount, sidebarMode, onSetSidebarMode, appEntity, onSetAppEntity }) {
   const inSettings = sidebarMode === 'settings';
   const panelStyle = (offset) => ({
     position: 'absolute', inset: 0,
@@ -991,12 +1068,21 @@ function Sidebar({ active, onNav, pendingCount, sidebarMode, onSetSidebarMode })
       display: 'flex', flexDirection: 'column',
       height: '100vh', position: 'sticky', top: 0,
     }}>
-      <div style={{ padding: '16px 20px 14px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-        <svg width="90" height="22" viewBox="0 0 115 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M45.753 5.26971C48.8202 5.29294 51.0277 7.91867 51.0277 10.5909C51.0277 13.2631 48.8202 15.8888 45.753 15.912H41.8725V22H39.1074V5.26971H45.753ZM45.7065 13.1236C47.1937 13.1236 48.2393 11.8921 48.2393 10.5909C48.2393 9.26639 47.1937 8.03485 45.7065 8.03485H41.8725V13.1236H45.7065ZM60.7159 10.01H63.481V22H60.7159V20.3502C59.8329 21.4656 58.6014 22.1394 57.0677 22.1394C54.1864 22.1394 51.8628 19.4207 51.8628 16.005C51.8628 12.5892 54.1864 9.87054 57.0677 9.87054C58.6014 9.87054 59.8794 10.5909 60.7159 11.683V10.01ZM57.6951 19.3975C59.4146 19.3975 60.7159 17.8871 60.7159 16.005C60.7159 14.1228 59.4146 12.6124 57.6951 12.6124C55.9524 12.6124 54.6511 14.1228 54.6511 16.005C54.6511 17.8871 55.9524 19.3975 57.6951 19.3975ZM77.1976 10.01V21.7444C77.1976 25.2299 74.7346 27.7162 71.4815 27.7162C67.8798 27.7162 65.9512 25.2066 65.8118 22.9062H68.6931C68.879 24.2075 69.8781 25.1369 71.5279 25.1369C73.3404 25.1369 74.4325 23.7195 74.4325 21.8141V20.4432C73.6192 21.4191 72.318 22.1394 70.9238 22.1394C68.1819 22.1394 66.6947 19.9784 66.6947 17.2365V10.01H69.4599V16.8183C69.4599 18.2357 70.552 19.3975 71.9462 19.3975C73.3404 19.3975 74.4325 18.2124 74.4325 16.8183V10.01H77.1976ZM87.1382 10.01V12.4266H84.1639V22H81.3987V12.4266H79.4701V10.01H81.3987V9.12697C81.3987 6.75684 82.9091 5.13029 85.1631 5.13029C86.046 5.13029 86.6037 5.26971 86.9755 5.36265V7.8722C86.7664 7.80249 86.2552 7.6863 85.7672 7.6863C84.8842 7.6863 84.1639 8.01162 84.1639 9.0805V10.01H87.1382ZM92.108 5.26971V22H89.3429V5.26971H92.108ZM96.8158 8.49958C95.7702 8.49958 94.9104 7.66307 94.9104 6.59419C94.9104 5.52531 95.7702 4.66556 96.8158 4.66556C97.9312 4.66556 98.7909 5.52531 98.7909 6.59419C98.7909 7.66307 97.8847 8.49958 96.8158 8.49958ZM98.1868 22H95.4216V10.01H98.1868V22ZM101.595 26.7402V10.01H104.361V11.7295C105.197 10.4282 106.452 9.87054 107.985 9.87054C110.797 9.87054 113.214 12.4498 113.214 16.005C113.214 19.5602 110.797 22.1394 107.985 22.1394C106.452 22.1394 105.127 21.3494 104.361 20.2573V26.7402H101.595ZM107.358 12.5892C105.592 12.5892 104.361 14.1228 104.361 16.005C104.361 17.8871 105.592 19.3975 107.358 19.3975C109.124 19.3975 110.449 17.8871 110.449 16.005C110.449 14.1228 109.124 12.5892 107.358 12.5892Z" fill={P.ink}/>
-          <path d="M4.33203 5.57666C6.05531 5.57671 7.54249 7.51885 8.24023 10.3306C8.49527 9.9639 8.77641 9.60597 9.08301 9.26025C12.4138 5.50467 17.5161 4.59001 20.4785 7.21729C21.4856 8.11046 22.1146 9.29844 22.377 10.6245C24.205 7.2415 26.4713 5.13629 27.8652 5.72314C28.6853 6.06841 29.0487 7.28097 28.9775 8.96826C29.5959 6.87093 30.4348 5.53748 31.2529 5.60596C32.5914 5.71859 33.3628 9.54023 32.9756 14.1411C32.5884 18.7414 31.1899 22.3791 29.8516 22.2671C28.5131 22.1545 27.7418 18.3338 28.1289 13.7329C28.1475 13.5121 28.1702 13.2937 28.1934 13.0776C27.9732 13.7849 27.7085 14.514 27.3984 15.2505C25.4779 19.8119 22.573 22.9418 20.9102 22.2417C20.055 21.8815 19.6963 20.5784 19.8096 18.7769C16.4787 22.5311 11.378 23.4448 8.41602 20.8179C8.04583 20.4895 7.72679 20.1213 7.45801 19.7212C6.66956 21.3081 5.56123 22.2963 4.33203 22.2964C1.93956 22.2964 7.5582e-05 18.554 0 13.937C0 9.31987 1.93951 5.57666 4.33203 5.57666Z" fill={P.ink}/>
-        </svg>
+      <div style={{ borderBottom: `1px solid ${P.border}`, flexShrink: 0, position: 'relative', height: 53 }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 20px', opacity: inSettings ? 0 : 1, transition: `opacity 200ms ${EASE_OUT}`, pointerEvents: inSettings ? 'none' : 'auto' }}>
+          <svg width="90" height="22" viewBox="0 0 115 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M45.753 5.26971C48.8202 5.29294 51.0277 7.91867 51.0277 10.5909C51.0277 13.2631 48.8202 15.8888 45.753 15.912H41.8725V22H39.1074V5.26971H45.753ZM45.7065 13.1236C47.1937 13.1236 48.2393 11.8921 48.2393 10.5909C48.2393 9.26639 47.1937 8.03485 45.7065 8.03485H41.8725V13.1236H45.7065ZM60.7159 10.01H63.481V22H60.7159V20.3502C59.8329 21.4656 58.6014 22.1394 57.0677 22.1394C54.1864 22.1394 51.8628 19.4207 51.8628 16.005C51.8628 12.5892 54.1864 9.87054 57.0677 9.87054C58.6014 9.87054 59.8794 10.5909 60.7159 11.683V10.01ZM57.6951 19.3975C59.4146 19.3975 60.7159 17.8871 60.7159 16.005C60.7159 14.1228 59.4146 12.6124 57.6951 12.6124C55.9524 12.6124 54.6511 14.1228 54.6511 16.005C54.6511 17.8871 55.9524 19.3975 57.6951 19.3975ZM77.1976 10.01V21.7444C77.1976 25.2299 74.7346 27.7162 71.4815 27.7162C67.8798 27.7162 65.9512 25.2066 65.8118 22.9062H68.6931C68.879 24.2075 69.8781 25.1369 71.5279 25.1369C73.3404 25.1369 74.4325 23.7195 74.4325 21.8141V20.4432C73.6192 21.4191 72.318 22.1394 70.9238 22.1394C68.1819 22.1394 66.6947 19.9784 66.6947 17.2365V10.01H69.4599V16.8183C69.4599 18.2357 70.552 19.3975 71.9462 19.3975C73.3404 19.3975 74.4325 18.2124 74.4325 16.8183V10.01H77.1976ZM87.1382 10.01V12.4266H84.1639V22H81.3987V12.4266H79.4701V10.01H81.3987V9.12697C81.3987 6.75684 82.9091 5.13029 85.1631 5.13029C86.046 5.13029 86.6037 5.26971 86.9755 5.36265V7.8722C86.7664 7.80249 86.2552 7.6863 85.7672 7.6863C84.8842 7.6863 84.1639 8.01162 84.1639 9.0805V10.01H87.1382ZM92.108 5.26971V22H89.3429V5.26971H92.108ZM96.8158 8.49958C95.7702 8.49958 94.9104 7.66307 94.9104 6.59419C94.9104 5.52531 95.7702 4.66556 96.8158 4.66556C97.9312 4.66556 98.7909 5.52531 98.7909 6.59419C98.7909 7.66307 97.8847 8.49958 96.8158 8.49958ZM98.1868 22H95.4216V10.01H98.1868V22ZM101.595 26.7402V10.01H104.361V11.7295C105.197 10.4282 106.452 9.87054 107.985 9.87054C110.797 9.87054 113.214 12.4498 113.214 16.005C113.214 19.5602 110.797 22.1394 107.985 22.1394C106.452 22.1394 105.127 21.3494 104.361 20.2573V26.7402H101.595ZM107.358 12.5892C105.592 12.5892 104.361 14.1228 104.361 16.005C104.361 17.8871 105.592 19.3975 107.358 19.3975C109.124 19.3975 110.449 17.8871 110.449 16.005C110.449 14.1228 109.124 12.5892 107.358 12.5892Z" fill={P.ink}/>
+            <path d="M4.33203 5.57666C6.05531 5.57671 7.54249 7.51885 8.24023 10.3306C8.49527 9.9639 8.77641 9.60597 9.08301 9.26025C12.4138 5.50467 17.5161 4.59001 20.4785 7.21729C21.4856 8.11046 22.1146 9.29844 22.377 10.6245C24.205 7.2415 26.4713 5.13629 27.8652 5.72314C28.6853 6.06841 29.0487 7.28097 28.9775 8.96826C29.5959 6.87093 30.4348 5.53748 31.2529 5.60596C32.5914 5.71859 33.3628 9.54023 32.9756 14.1411C32.5884 18.7414 31.1899 22.3791 29.8516 22.2671C28.5131 22.1545 27.7418 18.3338 28.1289 13.7329C28.1475 13.5121 28.1702 13.2937 28.1934 13.0776C27.9732 13.7849 27.7085 14.514 27.3984 15.2505C25.4779 19.8119 22.573 22.9418 20.9102 22.2417C20.055 21.8815 19.6963 20.5784 19.8096 18.7769C16.4787 22.5311 11.378 23.4448 8.41602 20.8179C8.04583 20.4895 7.72679 20.1213 7.45801 19.7212C6.66956 21.3081 5.56123 22.2963 4.33203 22.2964C1.93956 22.2964 7.5582e-05 18.554 0 13.937C0 9.31987 1.93951 5.57666 4.33203 5.57666Z" fill={P.ink}/>
+          </svg>
+        </div>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', opacity: inSettings ? 1 : 0, transition: `opacity 200ms ${EASE_OUT}`, pointerEvents: inSettings ? 'auto' : 'none' }}>
+          <button onClick={() => { onSetSidebarMode('app'); onNav('dashboard'); }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 20px', width: '100%', height: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+            <Icon name="arrow-left" size={14} color={P.inkSoft} strokeWidth={1.75} />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.inkSoft }}>Back to app</span>
+          </button>
+        </div>
       </div>
+      <EntitySwitcher value={appEntity} onChange={onSetAppEntity} mode="app" />
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         <div style={panelStyle(inSettings ? '-100%' : '0%')}>
           <AppModeSidebar
@@ -1010,7 +1096,6 @@ function Sidebar({ active, onNav, pendingCount, sidebarMode, onSetSidebarMode })
           <SettingsModeSidebar
             active={active}
             onNav={onNav}
-            onBack={() => { onSetSidebarMode('app'); onNav('dashboard'); }}
           />
         </div>
       </div>
@@ -1245,9 +1330,9 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
 
   // Status pill (must be before detailItems)
   const pillData = {
-    approved: { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0', label: 'Approved' },
-    rejected: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca', label: 'Declined' },
-    pending:  { bg: '#fef9c3', color: '#92400e', border: '#fde68a', label: 'Pending'  },
+    approved: { bg: '#bbf7d0', color: '#14532d', label: 'Approved' },
+    rejected: { bg: '#fecaca', color: '#7f1d1d', label: 'Declined' },
+    pending:  { bg: '#fde68a', color: '#92400e', label: 'Pending'  },
   };
   const pill = pillData[req.status] || pillData.pending;
 
@@ -1370,7 +1455,7 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
               </div>
               <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 {hasOverlap
-                  ? <DotPill bg="#fef9c3" color="#92400e">{overlapping.length} of {teamSize} away</DotPill>
+                  ? <DotPill bg="#fde68a" color="#92400e">{overlapping.length} of {teamSize} away</DotPill>
                   : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.inkSoft }}>All available</span>
                 }
                 {hasOverlap && (
@@ -2838,7 +2923,7 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
                         <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>via</span>
-                        <img src="./assets/coolblue-logo.png" alt="Coolblue" style={{ height: 14, objectFit: 'contain', display: 'block' }} />
+                        <img src="../assets/coolblue-logo.png" alt="Coolblue" style={{ height: 14, objectFit: 'contain', display: 'block' }} />
                         <span style={{ fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 12, color: P.inkSoft }}>Coolblue</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
@@ -3093,7 +3178,7 @@ const AppLink = ({ children, onClick, style }) => (
   <span onClick={onClick} style={{ color: P.ink, textDecoration: 'underline', cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', ...style }}>{children}</span>
 );
 
-function RequestRow({ req, requests, onApprove, onDecline, onDetail, onDeclineDirectly, onEdit, onCancel, selected, onToggle, onViewInCalendar, showStatus, removing }) {
+function RequestRow({ req, requests, onApprove, onDecline, onDetail, onDeclineDirectly, onEdit, onCancel, selected, onToggle, onViewInCalendar, showStatus, showEntity, removing }) {
   const emp = EMPLOYEES[req.employee] || { name: req.employee, initials: '?', color: '#e5e7eb', entitlement: 20 };
   const [hover, setHover] = useState(false);
   const usedDays = requests
@@ -3101,7 +3186,9 @@ function RequestRow({ req, requests, onApprove, onDecline, onDetail, onDeclineDi
     .reduce((s, r) => s + r.days, 0);
   const remaining = Math.max(0, emp.entitlement - usedDays - req.days);
   const overlapping = getOverlapping(req, requests);
-  const gridCols = showStatus ? '32px 1.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px' : '32px 1.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px';
+  const gridCols = showStatus
+    ? (showEntity ? '32px 1.8fr 0.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px' : '32px 1.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px')
+    : (showEntity ? '32px 1.8fr 0.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px' : '32px 1.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px');
   return (
     <div style={{
       display: 'grid',
@@ -3126,6 +3213,7 @@ function RequestRow({ req, requests, onApprove, onDecline, onDetail, onDeclineDi
             <Avatar employeeId={req.employee} size={24} style={{ border: '2px solid #fff', boxSizing: 'content-box' }} />
             <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: P.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.name}</span>
           </div>
+          {showEntity && <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.entity || '—'}</span>}
           {showStatus && <StatusDot status={req.status} />}
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
             <span style={{ width: 10, height: 10, borderRadius: '50%', background: LEAVE_COLORS[req.type] || P.inkFaint, border: `1.5px solid ${LEAVE_BORDER_COLORS[req.type] || P.border}`, flexShrink: 0 }} />
@@ -3311,12 +3399,12 @@ function AddExpenseModal({ categories, onClose, onSave }) {
 }
 
 // ── Expense row ────────────────────────────────────────────────────────────
-function ExpenseRow({ exp, onApprove, onDetail, showStatus, selected, onToggle }) {
+function ExpenseRow({ exp, onApprove, onDetail, showStatus, showEntity, selected, onToggle }) {
   const emp = EMPLOYEES[exp.employee] || { name: exp.employee, initials: '?', color: '#e5e7eb' };
   const [hover, setHover] = useState(false);
   const gridCols = showStatus
-    ? '32px 1.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px'
-    : '32px 1.8fr 1fr 2fr 0.8fr 0.7fr 96px';
+    ? (showEntity ? '32px 1.8fr 0.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px' : '32px 1.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px')
+    : (showEntity ? '32px 1.8fr 0.8fr 1fr 2fr 0.8fr 0.7fr 96px' : '32px 1.8fr 1fr 2fr 0.8fr 0.7fr 96px');
 
   const amountStr = `€ ${exp.amount.toFixed(2).replace('.', ',')}`;
 
@@ -3335,6 +3423,7 @@ function ExpenseRow({ exp, onApprove, onDetail, showStatus, selected, onToggle }
         <Avatar employeeId={exp.employee} size={24} style={{ border: '2px solid #fff', boxSizing: 'content-box' }} />
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: P.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.name}</span>
       </div>
+      {showEntity && <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{emp.entity || '—'}</span>}
       {showStatus && <StatusDot status={exp.status} />}
       <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{exp.category}</span>
       <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{exp.description}</span>
@@ -3361,7 +3450,7 @@ function ExpenseRow({ exp, onApprove, onDetail, showStatus, selected, onToggle }
 }
 
 // ── Expenses screen ─────────────────────────────────────────────────────────
-function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
+function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd, appEntity = null }) {
   const categoryOpts = [['all', 'All categories'], ...categories.map(c => [c, c])];
   const [tab, setTab] = useState('pending');
   const [addOpen, setAddOpen] = useState(false);
@@ -3390,9 +3479,10 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
       return true;
     });
   const showStatus = tab === 'all';
+  const showEntity = !appEntity;
   const gridCols = showStatus
-    ? '32px 1.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px'
-    : '32px 1.8fr 1fr 2fr 0.8fr 0.7fr 96px';
+    ? (showEntity ? '32px 1.8fr 0.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px' : '32px 1.8fr 1fr 1fr 2fr 0.8fr 0.7fr 96px')
+    : (showEntity ? '32px 1.8fr 0.8fr 1fr 2fr 0.8fr 0.7fr 96px' : '32px 1.8fr 1fr 2fr 0.8fr 0.7fr 96px');
   const toggleSelect = (id) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const allSelected = filtered.length > 0 && filtered.every(e => selected.has(e.id));
   const toggleAll = () => {
@@ -3406,6 +3496,7 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
       <PageHeader
         title="Expenses"
         subtitle="Review and approve team expense claims"
+        badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}
         tabs={
           <TabBar
             tabs={[
@@ -3433,6 +3524,7 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
           <div style={{ display: 'grid', gridTemplateColumns: gridCols, alignItems: 'center', gap: 12, padding: '0 20px', height: 38, borderBottom: `1px solid ${P.border}`, background: P.bg, position: 'sticky', top: 0, zIndex: 5 }}>
             <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ cursor: 'pointer', accentColor: P.action }} />
             <TH>Submitted by</TH>
+            {showEntity && <TH>Entity</TH>}
             {showStatus && <TH>Status</TH>}
             <TH>Category</TH>
             <TH>Note</TH>
@@ -3446,7 +3538,7 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkFaint }}>No {tab === 'pending' ? 'pending ' : tab === 'approved' ? 'approved ' : tab === 'declined' ? 'declined ' : ''}expenses</div>
             </div>
           ) : filtered.map(exp => (
-            <ExpenseRow key={exp.id} exp={exp} onApprove={onApprove} onDetail={onDetail} showStatus={showStatus} selected={selected.has(exp.id)} onToggle={toggleSelect} />
+            <ExpenseRow key={exp.id} exp={exp} onApprove={onApprove} onDetail={onDetail} showStatus={showStatus} showEntity={showEntity} selected={selected.has(exp.id)} onToggle={toggleSelect} />
           ))}
         </div>
       </div>
@@ -3492,7 +3584,8 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd }) {
 // ── Requests screen ────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
 
-function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onViewInCalendar, onNav }) {
+function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onViewInCalendar, onNav, appEntity = null }) {
+  const showEntity = !appEntity;
   const [tab, setTab] = useState('pending');
   const [page, setPage] = useState(1);
   const [detail, setDetail] = useState(null);
@@ -3562,6 +3655,7 @@ function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onVi
       <PageHeader
         title="Time off requests"
         subtitle="Manage your team's time off"
+        badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}
         tabs={
           <TabBar
             tabs={[
@@ -3586,9 +3680,9 @@ function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onVi
       />
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
       <div style={{ background: P.white, borderRadius: 12, border: `1px solid ${P.border}`, overflow: 'clip' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: (tab === 'all' || tab === 'declined') ? '32px 1.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px' : '32px 1.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px', alignItems: 'center', gap: 12, padding: '0 20px', height: 38, borderBottom: `1px solid ${P.border}`, background: P.bg, position: 'sticky', top: 0, zIndex: 5 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: (() => { const s = tab === 'all' || tab === 'declined'; if (s && showEntity) return '32px 1.8fr 0.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px'; if (s) return '32px 1.8fr 1fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px'; if (showEntity) return '32px 1.8fr 0.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px'; return '32px 1.8fr 0.9fr 0.7fr 0.7fr 1fr 1fr 96px'; })(), alignItems: 'center', gap: 12, padding: '0 20px', height: 38, borderBottom: `1px solid ${P.border}`, background: P.bg, position: 'sticky', top: 0, zIndex: 5 }}>
           <input type="checkbox" checked={allSelected} onChange={toggleAll} style={{ cursor: 'pointer', accentColor: P.action }} />
-          <TH>Requested by</TH>{(tab === 'all' || tab === 'declined') && <TH>Status</TH>}<TH>Leave type</TH><TH>Duration</TH><TH>Date from</TH><TH>Date to</TH><TH>Also off</TH><div />
+          <TH>Requested by</TH>{showEntity && <TH>Entity</TH>}{(tab === 'all' || tab === 'declined') && <TH>Status</TH>}<TH>Leave type</TH><TH>Duration</TH><TH>Date from</TH><TH>Date to</TH><TH>Also off</TH><div />
         </div>
         {displayRows.length === 0 ? (
           <div style={{ padding: '60px 24px', textAlign: 'center' }}>
@@ -3597,7 +3691,7 @@ function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onVi
             <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginTop: 4 }}>{tab === 'pending' ? 'New requests from your team will appear here.' : ''}</div>
           </div>
         ) : displayRows.map(req => (
-          <RequestRow key={req.id} req={req} requests={requests} onApprove={onApprove} onDecline={onDecline} onDetail={r => { setDetailDeclineMode(false); setDetail(r); }} onDeclineDirectly={r => { setDetailDeclineMode(true); setDetail(r); }} onEdit={setEditReq} onCancel={onCancel} selected={selected.has(req.id)} onToggle={toggleSelect} onViewInCalendar={onViewInCalendar} showStatus={tab === 'all' || tab === 'declined'} removing={removingIds.has(req.id)} />
+          <RequestRow key={req.id} req={req} requests={requests} onApprove={onApprove} onDecline={onDecline} onDetail={r => { setDetailDeclineMode(false); setDetail(r); }} onDeclineDirectly={r => { setDetailDeclineMode(true); setDetail(r); }} onEdit={setEditReq} onCancel={onCancel} selected={selected.has(req.id)} onToggle={toggleSelect} onViewInCalendar={onViewInCalendar} showStatus={tab === 'all' || tab === 'declined'} showEntity={showEntity} removing={removingIds.has(req.id)} />
         ))}
         {filtered.length > 0 && (
           <div style={{ padding: '8px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -3875,11 +3969,20 @@ function TabBar({ tabs, activeTab, onTabChange, padding = '0 28px' }) {
   );
 }
 
-function PageHeader({ title, subtitle, children, tabs }) {
+function PageHeader({ title, subtitle, badge, children, tabs }) {
   return (
     <div style={{ flexShrink: 0, borderBottom: `1px solid ${P.border}` }}>
       <div style={{ padding: tabs ? '40px 28px 24px' : '40px 28px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
+          {badge && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '2px 8px', borderRadius: 6,
+              background: P.white, border: `1px solid ${P.border}`,
+              fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft,
+              letterSpacing: 0, marginBottom: 24,
+            }}>{badge}</span>
+          )}
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>{title}</h1>
           {subtitle && <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>{subtitle}</p>}
         </div>
@@ -3910,7 +4013,7 @@ function FilterToolbar({ searchText, onSearch, filter, onFilter, filterOpts, dep
 }
 
 // ── Team absences screen ───────────────────────────────────────────────────
-function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activeReqId, onSave, companyEvents = [], onCancelCompanyEvent, initialDate, initialDeptFilter }) {
+function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activeReqId, onSave, companyEvents = [], onCancelCompanyEvent, initialDate, initialDeptFilter, appEntity = null }) {
   const today = new Date(); today.setHours(0,0,0,0);
   const todayISO = isoDate(today);
 
@@ -4030,6 +4133,7 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
   const filteredEmployees = useMemo(() => {
     const search = searchText.toLowerCase();
     return Object.entries(EMPLOYEES).filter(([id, emp]) => {
+      if (appEntity && emp.entityId !== appEntity) return false;
       if (!activeDepts.has(emp.department)) return false;
       if (deptFilter !== 'all' && emp.department !== deptFilter) return false;
       if (search && !emp.name.toLowerCase().includes(search)) return false;
@@ -4042,7 +4146,7 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
       }
       return true;
     });
-  }, [searchText, activeDepts, deptFilter, absencesOnly, dayISOs, absenceMap, leaveFilter]);
+  }, [searchText, activeDepts, deptFilter, absencesOnly, dayISOs, absenceMap, leaveFilter, appEntity]);
 
   const grouped = useMemo(() => {
     const groups = {};
@@ -4052,6 +4156,18 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
     }
     return groups;
   }, [filteredEmployees]);
+
+  const calendarRowItems = useMemo(() => {
+    if (appEntity) return filteredEmployees.map(([empId, emp]) => ({ type: 'employee', empId, emp }));
+    const items = [];
+    for (const entity of ENTITIES) {
+      const entityEmps = filteredEmployees.filter(([, emp]) => emp.entityId === entity.id);
+      if (!entityEmps.length) continue;
+      items.push({ type: 'header', entity, count: entityEmps.length });
+      for (const [empId, emp] of entityEmps) items.push({ type: 'employee', empId, emp });
+    }
+    return items;
+  }, [filteredEmployees, appEntity]);
 
   // Summary row — how many people off per day
   const summary = useMemo(() => {
@@ -4087,7 +4203,7 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
-      <PageHeader title="Team absences" subtitle="Track and plan team availability">
+      <PageHeader title="Team absences" subtitle="Track and plan team availability" badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}>
         <button onClick={() => setAddOpen(true)} style={{
           display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none',
           background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
@@ -4209,11 +4325,20 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
 
 
               {/* Employee rows */}
-              {filteredEmployees.map(([empId, emp], empIdx) => {
-                const employees = [[empId, emp]];
+              {calendarRowItems.map((item) => {
+                if (item.type === 'header') {
+                  return (
+                    <div key={`entity-header-${item.entity.id}`} style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: `1px solid ${P.border}`, background: P.bg }}>
+                      <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', padding: '0 12px', height: 26 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{item.entity.name} · {item.count}</span>
+                      </div>
+                    </div>
+                  );
+                }
+                const { empId, emp } = item;
                 return (
                   <React.Fragment key={empId}>
-                    {employees.map(([empId, emp], empIdx) => (
+                    {[1].map(() => (
                       <div key={empId} style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: `1px solid ${P.border}`, height: viewMode === 'week' ? 64 : 36 }}>
                         <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8, overflow: 'hidden' }}>
                           <div style={{ overflow: 'hidden' }}>
@@ -4534,20 +4659,22 @@ function EmployeeRow({ emp, onNav }) {
 }
 
 // ── Employees screen ──────────────────────────────────────────────────────
-function EmployeesScreen({ requests, onNav }) {
+function EmployeesScreen({ requests, onNav, initialRoleFilter = 'All', adminAccess = {}, appEntity = null }) {
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('All');
+  const [roleFilter, setRoleFilter] = useState(initialRoleFilter);
   const [statusFilter, setStatusFilter] = useState('Active');
 
   const empList = useMemo(() => {
-    return Object.entries(EMPLOYEES).filter(([, emp]) => emp.isEmployee !== false)
+    return Object.entries(EMPLOYEES)
+      .filter(([, emp]) => emp.isEmployee !== false && (!appEntity || emp.entityId === appEntity))
       .map(([id, emp]) => ({ id, ...emp }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, []);
+  }, [appEntity]);
 
   const filtered = useMemo(() => {
     return empList.filter(e => {
-      if (roleFilter !== 'All' && e.role !== roleFilter) return false;
+      const revoked = adminAccess && adminAccess[e.id] === 'revoked';
+      if (roleFilter !== 'All' && (revoked || (e.role !== roleFilter && !(roleFilter === 'Admin' && adminAccess && e.id in adminAccess && !revoked)))) return false;
       if (statusFilter !== 'All' && e.status !== statusFilter) return false;
       if (search && !e.name.toLowerCase().includes(search.toLowerCase()) && !e.email.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
@@ -4558,7 +4685,7 @@ function EmployeesScreen({ requests, onNav }) {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
-      <PageHeader title="Employees" subtitle="Overview">
+      <PageHeader title="Employees" subtitle="Overview" badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}>
         <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: `1px solid ${P.border}`, borderRadius: 8, background: P.white, color: P.ink, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
             <Icon name="Mail" size={14} /> Invite users
@@ -4739,7 +4866,7 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
 }
 
 // ── Employee detail screen ────────────────────────────────────────────────
-function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, onApprove, onDecline, onViewTeamCalendar, employeeBalance, onUpdateBalance, needsSetup, confirmedDate, onConfirmBalances, onToast }) {
+function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, onApprove, onDecline, onViewTeamCalendar, employeeBalance, onUpdateBalance, needsSetup, confirmedDate, onConfirmBalances, onToast, adminAccess, onAdminSave }) {
   const emp = EMPLOYEES[employeeId];
   const [activeTab, setActiveTab] = useState('choices');
   const [addModal, setAddModal] = useState(null); // null | 'add' | request object (edit)
@@ -5053,7 +5180,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
         ) : activeTab === 'salary' ? (
           <div><SalaryTab empId={employeeId} /></div>
         ) : activeTab === 'details' ? (
-          <div><DetailsTab emp={emp} empId={employeeId} onNav={onNav} /></div>
+          <div><DetailsTab emp={emp} empId={employeeId} onNav={onNav} adminAccess={adminAccess} onAdminSave={onAdminSave} /></div>
         ) : (
           <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: 24, maxWidth: 480, color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>
             Coming soon
@@ -5622,13 +5749,14 @@ function MobilityLaunchWidget({ onToast }) {
   );
 }
 
-function DashboardScreen({ requests, onNav, onToast }) {
+function DashboardScreen({ requests, onNav, onToast, appEntity = null }) {
   const today = new Date(); today.setHours(0,0,0,0);
   return (
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <PageHeader
         title="Home"
         subtitle={today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+        badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}
       />
       <div style={{ padding: '24px 32px' }}>
         <MobilityLaunchWidget onToast={onToast} />
@@ -5786,7 +5914,7 @@ const APPROVAL_OPTS = [
   { value: 'auto',    label: 'Auto-approve under threshold', hint: 'Expenses below the receipt threshold auto-approve' },
 ];
 
-function ExpenseCategorySettings({ categories, onSave }) {
+function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
   const [items, setItems] = useState(categories);
   const [catModal, setCatModal] = useState(null);       // { idx: number | 'new' }
   const [settingModal, setSettingModal] = useState(null); // 'cycle' | 'threshold' | 'approval' | { limit: cat }
@@ -5855,7 +5983,10 @@ function ExpenseCategorySettings({ categories, onSave }) {
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Expenses</h1>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Expenses</h1>
+          </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint, margin: '4px 0 0' }}>Manage expense settings for your company</p>
         </div>
 
@@ -6006,23 +6137,22 @@ const ADMIN_AREAS = [
 function AdminAccessModal({ admin, access, onSave, onClose }) {
   const { visible, close } = useModalTransition(onClose);
   const [step, setStep] = useState(Array.isArray(access) ? 2 : 1);
-  const [selectedAreas, setSelectedAreas] = useState(Array.isArray(access) ? access : ['time-off']);
-  const [revoking, setRevoking] = useState(false);
+  const [selectedAreas, setSelectedAreas] = useState(Array.isArray(access) ? access : []);
 
   const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
+  const SLIDE_DUR = 300;
+  const onStep2 = step === 2;
+  const step1Slide = onStep2 ? 'translateX(-100%)' : 'translateX(0)';
+  const step2Slide = onStep2 ? 'translateX(0)' : 'translateX(100%)';
+  const slideTransition = `transform ${SLIDE_DUR}ms ${EASE_DRAWER}`;
 
   const toggleArea = (value) => {
-    setSelectedAreas(prev => {
-      const next = prev.includes(value) ? prev.filter(a => a !== value) : [...prev, value];
-      return next.length === 0 ? prev : next;
-    });
+    setSelectedAreas(prev => prev.includes(value) ? prev.filter(a => a !== value) : [...prev, value]);
   };
 
   const headerAvatarAndName = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div style={{ width: 36, height: 36, borderRadius: '50%', background: admin.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 12, color: P.ink }}>{admin.initials}</span>
-      </div>
+      <Avatar employeeId={admin.id} size={36} />
       <div>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>{admin.name}</div>
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{admin.email}</div>
@@ -6049,105 +6179,191 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
           </button>
         </div>
 
-        {/* Step 1: access type */}
-        {step === 1 && (
-          <div style={{ padding: '8px 14px 4px' }}>
-            <div onClick={() => { onSave('full'); close(); }}
-              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${access === 'full' ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                {access === 'full' && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Full admin</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Full access to all settings, tools, and approvals</div>
-              </div>
-            </div>
-            <div onClick={() => setStep(2)}
-              style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', border: `2px solid ${Array.isArray(access) ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                {Array.isArray(access) && <div style={{ width: 7, height: 7, borderRadius: '50%', background: P.action }} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Limited access</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
-                  {Array.isArray(access) && access.length > 0
-                    ? access.map(a => AREA_LABELS[a] || a).join(' · ')
-                    : 'Select which areas to manage'}
-                </div>
-              </div>
-              <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 2 }} />
-            </div>
-          </div>
-        )}
+        {/* Sliding content area — height morphs between step 1 and step 2 natural heights */}
+        <div style={{ position: 'relative', overflow: 'hidden', height: onStep2 ? 180 : 132, transition: `height ${SLIDE_DUR}ms ${EASE_DRAWER}` }}>
 
-        {/* Step 2: area checkboxes */}
-        {step === 2 && (
-          <div style={{ padding: '8px 14px 4px' }}>
-            {ADMIN_AREAS.map(area => {
-              const checked = selectedAreas.includes(area.value);
-              return (
-                <div key={area.value} onClick={() => toggleArea(area.value)}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
-                  <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, background: checked ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 2 }}>
-                    {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{area.label}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{area.hint}</div>
+          {/* Step 1: access type */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, transform: step1Slide, transition: slideTransition }}>
+            <div style={{ padding: '8px 14px 4px' }}>
+              <div onClick={() => { onSave('full'); close(); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Full admin</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Full access to all settings, tools, and approvals</div>
+                </div>
+                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              </div>
+              <div onClick={() => setStep(2)}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>Custom access</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+                    {Array.isArray(access) && access.length > 0
+                      ? access.map(a => AREA_LABELS[a] || a).join(' · ')
+                      : 'Select which areas to manage'}
                   </div>
                 </div>
-              );
-            })}
+                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Step 2: area checkboxes */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, transform: step2Slide, transition: slideTransition }}>
+            <div style={{ padding: '8px 14px 4px' }}>
+              {ADMIN_AREAS.map(area => {
+                const checked = selectedAreas.includes(area.value);
+                return (
+                  <div key={area.value} onClick={() => toggleArea(area.value)}
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '9px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? P.action : P.border}`, background: checked ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'border-color 120ms ease, background 120ms ease', marginTop: 2 }}>
+                      {checked && <Icon name="check" size={10} color="#fff" strokeWidth={3} />}
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, fontWeight: 500 }}>{area.label}</div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{area.hint}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
         {/* Footer */}
-        {!revoking
-          ? <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center' }}>
-              <button onClick={() => setRevoking(true)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626' }}>
-                Revoke access
-              </button>
-              <div style={{ flex: 1 }} />
-              <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, marginRight: 8 }}>Cancel</button>
-              {step === 2 && (
-                <button onClick={() => { onSave(selectedAreas); close(); }} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-              )}
-            </div>
-          : <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Remove {admin.name.split(' ')[0]}'s admin access?</span>
-              <button onClick={() => setRevoking(false)} style={{ border: 'none', background: 'transparent', padding: '6px 0', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft }}>Cancel</button>
-              <button onClick={() => { onSave(null); close(); }} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Revoke</button>
-            </div>
-        }
+        <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+          {step === 2 && (
+            <button onClick={() => { if (selectedAreas.length > 0) { onSave(selectedAreas); close(); } }} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: selectedAreas.length > 0 ? P.action : P.border, color: selectedAreas.length > 0 ? '#fff' : P.inkSoft, cursor: selectedAreas.length > 0 ? 'pointer' : 'default', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 
-function TeamAccessSettings() {
-  const [adminAccess, setAdminAccess] = useState(() =>
-    Object.entries(EMPLOYEES)
-      .filter(([, u]) => u.adminAccess)
-      .reduce((acc, [id, u]) => ({ ...acc, [id]: u.adminAccess }), {})
+// ── In-page entity switcher ───────────────────────────────────────────────
+// Ghost trigger button + searchable modal. Resets on page navigation.
+function EntityPickerModal({ value, onChange, onClose }) {
+  const [search, setSearch] = useState('');
+  const { visible, close } = useModalTransition(onClose);
+
+  const filtered = ENTITIES.filter(e =>
+    !search.trim() || e.name.toLowerCase().includes(search.trim().toLowerCase())
   );
 
+  const pick = (id) => { onChange(id); close(); };
+
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 400, maxHeight: 560, display: 'flex', flexDirection: 'column', boxShadow: '0 8px 40px rgba(15,13,40,0.18)', ...modalPanelStyle(visible) }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>Switch entity</span>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)' }}>
+            <Icon name="X" size={13} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div style={{ padding: '10px 12px 6px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px', background: P.bg }}>
+            <Icon name="search" size={14} color={P.inkFaint} strokeWidth={1.75} />
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search entities…"
+              style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, flex: 1 }}
+            />
+            {search && (
+              <button onClick={() => setSearch('')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}>
+                <Icon name="X" size={13} color={P.inkFaint} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{ overflowY: 'auto', padding: '4px 8px 8px' }}>
+          <button onClick={() => pick(null)} style={{
+            display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px',
+            border: 'none', borderRadius: 8,
+            background: !value ? '#f3f0ff' : 'transparent', cursor: 'pointer', textAlign: 'left', marginBottom: 2,
+          }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: !value ? '#e9d5ff' : P.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="building-2" size={15} color={!value ? P.action : P.inkSoft} strokeWidth={1.75} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: !value ? P.action : P.ink }}>Company defaults</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>All entities inherit these settings</div>
+            </div>
+            {!value && <Icon name="check" size={15} color={P.action} strokeWidth={2.5} />}
+          </button>
+
+          {filtered.length > 0 && <div style={{ height: 1, background: P.border, margin: '4px 4px 6px' }} />}
+
+          {filtered.map(ent => (
+            <button key={ent.id} onClick={() => pick(ent.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px',
+              border: 'none', borderRadius: 8,
+              background: value === ent.id ? '#f3f0ff' : 'transparent', cursor: 'pointer', textAlign: 'left',
+            }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: value === ent.id ? '#e9d5ff' : P.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name="map-pin" size={15} color={value === ent.id ? P.action : P.inkSoft} strokeWidth={1.75} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: value === ent.id ? P.action : P.ink }}>{ent.name}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{ent.country} · {ent.employeeCount} employees</div>
+              </div>
+              {value === ent.id && <Icon name="check" size={15} color={P.action} strokeWidth={2.5} />}
+            </button>
+          ))}
+
+          {filtered.length === 0 && (
+            <div style={{ padding: '24px 12px', textAlign: 'center', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+              No entities matching "{search}"
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EntityPageSwitcher({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? ENTITIES.find(e => e.id === value) : null;
+
+  return (
+    <React.Fragment>
+      <button onClick={() => setOpen(true)} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '7px 14px 7px 12px',
+        border: `1px solid ${P.border}`,
+        borderRadius: 8,
+        background: P.white,
+        cursor: 'pointer',
+        fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 13,
+        color: P.ink,
+      }}>
+        <Icon name={selected ? 'map-pin' : 'building-2'} size={13} color={P.inkSoft} strokeWidth={1.75} />
+        {selected ? selected.name : 'Company defaults'}
+        <Icon name="chevrons-up-down" size={12} color={P.inkFaint} strokeWidth={1.75} />
+      </button>
+
+      {open && <EntityPickerModal value={value} onChange={onChange} onClose={() => setOpen(false)} />}
+    </React.Fragment>
+  );
+}
+
+function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null }) {
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
-      .filter(([, u]) => u.role === 'Admin' || u.isEmployee === false)
+      .filter(([id, u]) => adminAccess[id] !== 'revoked' && (u.role === 'Admin' || u.isEmployee === false || id in adminAccess))
       .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: id in adminAccess ? adminAccess[id] : (u.adminAccess || null) })),
     [adminAccess]
   );
 
   const [adminModal, setAdminModal] = useState(null);
-
-  const handleAdminSave = (adminId, newAccess) => {
-    setAdminAccess(prev => {
-      if (newAccess === null) { const next = { ...prev }; delete next[adminId]; return next; }
-      return { ...prev, [adminId]: newAccess };
-    });
-    setAdminModal(null);
-  };
 
   const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
@@ -6159,14 +6375,19 @@ function TeamAccessSettings() {
       <AdminAccessModal
         admin={admin}
         access={admin.access}
-        onSave={newAccess => handleAdminSave(adminModal, newAccess)}
+        onSave={newAccess => { onAdminSave(adminModal, newAccess); setAdminModal(null); }}
         onClose={() => setAdminModal(null)}
       />
     ) : null; })()}
+
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Team & access</h1>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Team & access</h1>
+          </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Configure access levels for your admin team</p>
         </div>
 
@@ -6178,29 +6399,28 @@ function TeamAccessSettings() {
               const badge = admin.access === 'full'
                 ? { label: 'Full admin', filled: true }
                 : areas && areas.length > 0
-                  ? areas.length === 1
-                    ? { label: AREA_LABELS[areas[0]] || areas[0], filled: false }
-                    : { label: `${areas.length} areas`, filled: false }
+                  ? { label: areas.map(a => AREA_LABELS[a] || a).join(' · '), filled: false }
                   : null;
               return (
-              <div key={admin.id}
-                onClick={() => setAdminModal(admin.id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: admin.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11, color: P.ink }}>{admin.initials}</span>
+                <div key={admin.id}
+                  onClick={() => setAdminModal(admin.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
+                  <Avatar employeeId={admin.id} size={32} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{admin.name}</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{admin.email}</div>
+                  </div>
+                  {badge
+                    ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
+                    : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>No access</span>
+                  }
+                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{admin.name}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{admin.email}</div>
-                </div>
-                {badge
-                  ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
-                  : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.action, background: 'transparent', padding: '3px 10px', borderRadius: 20, border: `1.5px solid ${P.action}`, whiteSpace: 'nowrap', flexShrink: 0 }}>Assign access</span>
-                }
-                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-              </div>
               );
             })}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <span onClick={() => onNav('employees:admin')} style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Manage admin roles in People</span>
           </div>
         </div>
 
@@ -6287,7 +6507,7 @@ function LeaveTypeModal({ name, color, config, onSave, onClose, showMaxDays = tr
   );
 }
 
-function TimeOffSettings() {
+function TimeOffSettings({ appEntity = null }) {
   const [leaveConfigs, setLeaveConfigs] = useState(DEFAULT_LEAVE_CONFIGS);
   const [entitlement, setEntitlement] = useState('legal');
   const [companyDays, setCompanyDays] = useState(25);
@@ -6297,17 +6517,36 @@ function TimeOffSettings() {
   const [leaveModal, setLeaveModal] = useState(null);
   const [settingModal, setSettingModal] = useState(null);
 
+  const [entityOverrides, setEntityOverrides] = useState({
+    'lumio-france': { entitlement: 'company', companyDays: 30, approval: 'hr' },
+  });
+
+  const ov = appEntity ? (entityOverrides[appEntity] || {}) : {};
+  const effEntitlement = ov.entitlement || entitlement;
+  const effCompanyDays = ov.companyDays || companyDays;
+  const effCarryover = ov.carryover || carryover;
+  const effCarryoverCap = ov.carryoverCap || carryoverCap;
+  const effApproval = ov.approval || approval;
+
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
   const settingRow = (onClick, icon, label, value, last) => (
-    <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: last ? 'none' : `1px solid ${P.border}`, cursor: 'pointer' }}>
+    <div onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px',
+      borderBottom: last ? 'none' : `1px solid ${P.border}`,
+      cursor: 'pointer',
+    }}>
       <Icon name={icon} size={18} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
       <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</span>
       <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{value}</span>
       <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
     </div>
   );
+
+  const entitlementDisplay = effEntitlement === 'company' ? `${effCompanyDays}d / year` : 'Legal minimum';
+  const carryoverDisplay = effCarryover === 'cap' ? `Up to ${effCarryoverCap} days` : (CARRYOVER_OPTS.find(o => o.value === effCarryover) || {}).label;
+  const approvalDisplay = (TIMEOFF_APPROVAL_OPTS.find(o => o.value === effApproval) || {}).label;
 
   return (
     <>
@@ -6321,14 +6560,39 @@ function TimeOffSettings() {
         showMaxDays={!STATUTORY_MAX_TYPES.has(leaveModal)}
       />
     )}
-    {settingModal === 'entitlement' && <PickModal title="Entitlement" options={ENTITLEMENT_OPTS} value={entitlement} onSave={(val, extra) => { setEntitlement(val); if (extra !== undefined) setCompanyDays(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'company', label: 'Days', defaultValue: companyDays, suffix: 'days', min: 20 }} />}
-    {settingModal === 'carryover' && <PickModal title="Unused days" options={CARRYOVER_OPTS} value={carryover} onSave={(val, extra) => { setCarryover(val); if (extra !== undefined) setCarryoverCap(extra); }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'cap', label: 'Max', defaultValue: carryoverCap, suffix: 'days', min: 1 }} />}
-    {settingModal === 'approval' && <PickModal title="Who approves?" options={TIMEOFF_APPROVAL_OPTS} value={approval} onSave={setApproval} onClose={() => setSettingModal(null)} />}
+    {settingModal === 'entitlement' && <PickModal title="Entitlement" options={ENTITLEMENT_OPTS} value={effEntitlement} onSave={(val, extra) => {
+      if (appEntity) {
+        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), entitlement: val, ...(extra !== undefined ? { companyDays: extra } : {}) } }));
+      } else {
+        setEntitlement(val); if (extra !== undefined) setCompanyDays(extra);
+      }
+      setSettingModal(null);
+    }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'company', label: 'Days', defaultValue: effCompanyDays, suffix: 'days', min: 20 }} />}
+    {settingModal === 'carryover' && <PickModal title="Unused days" options={CARRYOVER_OPTS} value={effCarryover} onSave={(val, extra) => {
+      if (appEntity) {
+        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), carryover: val, ...(extra !== undefined ? { carryoverCap: extra } : {}) } }));
+      } else {
+        setCarryover(val); if (extra !== undefined) setCarryoverCap(extra);
+      }
+      setSettingModal(null);
+    }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'cap', label: 'Max', defaultValue: effCarryoverCap, suffix: 'days', min: 1 }} />}
+    {settingModal === 'approval' && <PickModal title="Who approves?" options={TIMEOFF_APPROVAL_OPTS} value={effApproval} onSave={(val) => {
+      if (appEntity) {
+        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), approval: val } }));
+      } else {
+        setApproval(val);
+      }
+      setSettingModal(null);
+    }} onClose={() => setSettingModal(null)} />}
 
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
+          </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage leave types, entitlement and approval for your company</p>
         </div>
 
@@ -6354,15 +6618,15 @@ function TimeOffSettings() {
         <div>
           <div style={SL}>Accrual & carry-over</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('entitlement'), 'calendar-days', 'Entitlement', entitlement === 'company' ? `${companyDays}d / year` : 'Legal minimum', false)}
-            {settingRow(() => setSettingModal('carryover'), 'arrow-right', 'Unused days', carryover === 'cap' ? `Up to ${carryoverCap} days` : (CARRYOVER_OPTS.find(o => o.value === carryover) || {}).label, true)}
+            {settingRow(() => setSettingModal('entitlement'), 'calendar-days', 'Entitlement', entitlementDisplay, false)}
+            {settingRow(() => setSettingModal('carryover'), 'arrow-right', 'Unused days', carryoverDisplay, true)}
           </div>
         </div>
 
         <div>
           <div style={SL}>Approval</div>
           <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', (TIMEOFF_APPROVAL_OPTS.find(o => o.value === approval) || {}).label, true)}
+            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalDisplay, true)}
           </div>
         </div>
 
@@ -6420,7 +6684,7 @@ function ChoiceRow({ choice, onApprove, onDecline, onDetail, showStatus }) {
   );
 }
 
-function ChoicesScreen({ choices, onApprove, onDecline, onDetail }) {
+function ChoicesScreen({ choices, onApprove, onDecline, onDetail, appEntity = null }) {
   const [tab, setTab] = useState('pending');
   const [searchText, setSearchText] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
@@ -6444,6 +6708,7 @@ function ChoicesScreen({ choices, onApprove, onDecline, onDetail }) {
       <PageHeader
         title="Choices"
         subtitle="Review and approve employee benefit elections"
+        badge={appEntity ? (ENTITIES.find(e => e.id === appEntity)?.name) : null}
         tabs={
           <TabBar
             tabs={[
@@ -6484,6 +6749,437 @@ function ChoicesScreen({ choices, onApprove, onDecline, onDetail }) {
             </div>
           ) : filtered.map(c => <ChoiceRow key={c.id} choice={c} onApprove={onApprove} onDecline={onDecline} onDetail={onDetail} showStatus={showStatus} />)}
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ── Entities settings screen ──────────────────────────────────────────────
+function EntitiesSettings({ onNav, appEntity = null }) {
+  const [expandedId, setExpandedId] = useState(null);
+
+  const ENTITY_OVERRIDES_DEMO = {
+    'lumio-france': ['Entitlement', 'Approval workflow'],
+    'lumio-nl': [],
+    'lumio-group': [],
+  };
+
+  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
+
+  return (
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Entities</h1>
+          </div>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage your company's legal entities</p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: 10, background: '#f0f4ff', border: '1px solid #dbe4ff' }}>
+          <Icon name="info" size={15} color="#4c6ef5" strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 1 }} />
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#364fc7', lineHeight: 1.5 }}>
+            Settings are configured at the company level by default. Entity-specific overrides can be added per setting where needed.
+          </div>
+        </div>
+
+        <div>
+          <div style={SL}>All entities</div>
+          <div style={card}>
+            {ENTITIES.map((ent, idx) => {
+              const isExpanded = expandedId === ent.id;
+              const overrides = ENTITY_OVERRIDES_DEMO[ent.id] || [];
+              return (
+                <React.Fragment key={ent.id}>
+                  <div onClick={() => setExpandedId(isExpanded ? null : ent.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: (idx < ENTITIES.length - 1 || isExpanded) ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
+                    <Icon name="map-pin" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink }}>{ent.name}</div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 1 }}>
+                        {[ent.jc, ent.country].filter(Boolean).join(' · ') || ent.country}
+                      </div>
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, whiteSpace: 'nowrap' }}>{ent.employeeCount} employees</span>
+                    {overrides.length > 0 && (
+                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 11, color: P.action, background: '#f3f0ff', padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap' }}>
+                        {overrides.length} override{overrides.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    <Icon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                  </div>
+                  {isExpanded && (
+                    <div style={{ padding: '12px 20px 16px', background: P.bg, borderBottom: idx < ENTITIES.length - 1 ? `1px solid ${P.border}` : 'none' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
+                        {[
+                          ['Country', ent.country],
+                          ['Joint committee', ent.jc || '—'],
+                          ['Payroll provider', ent.payrollProvider],
+                          ['Integration ID', ent.integrationId || '—'],
+                          ['Employees', `${ent.employeeCount}`],
+                          ['Overrides', overrides.length > 0 ? overrides.join(', ') : 'None — fully inherited'],
+                        ].map(([label, value]) => (
+                          <div key={label}>
+                            <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft, marginBottom: 2 }}>{label}</div>
+                            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={() => {}} style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 16px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white,
+            cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink,
+          }}>
+            <Icon name="plus" size={14} color={P.ink} strokeWidth={2} />
+            Add entity
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddDocumentModal({ appEntity, title, saveLabel, onSave, onClose, initialValues, onDeactivate, isDeactivated, readOnly }) {
+  const [name, setName] = useState(initialValues?.name || '');
+  const [language, setLanguage] = useState(initialValues?.language && initialValues.language !== '—' ? initialValues.language : '');
+  const [type, setType] = useState(initialValues?.type || 'File');
+  const [scope, setScope] = useState(initialValues?.scope !== undefined ? initialValues.scope : (appEntity || ''));
+  const [file, setFile] = useState(initialValues?.fileName ? { name: initialValues.fileName, size: 0 } : null);
+  const { visible, close } = useModalTransition(onClose);
+
+  const fakeUpload = () => {
+    if (file) { setFile(null); return; }
+    const slug = name.trim() ? name.trim().toLowerCase().replace(/\s+/g, '-') : 'document';
+    setFile({ name: `${slug}.pdf`, size: (0.8 + Math.random() * 2.4) * 1024 * 1024 });
+  };
+
+  const handleSave = () => {
+    if (!name.trim()) return;
+    const id = initialValues?.id || `doc-${Date.now()}`;
+    onSave({ ...(initialValues || {}), id, name: name.trim(), language: language || '—', type, fileName: file?.name, scope: scope || null });
+    close();
+  };
+
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, boxShadow: '0 8px 40px rgba(15,13,40,0.18)', ...modalPanelStyle(visible) }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>{title || `Add document${entityName ? ` for ${entityName}` : ''}`}</span>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)' }}>
+            <Icon name="X" size={13} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+        <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkSoft, marginBottom: 6 }}>Name</label>
+            <input autoFocus={!readOnly} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Work authorization" disabled={readOnly}
+              style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 12px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, outline: 'none', background: readOnly ? P.bg : P.white, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkSoft, marginBottom: 6 }}>Scope</label>
+            <select value={scope} onChange={e => setScope(e.target.value)} disabled={readOnly}
+              style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 12px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, outline: 'none', background: readOnly ? P.bg : P.white }}>
+              <option value="">Company-wide</option>
+              {ENTITIES.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkSoft, marginBottom: 6 }}>Language</label>
+              <select value={language} onChange={e => setLanguage(e.target.value)} disabled={readOnly}
+                style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 12px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, outline: 'none', background: readOnly ? P.bg : P.white }}>
+                <option value="">—</option>
+                <option value="NL">NL</option>
+                <option value="FR">FR</option>
+                <option value="EN">EN</option>
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkSoft, marginBottom: 6 }}>Type</label>
+              <select value={type} onChange={e => setType(e.target.value)} disabled={readOnly}
+                style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 12px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, outline: 'none', background: readOnly ? P.bg : P.white }}>
+                <option value="File">File</option>
+                <option value="Url">URL</option>
+              </select>
+            </div>
+          </div>
+          {!readOnly && <div onClick={fakeUpload} style={{ border: `1px dashed ${file ? P.action : P.border}`, borderRadius: 8, padding: '16px', textAlign: 'center', background: file ? '#f5f3ff' : P.bg, cursor: 'pointer', transition: 'border-color 120ms, background 120ms' }}>
+            {file ? (
+              <>
+                <Icon name="file-check" size={18} color={P.action} strokeWidth={1.5} />
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.ink, marginTop: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint, marginTop: 2 }}>{(file.size / 1024 / 1024).toFixed(1)} MB · Click to change</div>
+              </>
+            ) : (
+              <>
+                <Icon name="upload" size={18} color={P.inkFaint} strokeWidth={1.5} />
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 6 }}>Upload file <span style={{ color: P.inkFaint }}>(optional)</span></div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint, marginTop: 2 }}>PDF, DOCX up to 10 MB</div>
+              </>
+            )}
+          </div>}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, padding: '14px 22px', borderTop: `1px solid ${P.border}` }}>
+          <div>
+            {onDeactivate && (
+              <button onClick={() => { onDeactivate(); close(); }} style={{ padding: '7px 14px', border: `1px solid ${isDeactivated ? '#bbf7d0' : '#fecaca'}`, borderRadius: 8, background: isDeactivated ? '#f0fdf4' : '#fef2f2', fontFamily: 'var(--font-body)', fontSize: 13, color: isDeactivated ? '#16a34a' : '#dc2626', cursor: 'pointer' }}>
+                {isDeactivated ? 'Reactivate' : 'Deactivate'}
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={close} style={{ padding: '7px 16px', border: `1px solid ${P.border}`, borderRadius: 8, background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>{readOnly ? 'Close' : 'Cancel'}</button>
+            {!readOnly && <button onClick={handleSave} disabled={!name.trim()} style={{ padding: '7px 16px', border: 'none', borderRadius: 8, background: name.trim() ? P.action : P.border, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, color: name.trim() ? '#fff' : P.inkFaint, cursor: name.trim() ? 'pointer' : 'default' }}>{saveLabel || (title ? title.split(' for ')[0] : 'Add document')}</button>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TableFadeIn({ children }) {
+  const [ready, setReady] = React.useState(false);
+  React.useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return (
+    <div style={{
+      opacity: ready ? 1 : 0,
+      transform: ready ? 'translateY(0)' : 'translateY(6px)',
+      transition: PREFERS_REDUCED_MOTION
+        ? `opacity 200ms ${EASE_OUT}`
+        : `opacity 200ms ${EASE_OUT}, transform 200ms ${EASE_OUT}`,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange }) {
+  const setDocuments = onDocumentsChange;
+  const [tab, setTab] = useState('templates');
+  const [addOpen, setAddOpen] = useState(false);
+  const [editDoc, setEditDoc] = useState(null);
+  const [docFilter, setDocFilter] = useState('active');
+
+  const entityName = appEntity ? (ENTITIES.find(e => e.id === appEntity) || {}).name : null;
+
+  const th = { textAlign: 'left', padding: '9px 16px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 11, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' };
+  const td = { padding: '14px 16px', color: P.ink, verticalAlign: 'middle', fontFamily: 'var(--font-body)', fontSize: 13 };
+  const tdMuted = { ...td, color: P.inkFaint, opacity: 0.6 };
+
+  const ActionBtn = ({ icon, label, onClick, danger }) => (
+    <button onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: `1px solid ${danger ? '#fecaca' : P.border}`, borderRadius: 6, background: danger ? '#fef2f2' : P.white, fontFamily: 'var(--font-body)', fontSize: 12, color: danger ? '#dc2626' : P.ink, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      <Icon name={icon} size={12} color={danger ? '#dc2626' : P.inkSoft} strokeWidth={1.75} />
+      {label}
+    </button>
+  );
+
+  const badge = { display: 'inline-flex', alignItems: 'center', padding: '2px 6px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginLeft: 6 };
+
+  const iconBtn = { border: 'none', background: 'transparent', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4 };
+
+  const DocTable = ({ rows, onEdit, showScope }) => (
+    <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)', fontSize: 13 }}>
+      <thead>
+        <tr style={{ borderBottom: `1px solid ${P.border}` }}>
+          <th style={th}>Name</th>
+          {showScope && <th style={th}>Scope</th>}
+          <th style={th}>Language</th>
+          <th style={th}>Type</th>
+          <th style={th}></th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((doc, idx) => {
+          const isLast = idx === rows.length - 1;
+          const scopeEntity = doc.scope ? ENTITIES.find(e => e.id === doc.scope) : null;
+          return (
+            <tr key={doc.id} style={{ borderBottom: isLast ? 'none' : `1px solid ${P.border}` }}>
+              <td style={td}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Icon name={doc.type === 'Url' ? 'link' : 'file-text'} size={14} color={P.inkSoft} strokeWidth={1.75} />
+                  {doc.name}
+                  {doc.deactivated && <span style={badge}>Deactivated</span>}
+                </div>
+              </td>
+              {showScope && (
+                <td style={td}>
+                  {scopeEntity
+                    ? <span style={badge}>{scopeEntity.name}</span>
+                    : <span style={{ color: P.inkFaint, fontSize: 12 }}>—</span>}
+                </td>
+              )}
+              <td style={td}>{doc.language || '—'}</td>
+              <td style={td}>{doc.type}</td>
+              <td style={{ ...td, textAlign: 'right' }}>
+                <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', alignItems: 'center' }}>
+                  {!doc.deactivated && (
+                    doc.type === 'Url'
+                      ? <button style={iconBtn}><Icon name="external-link" size={14} color={P.inkSoft} strokeWidth={1.75} /></button>
+                      : <button style={iconBtn}><Icon name="download" size={14} color={P.inkSoft} strokeWidth={1.75} /></button>
+                  )}
+                  {onEdit && <button style={iconBtn} onClick={() => onEdit(doc)}><Icon name="chevron-right" size={16} color={P.inkSoft} strokeWidth={1.75} /></button>}
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  const EmptyState = ({ tabId }) => (
+    <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: '48px 24px', textAlign: 'center' }}>
+      <Icon name="file-text" size={28} color={P.border} strokeWidth={1.5} />
+      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, marginTop: 12 }}>
+        No {tabId === 'templates' ? 'templates' : 'documents'} yet
+      </div>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 4, marginBottom: 20 }}>
+        {tabId === 'templates'
+          ? 'Add contract templates and policy documents your team can download.'
+          : 'Add documents employees are required to provide, like ID copies or signed contracts.'}
+      </div>
+      <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 14px', background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>
+        <Icon name="plus" size={14} color={P.inkSoft} strokeWidth={2} />
+        Add {tabId === 'templates' ? 'template' : 'document'}{appEntity ? ` for ${entityName}` : ''}
+      </button>
+    </div>
+  );
+
+  const tabs = [
+    { id: 'templates', label: 'Templates' },
+    { id: 'company',   label: 'Documents' },
+  ];
+
+  const applyFilter = (rows) => docFilter === 'deactivated'
+    ? rows.filter(d => d.deactivated)
+    : rows.filter(d => !d.deactivated);
+
+  const tabDocs = documents.filter(d => d.tab === tab);
+  const visibleDocs = appEntity
+    ? tabDocs.filter(d => !d.scope || d.scope === appEntity)
+    : tabDocs;
+  const rows = applyFilter(visibleDocs);
+  const hasDeactivated = visibleDocs.some(d => d.deactivated);
+
+  return (
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      {addOpen && (
+        <AddDocumentModal
+          appEntity={appEntity}
+          title={tab === 'templates' ? 'Add template' : 'Add document'}
+          onSave={doc => {
+            setDocuments(prev => [...prev, { ...doc, tab }]);
+            setAddOpen(false);
+          }}
+          onClose={() => setAddOpen(false)}
+        />
+      )}
+      {editDoc && (
+        <AddDocumentModal
+          appEntity={appEntity}
+          title={`Edit ${tab === 'templates' ? 'template' : 'document'}`}
+          saveLabel="Save changes"
+          initialValues={editDoc}
+          onSave={doc => {
+            setDocuments(prev => [...prev.filter(d => d.id !== doc.id), { ...doc, tab }]);
+            setEditDoc(null);
+          }}
+          onDeactivate={() => {
+            setDocuments(prev => prev.map(d => d.id === editDoc.id ? { ...d, deactivated: !d.deactivated } : d));
+            if (editDoc.deactivated) setDocFilter('active');
+          }}
+          isDeactivated={editDoc.deactivated}
+          onClose={() => setEditDoc(null)}
+        />
+      )}
+
+      <div style={{ maxWidth: 780, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        <div>
+          {appEntity && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>
+              {entityName}
+            </span>
+          )}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Documents</h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage document templates and employee requirements</p>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ borderBottom: `1px solid ${P.border}`, marginBottom: 8 }}>
+          <TabBar tabs={tabs} activeTab={tab} onTabChange={v => { setTab(v); setDocFilter('active'); }} padding="0" />
+        </div>
+
+        {/* Status filter — only shown once there's something deactivated */}
+        {hasDeactivated && (
+          <div style={{ display: 'flex' }}>
+            <FilterDropdown
+              label="Active"
+              active={docFilter}
+              opts={[['active', 'Active'], ['deactivated', 'Deactivated']]}
+              onSelect={setDocFilter}
+              minWidth={140}
+            />
+          </div>
+        )}
+
+        {/* Templates tab */}
+        {tab === 'templates' && (
+          rows.length === 0 ? <EmptyState tabId="templates" /> : (
+            <React.Fragment>
+              <TableFadeIn key={appEntity ?? 'all'}>
+                <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'clip' }}>
+                  <DocTable rows={rows} onEdit={setEditDoc} showScope={!appEntity} />
+                </div>
+              </TableFadeIn>
+              {docFilter === 'active' && (
+                <div>
+                  <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 14px', background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>
+                    <Icon name="plus" size={14} color={P.inkSoft} strokeWidth={2} />
+                    Add template
+                  </button>
+                </div>
+              )}
+            </React.Fragment>
+          )
+        )}
+
+        {/* Documents tab */}
+        {tab === 'company' && (
+          rows.length === 0 ? <EmptyState tabId="company" /> : (
+            <React.Fragment>
+              <TableFadeIn key={appEntity ?? 'all'}>
+                <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'clip' }}>
+                  <DocTable rows={rows} onEdit={setEditDoc} showScope={!appEntity} />
+                </div>
+              </TableFadeIn>
+              {docFilter === 'active' && (
+                <div>
+                  <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 14px', background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>
+                    <Icon name="plus" size={14} color={P.inkSoft} strokeWidth={2} />
+                    Add document
+                  </button>
+                </div>
+              )}
+            </React.Fragment>
+          )
+        )}
+
       </div>
     </div>
   );
@@ -6606,7 +7302,19 @@ function FollowUpBanner({ prompt, onLog, onDismiss }) {
 // ── Root App ───────────────────────────────────────────────────────────────
 function App() {
   const [screen, setScreen] = useState('dashboard');
+  const [adminAccess, setAdminAccess] = useState(() =>
+    Object.entries(EMPLOYEES)
+      .filter(([, u]) => u.adminAccess)
+      .reduce((acc, [id, u]) => ({ ...acc, [id]: u.adminAccess }), {})
+  );
+  const handleAdminSave = (adminId, newAccess) => {
+    setAdminAccess(prev => {
+      if (newAccess === 'revoke') return { ...prev, [adminId]: 'revoked' };
+      return { ...prev, [adminId]: newAccess };
+    });
+  };
   const [sidebarMode, setSidebarMode] = useState('app');
+  const [appEntity, setAppEntity] = useState(null);
   const [requests, setRequests] = useState(() => mergeRequests(generatedRequests, readLS()));
   const [companyEvents, setCompanyEvents] = useState([]);
   const [toast, setToast] = useState(null);
@@ -6629,6 +7337,8 @@ function App() {
     const ch = choices.find(c => c.id === id);
     if (ch) setToast({ message: `${(EMPLOYEES[ch.empId] || {}).name?.split(' ')[0]}'s choice declined`, type: 'decline' });
   };
+
+  const [settingsDocuments, setSettingsDocuments] = useState([]);
 
   const [expenses, setExpenses] = useState(EXPENSES_SEED);
   const [expenseCategories, setExpenseCategories] = useState(EXPENSE_CATEGORIES_SEED);
@@ -6776,9 +7486,13 @@ function App() {
     setBalanceConfirmedDates(prev => ({ ...prev, [empId]: '15 Jul 2026' }));
   };
 
-  const pendingRequestsCount = requests.filter(r => r.status === 'pending').length;
-  const pendingExpensesCount = expenses.filter(e => e.status === 'pending').length;
-  const pendingChoicesCount = choices.filter(c => c.status === 'pending').length;
+  const entityFilteredRequests = appEntity ? requests.filter(r => EMPLOYEES[r.employee]?.entityId === appEntity) : requests;
+  const entityFilteredExpenses = appEntity ? expenses.filter(e => EMPLOYEES[e.employee]?.entityId === appEntity) : expenses;
+  const entityFilteredChoices = appEntity ? choices.filter(c => EMPLOYEES[c.empId]?.entityId === appEntity) : choices;
+
+  const pendingRequestsCount = entityFilteredRequests.filter(r => r.status === 'pending').length;
+  const pendingExpensesCount = entityFilteredExpenses.filter(e => e.status === 'pending').length;
+  const pendingChoicesCount = entityFilteredChoices.filter(c => c.status === 'pending').length;
   const pendingCount = { requests: pendingRequestsCount, expenses: pendingExpensesCount, choices: pendingChoicesCount };
 
   return (
@@ -6804,6 +7518,14 @@ function App() {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes tableEnter {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes tableEnterReduced {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
         @keyframes fileRowIn {
           from { opacity: 0; transform: translateY(5px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -6820,22 +7542,24 @@ function App() {
         ::placeholder { color: #9ca3af; opacity: 1; }
       `}</style>
 
-      <Sidebar active={screen} onNav={handleNav} pendingCount={pendingCount} sidebarMode={sidebarMode} onSetSidebarMode={setSidebarMode} />
+      <Sidebar active={screen} onNav={handleNav} pendingCount={pendingCount} sidebarMode={sidebarMode} onSetSidebarMode={setSidebarMode} appEntity={appEntity} onSetAppEntity={setAppEntity} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        {screen === 'dashboard' && <DashboardScreen requests={requests} onNav={setScreen} onToast={setToast} />}
-        {screen === 'team-absences' && <TeamAbsencesScreen requests={requests} pendingCount={pendingRequestsCount} onNav={setScreen} onShowDetail={setCalDetail} activeReqId={calDetail?.id} onSave={saveRequest} companyEvents={companyEvents} onCancelCompanyEvent={cancelCompanyEvent} initialDate={calendarJumpDate} initialDeptFilter={calendarDeptFilter} />}
-        {screen === 'requests' && <RequestsScreen requests={requests} onApprove={approve} onDecline={requestDecline} onSave={saveRequest} onCancel={requestCancel} onNav={setScreen} onViewInCalendar={(req) => { const d = req._selectedDates?.[0] || req.startDate; if (d) { const iso = typeof d === 'string' && d.match(/^\d{4}-/) ? d : null; setCalendarJumpDate(iso ? new Date(iso) : parseDisplayDate(d)); } setCalDetail(req); setScreen('team-absences'); }} />}
-        {screen === 'employees' && <EmployeesScreen requests={requests} onNav={setScreen} />}
-        {screen.startsWith('employee-detail:') && <EmployeeDetailScreen employeeId={screen.split(':')[1]} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[screen.split(':')[1]]} onUpdateBalance={(newBal) => updateBalances(screen.split(':')[1], newBal)} needsSetup={needsBalanceSetup.has(screen.split(':')[1])} confirmedDate={balanceConfirmedDates[screen.split(':')[1]]} onConfirmBalances={() => confirmBalancesFor(screen.split(':')[1])} onToast={setToast} />}
-        {screen === 'expenses' && <ExpensesScreen expenses={expenses} categories={expenseCategories} onApprove={approveExpense} onDetail={(exp) => setExpDetail(exp)} onAdd={addExpense} />}
-        {screen === 'choices' && <ChoicesScreen choices={choices} onApprove={approveChoice} onDecline={declineChoice} onDetail={setChoiceDetail} />}
+        {screen === 'dashboard' && <DashboardScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} onToast={setToast} appEntity={appEntity} />}
+        {screen === 'team-absences' && <TeamAbsencesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} pendingCount={pendingRequestsCount} onNav={setScreen} onShowDetail={setCalDetail} activeReqId={calDetail?.id} onSave={saveRequest} companyEvents={companyEvents} onCancelCompanyEvent={cancelCompanyEvent} initialDate={calendarJumpDate} initialDeptFilter={calendarDeptFilter} appEntity={appEntity} />}
+        {screen === 'requests' && <RequestsScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onApprove={approve} onDecline={requestDecline} onSave={saveRequest} onCancel={requestCancel} onNav={setScreen} onViewInCalendar={(req) => { const d = req._selectedDates?.[0] || req.startDate; if (d) { const iso = typeof d === 'string' && d.match(/^\d{4}-/) ? d : null; setCalendarJumpDate(iso ? new Date(iso) : parseDisplayDate(d)); } setCalDetail(req); setScreen('team-absences'); }} appEntity={appEntity} />}
+        {(screen === 'employees' || screen === 'employees:admin') && <EmployeesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} initialRoleFilter={screen === 'employees:admin' ? 'Admin' : 'All'} adminAccess={adminAccess} appEntity={appEntity} />}
+        {screen.startsWith('employee-detail:') && <EmployeeDetailScreen employeeId={screen.split(':')[1]} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[screen.split(':')[1]]} onUpdateBalance={(newBal) => updateBalances(screen.split(':')[1], newBal)} needsSetup={needsBalanceSetup.has(screen.split(':')[1])} confirmedDate={balanceConfirmedDates[screen.split(':')[1]]} onConfirmBalances={() => confirmBalancesFor(screen.split(':')[1])} onToast={setToast} adminAccess={adminAccess} onAdminSave={handleAdminSave} />}
+        {screen === 'expenses' && <ExpensesScreen key={appEntity ?? 'all'} expenses={entityFilteredExpenses} categories={expenseCategories} onApprove={approveExpense} onDetail={(exp) => setExpDetail(exp)} onAdd={addExpense} appEntity={appEntity} />}
+        {screen === 'choices' && <ChoicesScreen key={appEntity ?? 'all'} choices={entityFilteredChoices} onApprove={approveChoice} onDecline={declineChoice} onDetail={setChoiceDetail} appEntity={appEntity} />}
         {screen === 'payroll-overview' && <StubScreen title="Payroll Overview" description="Monthly payroll run and submission" />}
         {screen === 'payroll-reports' && <StubScreen title="Payroll Reports" description="Reporting and exports" />}
-        {screen === 'settings-expenses' && <ExpenseCategorySettings categories={expenseCategories} onSave={setExpenseCategories} />}
-        {screen === 'settings-team' && <TeamAccessSettings />}
-        {screen === 'settings-timeoff' && <TimeOffSettings />}
-        {screen.startsWith('settings-') && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
+        {screen === 'settings-expenses' && <ExpenseCategorySettings key={appEntity ?? 'all'} categories={expenseCategories} onSave={setExpenseCategories} appEntity={appEntity} />}
+        {screen === 'settings-team' && <TeamAccessSettings key={appEntity ?? 'all'} onNav={setScreen} adminAccess={adminAccess} onAdminSave={handleAdminSave} appEntity={appEntity} />}
+        {screen === 'settings-entities' && <EntitiesSettings key={appEntity ?? 'all'} onNav={setScreen} appEntity={appEntity} />}
+        {screen === 'settings-timeoff' && <TimeOffSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
+        {screen === 'settings-documents' && <DocumentsSettings key={appEntity ?? 'all'} appEntity={appEntity} documents={settingsDocuments} onDocumentsChange={setSettingsDocuments} />}
+        {screen.startsWith('settings-') && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
       </div>
 
       {calDetail && (
