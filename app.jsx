@@ -958,7 +958,7 @@ function EntitySwitcher({ value, onChange, mode }) {
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
-      {open && rect && (
+      {open && rect && ReactDOM.createPortal(
         <div ref={popRef} style={{
           position: 'fixed', top: rect.top, left: rect.right + 8, zIndex: 500,
           background: P.white, border: `1px solid ${P.border}`, borderRadius: 12,
@@ -970,13 +970,13 @@ function EntitySwitcher({ value, onChange, mode }) {
           <div style={{ padding: '0 8px 8px' }}>
             <button onClick={() => { onChange(null); setOpen(false); }} style={{
               display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '8px 8px', border: 'none', borderRadius: 8,
-              background: !value ? P.bg : 'transparent', cursor: 'pointer', textAlign: 'left',
+              background: !value ? P.bg : 'transparent', cursor: 'pointer', textAlign: 'left', position: 'relative',
             }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{defaultLabel}</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{defaultSub}</div>
               </div>
-              {!value && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+              {!value && <Icon name="check" size={13} color="#C42BFC" strokeWidth={2.5} />}
             </button>
             {ENTITIES.map(ent => (
               <button key={ent.id} onClick={() => { onChange(ent.id); setOpen(false); }} style={{
@@ -987,11 +987,12 @@ function EntitySwitcher({ value, onChange, mode }) {
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>{ent.name}</div>
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{ent.employeeCount} employees</div>
                 </div>
-                {value === ent.id && <Icon name="check" size={13} color={P.ink} strokeWidth={2.5} />}
+                {value === ent.id && <Icon name="check" size={13} color="#C42BFC" strokeWidth={2.5} />}
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </React.Fragment>
   );
@@ -1478,7 +1479,7 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
               <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                 {hasOverlap
                   ? <DotPill bg="#fde68a" color="#92400e">{overlapping.length} of {teamSize} away</DotPill>
-                  : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.inkSoft }}>All available</span>
+                  : <DotPill bg="#dcfce7" color="#166534">All available</DotPill>
                 }
                 {hasOverlap && (
                   <span style={{ flexShrink: 0, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
