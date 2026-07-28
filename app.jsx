@@ -931,7 +931,7 @@ function EntitySwitcher({ value, onChange, mode }) {
     <React.Fragment>
       <button onClick={() => setOpen(o => !o)} style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 20px 10px', width: '100%', border: 'none',
+        padding: '16px 20px', width: '100%', border: 'none',
         borderBottom: open ? 'none' : `1px solid ${P.border}`,
         background: 'transparent', cursor: 'pointer', textAlign: 'left',
       }}>
@@ -982,7 +982,7 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
   return (
     <React.Fragment>
 
-      <nav style={{ flex: 1, padding: '0 0 10px', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'auto' }}>
+      <nav style={{ flex: 1, padding: '16px 0 10px', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'auto' }}>
         <SidebarItem icon="house" label="Home" isActive={active === 'dashboard'} onClick={() => onNav('dashboard')} />
         <SidebarItem icon="users" label="People" isActive={active === 'employees' || active === 'employees:admin' || active?.startsWith('employee-detail')} onClick={() => onNav('employees')} />
         <SidebarItem icon="list-checks" label="Choices" isActive={active === 'choices'} onClick={() => onNav('choices')} badgeDot={pendingCount?.choices || null} />
