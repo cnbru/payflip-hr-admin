@@ -6491,7 +6491,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
   const [maxDays, setMaxDays] = useState(defaults.maxDays);
-  const [hoveredColor, setHoveredColor] = useState(null);
+  const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
   // Deduplicated color list and usage map
   const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
@@ -6539,6 +6539,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   };
 
   return (
+    <>
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
       <div onClick={e => e.stopPropagation()} style={{
         position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
@@ -6587,29 +6588,29 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             <div>
               <label style={labelStyle}>Color</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {uniqueColors.map((c, i) => {
+                {uniqueColors.map((c) => {
                   const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
                   const borderColor = entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
                   const usedBy = colorUsers[c];
                   return (
                     <div key={c} onClick={() => setColor(c)}
-                      onMouseEnter={() => setHoveredColor(c)}
-                      onMouseLeave={() => setHoveredColor(null)}
+                      onMouseEnter={e => {
+                        if (usedBy) {
+                          const r = e.currentTarget.getBoundingClientRect();
+                          setTooltip({ text: `Used by ${usedBy.join(', ')}`, x: r.left + r.width / 2, y: r.top });
+                        }
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
                       style={{
                         width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer',
                         border: `1.5px solid ${borderColor}`,
-                        outline: color === c ? `2px solid ${P.ink}` : (usedBy && hoveredColor === c ? `2px solid ${P.inkFaint}` : '2px solid transparent'),
+                        outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
                         outlineOffset: 2,
                         transition: `outline 120ms ${EASE_OUT}`,
                       }} />
                   );
                 })}
               </div>
-              {hoveredColor && colorUsers[hoveredColor] && (
-                <div style={{ marginTop: 8, fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>
-                  Already used by {colorUsers[hoveredColor].join(', ')}
-                </div>
-              )}
             </div>
           </div>
 
@@ -6636,7 +6637,18 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
           <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
         </div>
       </div>
+      {tooltip && (
+        <div style={{
+          position: 'fixed', left: tooltip.x, top: tooltip.y - 6,
+          transform: 'translateX(-50%) translateY(-100%)',
+          padding: '4px 8px', borderRadius: 6,
+          background: P.ink, color: '#fff',
+          fontSize: 12, fontWeight: 500, fontFamily: 'var(--font-body)',
+          whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 9999,
+        }}>{tooltip.text}</div>
+      )}
     </div>
+    </>
   );
 }
 
