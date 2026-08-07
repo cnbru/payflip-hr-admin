@@ -6627,6 +6627,16 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               </div>
             </div>
           </div>
+          <div style={{ marginTop: 16 }}>
+            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), !limitedDays)}
+            {limitedDays && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
+                <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                  style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center' }} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+              </div>
+            )}
+          </div>
           <div style={{ marginBottom: 32 }} />
           {/* Rules section */}
           <div style={SL}>Rules</div>
@@ -6635,15 +6645,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
             <div style={{ ...SL, marginTop: 32 }}>After approval</div>
             {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v))}
-            {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v))}
-            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
-            {limitedDays && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
-                <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                  style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
-              </div>
-            )}
+            {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
           </div>
         </div>
 
