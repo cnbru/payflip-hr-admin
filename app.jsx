@@ -30,29 +30,47 @@ const avatarUrl = (name, gender) => {
 };
 
 const LEAVE_COLORS = {
-  'Time off':           '#c5dcfd',
-  'ADV / RTT':          '#fef3c7',
-  'Extra-legal leave':  '#ede9fe',
-  'Sick leave':         '#fbd0e4',
-  'Special leave':      '#fde9c8',
-  'Funeral leave':      '#d8d3e3',
-  'Paternity leave':    '#ddd8fb',
-  'Maternity leave':    '#ddd8fb',
-  'Paid absence':       '#c0eef3',
-  'Unpaid absence':     '#e2e8ec',
+  'Time off':                    '#c5dcfd',
+  'ADV / RTT':                   '#fef3c7',
+  'Extra-legal leave':           '#ede9fe',
+  'Sick leave':                  '#fbd0e4',
+  'Wedding':                     '#fde9c8',
+  'Family wedding':              '#fde9c8',
+  'Bereavement — close family':  '#d8d3e3',
+  'Bereavement — family':        '#d8d3e3',
+  'Solemn communion':            '#fef3c7',
+  'Civic duty':                  '#c5dcfd',
+  'Moving':                      '#fde9c8',
 };
 const LEAVE_BORDER_COLORS = {
-  'Time off':           '#7aafe8',
-  'ADV / RTT':          '#e5c87a',
-  'Extra-legal leave':  '#a899e0',
-  'Sick leave':         '#e698b8',
-  'Special leave':      '#e0b97a',
-  'Funeral leave':      '#a99dba',
-  'Paternity leave':    '#a9a0e0',
-  'Maternity leave':    '#a9a0e0',
-  'Paid absence':       '#7ac8d1',
-  'Unpaid absence':     '#a8b4be',
+  'Time off':                    '#7aafe8',
+  'ADV / RTT':                   '#e5c87a',
+  'Extra-legal leave':           '#a899e0',
+  'Sick leave':                  '#e698b8',
+  'Wedding':                     '#e0b97a',
+  'Family wedding':              '#e0b97a',
+  'Bereavement — close family':  '#a99dba',
+  'Bereavement — family':        '#a99dba',
+  'Solemn communion':            '#e5c87a',
+  'Civic duty':                  '#7aafe8',
+  'Moving':                      '#e0b97a',
 };
+
+const SPECIAL_LEAVE_METADATA = {
+  'Wedding':                    { statutory: true,  statutoryDays: 2,  statutoryNote: 'Own wedding' },
+  'Family wedding':             { statutory: true,  statutoryDays: 1,  statutoryNote: "Child's, sibling's or parent's wedding" },
+  'Bereavement — close family': { statutory: true,  statutoryDays: 10, statutoryNote: 'Spouse or child — 3 days immediate + 7 days at will within a year (updated 2021)' },
+  'Bereavement — family':       { statutory: true,  statutoryDays: 3,  statutoryNote: 'Parent or in-law: 3 days; sibling, grandparent: 1–2 days depending on cohabitation' },
+  'Solemn communion':           { statutory: true,  statutoryDays: 1,  statutoryNote: "Child's solemn communion or humanist coming-of-age ceremony" },
+  'Civic duty':                 { statutory: true,  statutoryDays: 5,  statutoryNote: 'Jury duty or court appearance — up to 5 days' },
+  'Moving':                     { statutory: false, statutoryDays: null, statutoryNote: null },
+};
+
+const LEAVE_SECTIONS = [
+  { id: 'time-off',      label: 'Time off',     typeNames: ['Time off', 'ADV / RTT', 'Extra-legal leave'] },
+  { id: 'sick-leave',    label: 'Sick leave',    typeNames: ['Sick leave'] },
+  { id: 'special-leave', label: 'Special leave', typeNames: ['Wedding', 'Family wedding', 'Bereavement — close family', 'Bereavement — family', 'Solemn communion', 'Civic duty', 'Moving'] },
+];
 
 
 const LEAVE_ICONS = {
@@ -6468,30 +6486,29 @@ const CARRYOVER_OPTS = [
   { value: 'unlimited', label: 'Carry over all unused',   hint: 'All remaining days roll over' },
   { value: 'payout',    label: 'Pay out unused days',     hint: 'Remaining balance is included in the last payroll of the year' },
 ];
-const STATUTORY_MAX_TYPES = new Set(['Sick leave', 'Funeral leave', 'Paternity leave', 'Maternity leave', 'Special leave']);
-const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
-  Object.keys(LEAVE_COLORS).map(name => {
-    const isStatutory = ['Sick leave', 'Funeral leave', 'Paternity leave', 'Maternity leave', 'Special leave'].includes(name);
-    return [name, {
-      docRequired: isStatutory,
-      maxDays: name === 'Time off' ? 20 : null,
-      editRequiresApproval: isStatutory,
-      cancelRequiresApproval: isStatutory,
-    }];
-  })
-);
+const DEFAULT_LEAVE_CONFIGS = {
+  'Time off':                    { docRequired: false, maxDays: 20,   editRequiresApproval: false, cancelRequiresApproval: false },
+  'ADV / RTT':                   { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
+  'Extra-legal leave':           { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
+  'Sick leave':                  { docRequired: true,  maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
+  'Wedding':                     { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
+  'Family wedding':              { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
+  'Bereavement — close family':  { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
+  'Bereavement — family':        { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
+  'Solemn communion':            { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
+  'Civic duty':                  { docRequired: true,  maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
+  'Moving':                      { docRequired: false, maxDays: 1,   editRequiresApproval: false, cancelRequiresApproval: false },
+};
 
 const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
 const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
 function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const isNew = !config;
-  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false };
+  const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, statutoryDays: null, statutoryNote: null, section: 'time-off' };
   const [name, setName] = useState(defaults.name);
-  const [description, setDescription] = useState(defaults.description);
   const [color, setColor] = useState(defaults.color);
   const [active, setActive] = useState(defaults.active);
-  const [visibleToEmployees, setVisibleToEmployees] = useState(defaults.visibleToEmployees);
   const [requiresApproval, setRequiresApproval] = useState(defaults.requiresApproval);
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
@@ -6522,7 +6539,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
 
   const save = () => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, editRequiresApproval, cancelRequiresApproval });
+    onSave({ name: name.trim(), color, active, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, editRequiresApproval, cancelRequiresApproval, statutory: defaults.statutory, statutoryDays: defaults.statutoryDays, statutoryNote: defaults.statutoryNote, section: defaults.section });
     close();
   };
 
@@ -6625,13 +6642,28 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             </div>
           </div>
           <div style={{ marginTop: 16 }}>
-            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
-            {limitedDays && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
-                <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                  style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+            {defaults.statutory ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Days allowed</div>
+                  {defaults.statutoryNote && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{defaults.statutoryNote}</div>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink }}>{defaults.statutoryDays} {defaults.statutoryDays === 1 ? 'day' : 'days'}</span>
+                  <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' }}>Belgian law</span>
+                </div>
               </div>
+            ) : (
+              <>
+                {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
+                {limitedDays && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
+                    <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                      style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center' }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div style={{ marginBottom: 32 }} />
@@ -6669,19 +6701,27 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
 
 function TimeOffSettings({ appEntity = null }) {
   const [leaveTypes, setLeaveTypes] = useState(() =>
-    Object.keys(LEAVE_COLORS).map(name => ({
-      name,
-      description: '',
-      color: LEAVE_COLORS[name],
-      active: true,
-      visibleToEmployees: true,
-      requiresApproval: true,
-      docRequired: DEFAULT_LEAVE_CONFIGS[name]?.docRequired || false,
-      limitedDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays != null,
-      maxDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays || 20,
-      editRequiresApproval: DEFAULT_LEAVE_CONFIGS[name]?.editRequiresApproval ?? false,
-      cancelRequiresApproval: DEFAULT_LEAVE_CONFIGS[name]?.cancelRequiresApproval ?? false,
-    }))
+    LEAVE_SECTIONS.flatMap(section =>
+      section.typeNames.map(name => {
+        const meta = SPECIAL_LEAVE_METADATA[name];
+        const cfg = DEFAULT_LEAVE_CONFIGS[name] || {};
+        return {
+          name,
+          section: section.id,
+          color: LEAVE_COLORS[name],
+          active: true,
+          requiresApproval: true,
+          docRequired: cfg.docRequired || false,
+          statutory: meta?.statutory || false,
+          statutoryDays: meta?.statutoryDays || null,
+          statutoryNote: meta?.statutoryNote || null,
+          limitedDays: !meta?.statutory && cfg.maxDays != null,
+          maxDays: cfg.maxDays || 20,
+          editRequiresApproval: cfg.editRequiresApproval ?? false,
+          cancelRequiresApproval: cfg.cancelRequiresApproval ?? false,
+        };
+      })
+    )
   );
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
 
@@ -6721,29 +6761,40 @@ function TimeOffSettings({ appEntity = null }) {
           </button>
         </div>
 
-        <div>
-          <div style={card}>
-            {leaveTypes.map((lt, idx) => (
-              <div key={lt.name + idx} onClick={() => setLeaveModal(idx)}
-                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < leaveTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }} />
-                <span style={{ flex: 1 }}>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
-                  {(() => {
-                    const parts = [];
-                    if (!lt.active) parts.push('Inactive');
-                    if (lt.requiresApproval) parts.push('Approval required');
-                    if (lt.docRequired) parts.push('Doc required');
-                    if (lt.limitedDays && lt.maxDays) parts.push(`${lt.maxDays} days`);
-                    return parts.length > 0 ? (
-                      <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginTop: 2 }}>{parts.join(' · ')}</span>
-                    ) : null;
-                  })()}
-                </span>
-                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {LEAVE_SECTIONS.map(section => {
+            const sectionTypes = leaveTypes.filter(lt => lt.section === section.id);
+            return (
+              <div key={section.id}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{section.label}</div>
+                <div style={card}>
+                  {sectionTypes.map((lt, i) => {
+                    const globalIdx = leaveTypes.indexOf(lt);
+                    const subtitle = (() => {
+                      const parts = [];
+                      if (!lt.active) parts.push('Inactive');
+                      if (lt.requiresApproval) parts.push('Approval required');
+                      if (lt.docRequired) parts.push('Doc required');
+                      if (lt.statutory && lt.statutoryDays) parts.push(`${lt.statutoryDays} ${lt.statutoryDays === 1 ? 'day' : 'days'}`);
+                      else if (lt.limitedDays && lt.maxDays) parts.push(`${lt.maxDays} ${lt.maxDays === 1 ? 'day' : 'days'}`);
+                      return parts.length > 0 ? parts.join(' · ') : null;
+                    })();
+                    return (
+                      <div key={lt.name + globalIdx} onClick={() => setLeaveModal(globalIdx)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < sectionTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }} />
+                        <span style={{ flex: 1 }}>
+                          <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
+                          {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginTop: 2 }}>{subtitle}</span>}
+                        </span>
+                        <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
       </div>
