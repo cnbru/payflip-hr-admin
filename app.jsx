@@ -6576,7 +6576,7 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {LEAVE_COLOR_VALUES.map((c, i) => (
                   <div key={i} onClick={() => setColor(c)} style={{
-                    width: 24, height: 24, borderRadius: '50%', background: c, cursor: 'pointer',
+                    width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer',
                     border: `1.5px solid ${LEAVE_COLOR_ENTRIES[i] ? (LEAVE_BORDER_COLORS[LEAVE_COLOR_ENTRIES[i][0]] || P.border) : P.border}`,
                     outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
                     outlineOffset: 2,
