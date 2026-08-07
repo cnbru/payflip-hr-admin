@@ -6593,15 +6593,13 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
             {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v))}
             {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
-            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true,
-              limitedDays && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 7, padding: '4px 8px', background: P.bg }}>
-                  <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                    onClick={e => e.stopPropagation()}
-                    style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent', textAlign: 'center' }} />
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, whiteSpace: 'nowrap' }}>days / yr</span>
-                </div>
-              )
+            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), !limitedDays)}
+            {limitedDays && (
+              <div style={{ paddingBottom: 14 }}>
+                <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 }}>Days per year</label>
+                <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                  style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
             )}
           </div>
         </div>
