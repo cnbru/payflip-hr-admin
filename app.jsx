@@ -6616,7 +6616,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
                       }}
                       onMouseLeave={() => setTooltip(null)}
                       style={{
-                        width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer',
+                        width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer',
                         border: `1.5px solid ${borderColor}`,
                         outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
                         outlineOffset: 2,
