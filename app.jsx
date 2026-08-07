@@ -6638,7 +6638,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
           {/* Rules section */}
           <div style={SL}>Rules</div>
           <div>
-            {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
+            {toggleRow('Requires approval', 'Employees must submit a request and wait for manager approval', requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
             <div style={{ ...SL, marginTop: 32 }}>After approval</div>
             {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v))}
