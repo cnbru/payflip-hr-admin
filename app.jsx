@@ -6549,6 +6549,17 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          {/* Enabled status — top-level, not a "rule" */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
+            <div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
+                {active ? 'This leave type is available for use' : 'Hidden — employees cannot use or see this type'}
+              </div>
+            </div>
+            <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
+          </div>
+
           {/* General section */}
           <div style={SL}>General</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
@@ -6579,7 +6590,6 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
           {/* Rules section */}
           <div style={SL}>Rules</div>
           <div>
-            {toggleRow('Active', 'Inactive types are hidden from employees', active, () => setActive(v => !v))}
             {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v))}
             {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
