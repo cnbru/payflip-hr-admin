@@ -6476,24 +6476,8 @@ const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
   }])
 );
 
-function LeaveTypeModal({ name, color, config, onSave, onClose, showMaxDays = true }) {
+function LeaveTypeModal({ name, color, onClose }) {
   const { visible, close } = useModalTransition(onClose);
-  const [cfg, setCfg] = useState({ ...config });
-  const save = () => { onSave(cfg); close(); };
-  const toggle = (field) => setCfg(prev => ({ ...prev, [field]: !prev[field] }));
-
-  const ToggleRow = ({ label, hint, field, last }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
-        {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{hint}</div>}
-      </div>
-      <div onClick={() => toggle(field)} style={{ width: 38, height: 22, borderRadius: 11, background: cfg[field] ? P.action : P.border, cursor: 'pointer', position: 'relative', transition: `background 180ms ${EASE_OUT}`, flexShrink: 0 }}>
-        <div style={{ position: 'absolute', top: 3, left: cfg[field] ? 19 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: `left 180ms ${EASE_OUT}`, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
-      </div>
-    </div>
-  );
-
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
       <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
@@ -6506,24 +6490,8 @@ function LeaveTypeModal({ name, color, config, onSave, onClose, showMaxDays = tr
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '0 22px' }}>
-          <ToggleRow label="Document required" hint="Employee must upload proof when submitting this request" field="docRequired" last={!showMaxDays} />
-          {showMaxDays && (
-          <div style={{ padding: '14px 0' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>Max days per year</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 10px' }}>
-              <input type="number" min="0" value={cfg.maxDays ?? ''} onChange={e => setCfg(prev => ({ ...prev, maxDays: e.target.value === '' ? null : parseFloat(e.target.value) }))}
-                placeholder="No limit"
-                style={{ flex: 1, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent' }} />
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>days</span>
-            </div>
-            <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Leave blank for no limit.</p>
-          </div>
-          )}
-        </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+        <div style={{ padding: '40px 22px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 13 }}>
+          Settings coming soon
         </div>
       </div>
     </div>
@@ -6531,126 +6499,73 @@ function LeaveTypeModal({ name, color, config, onSave, onClose, showMaxDays = tr
 }
 
 function TimeOffSettings({ appEntity = null }) {
-  const [leaveConfigs, setLeaveConfigs] = useState(DEFAULT_LEAVE_CONFIGS);
-  const [entitlement, setEntitlement] = useState('legal');
-  const [companyDays, setCompanyDays] = useState(25);
-  const [carryover, setCarryover] = useState('cap');
-  const [carryoverCap, setCarryoverCap] = useState(5);
-  const [approval, setApproval] = useState('manager');
+  const [leaveTypes, setLeaveTypes] = useState(Object.keys(LEAVE_COLORS));
   const [leaveModal, setLeaveModal] = useState(null);
-  const [settingModal, setSettingModal] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newName, setNewName] = useState('');
 
-  const [entityOverrides, setEntityOverrides] = useState({
-    'lumio-france': { entitlement: 'company', companyDays: 30, approval: 'hr' },
-  });
-
-  const ov = appEntity ? (entityOverrides[appEntity] || {}) : {};
-  const effEntitlement = ov.entitlement || entitlement;
-  const effCompanyDays = ov.companyDays || companyDays;
-  const effCarryover = ov.carryover || carryover;
-  const effCarryoverCap = ov.carryoverCap || carryoverCap;
-  const effApproval = ov.approval || approval;
-
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
-
-  const settingRow = (onClick, icon, label, value, last) => (
-    <div onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px',
-      borderBottom: last ? 'none' : `1px solid ${P.border}`,
-      cursor: 'pointer',
-    }}>
-      <Icon name={icon} size={18} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-      <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{value}</span>
-      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-    </div>
-  );
-
-  const entitlementDisplay = effEntitlement === 'company' ? `${effCompanyDays}d / year` : 'Legal minimum';
-  const carryoverDisplay = effCarryover === 'cap' ? `Up to ${effCarryoverCap} days` : (CARRYOVER_OPTS.find(o => o.value === effCarryover) || {}).label;
-  const approvalDisplay = (TIMEOFF_APPROVAL_OPTS.find(o => o.value === effApproval) || {}).label;
 
   return (
     <>
     {leaveModal && (
       <LeaveTypeModal
         name={leaveModal}
-        color={LEAVE_COLORS[leaveModal]}
-        config={leaveConfigs[leaveModal]}
-        onSave={cfg => setLeaveConfigs(prev => ({ ...prev, [leaveModal]: cfg }))}
+        color={LEAVE_COLORS[leaveModal] || P.border}
+        config={{}}
+        onSave={() => setLeaveModal(null)}
         onClose={() => setLeaveModal(null)}
-        showMaxDays={!STATUTORY_MAX_TYPES.has(leaveModal)}
+        showMaxDays={false}
       />
     )}
-    {settingModal === 'entitlement' && <PickModal title="Entitlement" options={ENTITLEMENT_OPTS} value={effEntitlement} onSave={(val, extra) => {
-      if (appEntity) {
-        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), entitlement: val, ...(extra !== undefined ? { companyDays: extra } : {}) } }));
-      } else {
-        setEntitlement(val); if (extra !== undefined) setCompanyDays(extra);
-      }
-      setSettingModal(null);
-    }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'company', label: 'Days', defaultValue: effCompanyDays, suffix: 'days', min: 20 }} />}
-    {settingModal === 'carryover' && <PickModal title="Unused days" options={CARRYOVER_OPTS} value={effCarryover} onSave={(val, extra) => {
-      if (appEntity) {
-        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), carryover: val, ...(extra !== undefined ? { carryoverCap: extra } : {}) } }));
-      } else {
-        setCarryover(val); if (extra !== undefined) setCarryoverCap(extra);
-      }
-      setSettingModal(null);
-    }} onClose={() => setSettingModal(null)} extraField={{ forValue: 'cap', label: 'Max', defaultValue: effCarryoverCap, suffix: 'days', min: 1 }} />}
-    {settingModal === 'approval' && <PickModal title="Who approves?" options={TIMEOFF_APPROVAL_OPTS} value={effApproval} onSave={(val) => {
-      if (appEntity) {
-        setEntityOverrides(prev => ({ ...prev, [appEntity]: { ...(prev[appEntity] || {}), approval: val } }));
-      } else {
-        setApproval(val);
-      }
-      setSettingModal(null);
-    }} onClose={() => setSettingModal(null)} />}
+    {addOpen && (
+      <div onClick={() => setAddOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 400, boxShadow: '0 8px 40px rgba(15,13,40,0.2)' }}>
+          <div style={{ padding: '18px 22px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>New leave type</span>
+            <button onClick={() => setAddOpen(false)} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+              <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
+            </button>
+          </div>
+          <div style={{ padding: '20px 22px' }}>
+            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</label>
+            <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
+              placeholder="e.g. Parental leave"
+              style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+          <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button onClick={() => { setAddOpen(false); setNewName(''); }} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+            <button onClick={() => { if (newName.trim()) { setLeaveTypes(prev => [...prev, newName.trim()]); setNewName(''); setAddOpen(false); } }}
+              style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Add</button>
+          </div>
+        </div>
+      </div>
+    )}
 
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
         <div>
-          <div>
-            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
-          </div>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Manage leave types, entitlement and approval for your company</p>
+          {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Configure the leave types available to your employees</p>
         </div>
 
         <div>
-          <div style={SL}>Leave types</div>
           <div style={card}>
-            {Object.keys(LEAVE_COLORS).map((name, idx, arr) => {
-              const cfg = leaveConfigs[name];
-              const summary = [cfg.docRequired && 'Doc required', cfg.maxDays != null && `${cfg.maxDays}d max`].filter(Boolean).join(' · ') || 'No limits';
-              return (
-                <div key={name} onClick={() => setLeaveModal(name)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < arr.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: LEAVE_COLORS[name], border: `1.5px solid ${LEAVE_BORDER_COLORS[name] || P.border}`, flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{name}</span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{summary}</span>
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
-              );
-            })}
+            {leaveTypes.map((name, idx) => (
+              <div key={name} onClick={() => setLeaveModal(name)}
+                style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < leaveTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: LEAVE_COLORS[name] || P.border, border: `1.5px solid ${LEAVE_BORDER_COLORS[name] || P.border}`, flexShrink: 0 }} />
+                <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{name}</span>
+                <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              </div>
+            ))}
           </div>
-        </div>
-
-        <div>
-          <div style={SL}>Accrual & carry-over</div>
-          <div style={card}>
-            {settingRow(() => setSettingModal('entitlement'), 'calendar-days', 'Entitlement', entitlementDisplay, false)}
-            {settingRow(() => setSettingModal('carryover'), 'arrow-right', 'Unused days', carryoverDisplay, true)}
-          </div>
-        </div>
-
-        <div>
-          <div style={SL}>Approval</div>
-          <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalDisplay, true)}
-          </div>
+          <button onClick={() => setAddOpen(true)} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', border: `1px solid ${P.border}`, borderRadius: 9, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
+            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} />
+            Add leave type
+          </button>
         </div>
 
       </div>
