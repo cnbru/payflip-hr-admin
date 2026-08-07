@@ -6627,16 +6627,6 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               </div>
             </div>
           </div>
-          <div style={{ marginBottom: 32 }}>
-            {toggleRow(
-              'Visible to employees',
-              visibleToEmployees
-                ? 'Employees can see and request this type'
-                : 'Hidden from employees — existing approved leave remains visible in their history',
-              visibleToEmployees, () => setVisibleToEmployees(v => !v), true
-            )}
-          </div>
-
           {/* Rules section */}
           <div style={SL}>Rules</div>
           <div>
