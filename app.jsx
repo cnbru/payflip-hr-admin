@@ -6680,10 +6680,16 @@ function TimeOffSettings({ appEntity = null }) {
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-        <div>
-          {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
-          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Configure the leave types available to your employees</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Configure the leave types available to your employees</p>
+          </div>
+          <button onClick={() => setLeaveModal('new')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
+            <Icon name="plus" size={14} color="#fff" strokeWidth={2.5} />
+            Add leave type
+          </button>
         </div>
 
         <div>
@@ -6700,10 +6706,6 @@ function TimeOffSettings({ appEntity = null }) {
               </div>
             ))}
           </div>
-          <button onClick={() => setLeaveModal('new')} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', border: `1px solid ${P.border}`, borderRadius: 9, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
-            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} />
-            Add leave type
-          </button>
         </div>
 
       </div>
