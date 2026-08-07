@@ -6627,8 +6627,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v))}
             {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
-            {toggleRow('Employee can edit approved requests', null, canEditApproved, () => setCanEditApproved(v => !v))}
-            {toggleRow('Employee can cancel approved requests', null, canCancelApproved, () => setCanCancelApproved(v => !v))}
+            {toggleRow('Employee can edit approved requests', 'Upcoming leave only — no impact on processed payroll', canEditApproved, () => setCanEditApproved(v => !v))}
+            {toggleRow('Employee can cancel approved requests', 'Upcoming leave only — cancelled days are returned to their balance', canCancelApproved, () => setCanCancelApproved(v => !v))}
             {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
