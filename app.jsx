@@ -6476,22 +6476,130 @@ const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
   }])
 );
 
-function LeaveTypeModal({ name, color, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
+const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
+const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
+
+function LeaveTypeDrawer({ config, onSave, onClose }) {
+  const isNew = !config;
+  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20 };
+  const [name, setName] = useState(defaults.name);
+  const [description, setDescription] = useState(defaults.description);
+  const [color, setColor] = useState(defaults.color);
+  const [active, setActive] = useState(defaults.active);
+  const [visibleToEmployees, setVisibleToEmployees] = useState(defaults.visibleToEmployees);
+  const [requiresApproval, setRequiresApproval] = useState(defaults.requiresApproval);
+  const [docRequired, setDocRequired] = useState(defaults.docRequired);
+  const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
+  const [maxDays, setMaxDays] = useState(defaults.maxDays);
+
+  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
+
+  React.useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [close]);
+
+  const save = () => {
+    if (!name.trim()) return;
+    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null });
+    close();
+  };
+
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
+  const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 };
+  const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' };
+  const toggleRow = (label, hint, checked, onChange, last, rightExtra) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
+        {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{hint}</div>}
+      </div>
+      {rightExtra}
+      <Switch size="sm" checked={checked} onChange={onChange} />
+    </div>
+  );
+
+  const borderForColor = (c) => {
+    const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
+    return entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
+  };
+
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
+        background: P.white, borderRadius: 20,
+        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        ...sheetPanelStyle(visible, closing),
+      }}>
+        {/* Header */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, border: `1.5px solid ${LEAVE_BORDER_COLORS[name] || P.border}`, flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{name}</span>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: `1.5px solid ${borderForColor(color)}`, flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
+              {isNew ? 'New leave type' : (name || defaults.name)}
+            </span>
           </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '40px 22px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 13 }}>
-          Settings coming soon
+
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          {/* General section */}
+          <div style={SL}>General</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
+            <div>
+              <label style={labelStyle}>Name</label>
+              <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Description</label>
+              <input value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Standard annual vacation days" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Color</label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {LEAVE_COLOR_VALUES.map((c, i) => (
+                  <div key={i} onClick={() => setColor(c)} style={{
+                    width: 24, height: 24, borderRadius: '50%', background: c, cursor: 'pointer',
+                    border: `1.5px solid ${LEAVE_COLOR_ENTRIES[i] ? (LEAVE_BORDER_COLORS[LEAVE_COLOR_ENTRIES[i][0]] || P.border) : P.border}`,
+                    outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
+                    outlineOffset: 2,
+                    transition: `outline 120ms ${EASE_OUT}`,
+                  }} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Rules section */}
+          <div style={SL}>Rules</div>
+          <div>
+            {toggleRow('Active', 'Inactive types are hidden from employees', active, () => setActive(v => !v))}
+            {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v))}
+            {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
+            {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
+            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true,
+              limitedDays && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 7, padding: '4px 8px', background: P.bg }}>
+                  <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                    onClick={e => e.stopPropagation()}
+                    style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent', textAlign: 'center' }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, whiteSpace: 'nowrap' }}>days / yr</span>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ flexShrink: 0, padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
         </div>
       </div>
     </div>
@@ -6499,47 +6607,39 @@ function LeaveTypeModal({ name, color, onClose }) {
 }
 
 function TimeOffSettings({ appEntity = null }) {
-  const [leaveTypes, setLeaveTypes] = useState(Object.keys(LEAVE_COLORS));
-  const [leaveModal, setLeaveModal] = useState(null);
-  const [addOpen, setAddOpen] = useState(false);
-  const [newName, setNewName] = useState('');
+  const [leaveTypes, setLeaveTypes] = useState(() =>
+    Object.keys(LEAVE_COLORS).map(name => ({
+      name,
+      description: '',
+      color: LEAVE_COLORS[name],
+      active: true,
+      visibleToEmployees: true,
+      requiresApproval: true,
+      docRequired: DEFAULT_LEAVE_CONFIGS[name]?.docRequired || false,
+      limitedDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays != null,
+      maxDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays || 20,
+    }))
+  );
+  const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
 
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
+  const handleSave = (updated) => {
+    if (leaveModal === 'new') {
+      setLeaveTypes(prev => [...prev, updated]);
+    } else {
+      setLeaveTypes(prev => prev.map((lt, i) => i === leaveModal ? updated : lt));
+    }
+  };
+
   return (
     <>
-    {leaveModal && (
-      <LeaveTypeModal
-        name={leaveModal}
-        color={LEAVE_COLORS[leaveModal] || P.border}
-        config={{}}
-        onSave={() => setLeaveModal(null)}
+    {leaveModal != null && (
+      <LeaveTypeDrawer
+        config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
+        onSave={handleSave}
         onClose={() => setLeaveModal(null)}
-        showMaxDays={false}
       />
-    )}
-    {addOpen && (
-      <div onClick={() => setAddOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 400, boxShadow: '0 8px 40px rgba(15,13,40,0.2)' }}>
-          <div style={{ padding: '18px 22px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>New leave type</span>
-            <button onClick={() => setAddOpen(false)} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-              <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-            </button>
-          </div>
-          <div style={{ padding: '20px 22px' }}>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</label>
-            <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
-              placeholder="e.g. Parental leave"
-              style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button onClick={() => { setAddOpen(false); setNewName(''); }} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-            <button onClick={() => { if (newName.trim()) { setLeaveTypes(prev => [...prev, newName.trim()]); setNewName(''); setAddOpen(false); } }}
-              style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Add</button>
-          </div>
-        </div>
-      </div>
     )}
 
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
@@ -6553,16 +6653,19 @@ function TimeOffSettings({ appEntity = null }) {
 
         <div>
           <div style={card}>
-            {leaveTypes.map((name, idx) => (
-              <div key={name} onClick={() => setLeaveModal(name)}
+            {leaveTypes.map((lt, idx) => (
+              <div key={lt.name + idx} onClick={() => setLeaveModal(idx)}
                 style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < leaveTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: LEAVE_COLORS[name] || P.border, border: `1.5px solid ${LEAVE_BORDER_COLORS[name] || P.border}`, flexShrink: 0 }} />
-                <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{name}</span>
+                <div style={{ width: 10, height: 10, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }} />
+                <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
+                {!lt.active && (
+                  <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.white, color: P.inkSoft, border: `1px solid ${P.border}` }}>Inactive</span>
+                )}
                 <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
               </div>
             ))}
           </div>
-          <button onClick={() => setAddOpen(true)} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', border: `1px solid ${P.border}`, borderRadius: 9, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
+          <button onClick={() => setLeaveModal('new')} style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', border: `1px solid ${P.border}`, borderRadius: 9, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
             <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} />
             Add leave type
           </button>
