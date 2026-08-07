@@ -6554,7 +6554,7 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
             <div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
               <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
-                {active ? 'This leave type is available for use' : 'Hidden — employees cannot use or see this type'}
+                {active ? 'Employees can request this leave type' : 'Disabled — employees cannot request this type'}
               </div>
             </div>
             <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
