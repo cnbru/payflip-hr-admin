@@ -6529,14 +6529,11 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 };
   const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' };
-  const toggleRow = (label, hint, checked, onChange, last, rightExtra, icon) => (
+  const toggleRow = (label, hint, checked, onChange, last, rightExtra) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        {icon && <Icon name={icon} size={15} color={P.inkSoft} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 1 }} />}
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
-          {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{hint}</div>}
-        </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
+        {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{hint}</div>}
       </div>
       {rightExtra}
       <Switch size="sm" checked={checked} onChange={onChange} />
@@ -6574,14 +6571,21 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {/* Enabled status — top-level, not a "rule" */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
-                {active ? 'Employees can request this leave type' : 'Disabled — employees cannot request this type'}
+          <div style={{ paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
+                  {active ? 'Employees can request this leave type' : 'Employees cannot submit new requests for this type'}
+                </div>
               </div>
+              <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
             </div>
-            <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
+            {!active && (
+              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#fafafa', border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+                Approved leave already on record is not affected. Pending requests will need to be handled manually.
+              </div>
+            )}
           </div>
 
           {/* General section */}
@@ -6624,18 +6628,24 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             </div>
           </div>
           <div style={{ marginBottom: 32 }}>
-            {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v), true, null, 'eye')}
+            {toggleRow(
+              'Visible to employees',
+              visibleToEmployees
+                ? 'Employees can see and request this type'
+                : 'Hidden from employees — existing approved leave remains visible in their history',
+              visibleToEmployees, () => setVisibleToEmployees(v => !v), true
+            )}
           </div>
 
           {/* Rules section */}
           <div style={SL}>Rules</div>
           <div>
-            {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v), false, null, 'check-circle')}
-            {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), false, null, 'paperclip')}
+            {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
+            {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
             <div style={{ fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, color: P.inkFaint, letterSpacing: '0.05em', textTransform: 'uppercase', paddingTop: 14, paddingBottom: 2 }}>After approval</div>
-            {toggleRow('Employee can edit approved requests', 'Upcoming leave only — no impact on processed payroll', canEditApproved, () => setCanEditApproved(v => !v), false, null, 'pencil')}
-            {toggleRow('Employee can cancel approved requests', 'Upcoming leave only — cancelled days are returned to their balance', canCancelApproved, () => setCanCancelApproved(v => !v), false, null, 'x-circle')}
-            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true, null, 'calendar')}
+            {toggleRow('Employee can edit approved requests', 'Upcoming leave only — no impact on processed payroll', canEditApproved, () => setCanEditApproved(v => !v))}
+            {toggleRow('Employee can cancel approved requests', 'Upcoming leave only — cancelled days are returned to their balance', canCancelApproved, () => setCanCancelApproved(v => !v))}
+            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
                 <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
