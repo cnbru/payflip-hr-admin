@@ -6582,7 +6582,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
             </div>
             {!active && (
-              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#fafafa', border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <Icon name="info" size={14} color="#3b82f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
                 Approved leave already on record is not affected. Pending requests will need to be handled manually.
               </div>
             )}
