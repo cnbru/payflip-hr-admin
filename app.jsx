@@ -6470,10 +6470,15 @@ const CARRYOVER_OPTS = [
 ];
 const STATUTORY_MAX_TYPES = new Set(['Sick leave', 'Funeral leave', 'Paternity leave', 'Maternity leave', 'Special leave']);
 const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
-  Object.keys(LEAVE_COLORS).map(name => [name, {
-    docRequired: ['Sick leave', 'Funeral leave', 'Paternity leave', 'Maternity leave', 'Special leave'].includes(name),
-    maxDays: name === 'Time off' ? 20 : null,
-  }])
+  Object.keys(LEAVE_COLORS).map(name => {
+    const isStatutory = ['Sick leave', 'Funeral leave', 'Paternity leave', 'Maternity leave', 'Special leave'].includes(name);
+    return [name, {
+      docRequired: isStatutory,
+      maxDays: name === 'Time off' ? 20 : null,
+      canEditApproved: !isStatutory,
+      canCancelApproved: !isStatutory,
+    }];
+  })
 );
 
 const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
@@ -6481,7 +6486,7 @@ const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
 function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const isNew = !config;
-  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20 };
+  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, canEditApproved: true, canCancelApproved: true };
   const [name, setName] = useState(defaults.name);
   const [description, setDescription] = useState(defaults.description);
   const [color, setColor] = useState(defaults.color);
@@ -6491,6 +6496,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
   const [maxDays, setMaxDays] = useState(defaults.maxDays);
+  const [canEditApproved, setCanEditApproved] = useState(defaults.canEditApproved ?? true);
+  const [canCancelApproved, setCanCancelApproved] = useState(defaults.canCancelApproved ?? true);
   const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
   // Deduplicated color list and usage map
@@ -6515,7 +6522,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
 
   const save = () => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null });
+    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, canEditApproved, canCancelApproved });
     close();
   };
 
@@ -6620,6 +6627,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             {toggleRow('Visible to employees', 'Employees can see and request this type', visibleToEmployees, () => setVisibleToEmployees(v => !v))}
             {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
+            {toggleRow('Employee can edit approved requests', null, canEditApproved, () => setCanEditApproved(v => !v))}
+            {toggleRow('Employee can cancel approved requests', null, canCancelApproved, () => setCanCancelApproved(v => !v))}
             {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
@@ -6664,6 +6673,8 @@ function TimeOffSettings({ appEntity = null }) {
       docRequired: DEFAULT_LEAVE_CONFIGS[name]?.docRequired || false,
       limitedDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays != null,
       maxDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays || 20,
+      canEditApproved: DEFAULT_LEAVE_CONFIGS[name]?.canEditApproved ?? true,
+      canCancelApproved: DEFAULT_LEAVE_CONFIGS[name]?.canCancelApproved ?? true,
     }))
   );
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
