@@ -6475,8 +6475,8 @@ const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
     return [name, {
       docRequired: isStatutory,
       maxDays: name === 'Time off' ? 20 : null,
-      canEditApproved: !isStatutory,
-      canCancelApproved: !isStatutory,
+      editRequiresApproval: isStatutory,
+      cancelRequiresApproval: isStatutory,
     }];
   })
 );
@@ -6486,7 +6486,7 @@ const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
 function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const isNew = !config;
-  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, canEditApproved: true, canCancelApproved: true };
+  const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false };
   const [name, setName] = useState(defaults.name);
   const [description, setDescription] = useState(defaults.description);
   const [color, setColor] = useState(defaults.color);
@@ -6496,8 +6496,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
   const [maxDays, setMaxDays] = useState(defaults.maxDays);
-  const [canEditApproved, setCanEditApproved] = useState(defaults.canEditApproved ?? true);
-  const [canCancelApproved, setCanCancelApproved] = useState(defaults.canCancelApproved ?? true);
+  const [editRequiresApproval, setEditRequiresApproval] = useState(defaults.editRequiresApproval ?? false);
+  const [cancelRequiresApproval, setCancelRequiresApproval] = useState(defaults.cancelRequiresApproval ?? false);
   const [tooltip, setTooltip] = useState(null); // { text, x, y }
 
   // Deduplicated color list and usage map
@@ -6522,7 +6522,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
 
   const save = () => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, canEditApproved, canCancelApproved });
+    onSave({ name: name.trim(), description, color, active, visibleToEmployees, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, editRequiresApproval, cancelRequiresApproval });
     close();
   };
 
@@ -6643,8 +6643,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             {toggleRow('Requires approval', requiresApproval ? 'Managed in Team & access settings' : null, requiresApproval, () => setRequiresApproval(v => !v))}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v))}
             <div style={{ fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, color: P.inkFaint, letterSpacing: '0.05em', textTransform: 'uppercase', paddingTop: 14, paddingBottom: 2 }}>After approval</div>
-            {toggleRow('Employee can edit approved requests', 'Upcoming leave only — no impact on processed payroll', canEditApproved, () => setCanEditApproved(v => !v))}
-            {toggleRow('Employee can cancel approved requests', 'Upcoming leave only — cancelled days are returned to their balance', canCancelApproved, () => setCanCancelApproved(v => !v))}
+            {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v))}
+            {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v))}
             {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
@@ -6689,8 +6689,8 @@ function TimeOffSettings({ appEntity = null }) {
       docRequired: DEFAULT_LEAVE_CONFIGS[name]?.docRequired || false,
       limitedDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays != null,
       maxDays: DEFAULT_LEAVE_CONFIGS[name]?.maxDays || 20,
-      canEditApproved: DEFAULT_LEAVE_CONFIGS[name]?.canEditApproved ?? true,
-      canCancelApproved: DEFAULT_LEAVE_CONFIGS[name]?.canCancelApproved ?? true,
+      editRequiresApproval: DEFAULT_LEAVE_CONFIGS[name]?.editRequiresApproval ?? false,
+      cancelRequiresApproval: DEFAULT_LEAVE_CONFIGS[name]?.cancelRequiresApproval ?? false,
     }))
   );
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
