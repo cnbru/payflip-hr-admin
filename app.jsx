@@ -6727,20 +6727,18 @@ function TimeOffSettings({ appEntity = null }) {
               <div key={lt.name + idx} onClick={() => setLeaveModal(idx)}
                 style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < leaveTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }} />
-                <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  {!lt.active && (
-                    <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.white, color: P.inkSoft, border: `1px solid ${P.border}` }}>Inactive</span>
-                  )}
-                  {lt.requiresApproval && (
-                    <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>Approval</span>
-                  )}
-                  {lt.docRequired && (
-                    <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>Doc required</span>
-                  )}
-                  {lt.limitedDays && lt.maxDays && (
-                    <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>{lt.maxDays} days</span>
-                  )}
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
+                  {(() => {
+                    const parts = [];
+                    if (!lt.active) parts.push('Inactive');
+                    if (lt.requiresApproval) parts.push('Approval required');
+                    if (lt.docRequired) parts.push('Doc required');
+                    if (lt.limitedDays && lt.maxDays) parts.push(`${lt.maxDays} days`);
+                    return parts.length > 0 ? (
+                      <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginTop: 2 }}>{parts.join(' · ')}</span>
+                    ) : null;
+                  })()}
                 </span>
                 <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
               </div>
