@@ -6627,6 +6627,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               </div>
             </div>
           </div>
+          <div style={{ marginBottom: 32 }} />
           {/* Rules section */}
           <div style={SL}>Rules</div>
           <div>
