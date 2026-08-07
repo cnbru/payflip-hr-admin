@@ -6636,7 +6636,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             <div style={{ ...SL, marginTop: 32 }}>After approval</div>
             {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v))}
             {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v))}
-            {toggleRow('Day limit', limitedDays ? null : 'No cap on days per year', limitedDays, () => setLimitedDays(v => !v), true)}
+            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 14 }}>
                 <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
