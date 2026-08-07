@@ -6596,10 +6596,6 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave" style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Description</label>
-              <input value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Standard annual vacation days" style={inputStyle} />
-            </div>
-            <div>
               <label style={labelStyle}>Color</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {uniqueColors.map((c) => {
@@ -6628,7 +6624,7 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
             </div>
           </div>
           <div style={{ marginTop: 16 }}>
-            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), !limitedDays)}
+            {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
             {limitedDays && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
                 <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
