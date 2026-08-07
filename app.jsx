@@ -6479,7 +6479,7 @@ const DEFAULT_LEAVE_CONFIGS = Object.fromEntries(
 const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
 const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
-function LeaveTypeDrawer({ config, onSave, onClose }) {
+function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   const isNew = !config;
   const defaults = config || { name: '', description: '', color: LEAVE_COLOR_VALUES[0], active: true, visibleToEmployees: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20 };
   const [name, setName] = useState(defaults.name);
@@ -6491,6 +6491,19 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
   const [maxDays, setMaxDays] = useState(defaults.maxDays);
+  const [hoveredColor, setHoveredColor] = useState(null);
+
+  // Deduplicated color list and usage map
+  const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
+  const colorUsers = React.useMemo(() => {
+    const map = {};
+    allLeaveTypes.forEach(lt => {
+      if (lt.name === defaults.name) return; // skip self
+      if (!map[lt.color]) map[lt.color] = [];
+      map[lt.color].push(lt.name);
+    });
+    return map;
+  }, [allLeaveTypes, defaults.name]);
 
   const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
 
@@ -6574,16 +6587,29 @@ function LeaveTypeDrawer({ config, onSave, onClose }) {
             <div>
               <label style={labelStyle}>Color</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {LEAVE_COLOR_VALUES.map((c, i) => (
-                  <div key={i} onClick={() => setColor(c)} style={{
-                    width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer',
-                    border: `1.5px solid ${LEAVE_COLOR_ENTRIES[i] ? (LEAVE_BORDER_COLORS[LEAVE_COLOR_ENTRIES[i][0]] || P.border) : P.border}`,
-                    outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
-                    outlineOffset: 2,
-                    transition: `outline 120ms ${EASE_OUT}`,
-                  }} />
-                ))}
+                {uniqueColors.map((c, i) => {
+                  const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
+                  const borderColor = entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
+                  const usedBy = colorUsers[c];
+                  return (
+                    <div key={c} onClick={() => setColor(c)}
+                      onMouseEnter={() => setHoveredColor(c)}
+                      onMouseLeave={() => setHoveredColor(null)}
+                      style={{
+                        width: 28, height: 28, borderRadius: '50%', background: c, cursor: 'pointer',
+                        border: `1.5px solid ${borderColor}`,
+                        outline: color === c ? `2px solid ${P.ink}` : (usedBy && hoveredColor === c ? `2px solid ${P.inkFaint}` : '2px solid transparent'),
+                        outlineOffset: 2,
+                        transition: `outline 120ms ${EASE_OUT}`,
+                      }} />
+                  );
+                })}
               </div>
+              {hoveredColor && colorUsers[hoveredColor] && (
+                <div style={{ marginTop: 8, fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>
+                  Already used by {colorUsers[hoveredColor].join(', ')}
+                </div>
+              )}
             </div>
           </div>
 
@@ -6645,6 +6671,7 @@ function TimeOffSettings({ appEntity = null }) {
     {leaveModal != null && (
       <LeaveTypeDrawer
         config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
+        allLeaveTypes={leaveTypes}
         onSave={handleSave}
         onClose={() => setLeaveModal(null)}
       />
