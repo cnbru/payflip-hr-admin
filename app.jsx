@@ -7041,10 +7041,16 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                 </div>
               </div>
 
-              {/* Revealed employee list — scoped to the selected entity; "All entities" shows every assignment */}
-              <div style={{ display: 'grid', gridTemplateRows: specific ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 220ms ${EASE_OUT}`, overflow: 'hidden' }}>
+              {/* Revealed content — scoped to the selected entity; "All entities" shows every assignment */}
+              <div style={{ display: 'grid', gridTemplateRows: '1fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 220ms ${EASE_OUT}`, overflow: 'hidden' }}>
                 <div style={{ minHeight: 0 }}>
-                  {(() => {
+                  {!specific ? (() => {
+                    const allCount = Object.values(EMPLOYEES).filter(e => e.isEmployee !== false && (!appEntity || e.entityId === appEntity)).length;
+                    return (
+                      <EmptyState icon="users" title="Applies to all employees"
+                        description={`Currently ${allCount} employee${allCount === 1 ? '' : 's'}${appEntity ? '' : ' across all entities'} — including anyone hired later.`} />
+                    );
+                  })() : (() => {
                     const visibleAssigned = assignedEmployees.filter(id => {
                       const emp = EMPLOYEES[id];
                       return emp && (!appEntity || emp.entityId === appEntity);
