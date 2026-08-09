@@ -7031,7 +7031,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Eligible employees</span>
                 <div className="t-tabs" ref={tabsRef}>
                   <span className="t-tabs-pill" aria-hidden="true" />
-                  {[{ value: false, label: 'All employees' }, { value: true, label: 'Specific employees' }].map(opt => (
+                  {[{ value: false, label: 'All' }, { value: true, label: 'Specific' }].map(opt => (
                     <button key={String(opt.value)} className="t-tab"
                       role="tab" aria-selected={String(specific === opt.value)}
                       onClick={() => setSpecific(opt.value)}>
@@ -7047,8 +7047,8 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                   {!specific ? (() => {
                     const allCount = Object.values(EMPLOYEES).filter(e => e.isEmployee !== false && (!appEntity || e.entityId === appEntity)).length;
                     return (
-                      <EmptyState icon="users" title="Applies to all employees"
-                        description={`Currently ${allCount} employee${allCount === 1 ? '' : 's'}${appEntity ? '' : ' across all entities'} — including anyone hired later.`} />
+                      <EmptyState icon="users" title="Every employee is eligible"
+                        description={`Applies to ${allCount} current employee${allCount === 1 ? '' : 's'}${appEntity ? '' : ' across all entities'} and all future hires automatically.`} />
                     );
                   })() : (() => {
                     const visibleAssigned = assignedEmployees.filter(id => {
@@ -7058,8 +7058,8 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     return <>
                   {/* Truly empty — this allowance currently applies to nobody, not just "nobody visible here" */}
                   {assignedEmployees.length === 0 ? (
-                    <EmptyState icon="users" title="No employees assigned"
-                      description="This allowance won't apply to anyone until you add at least one."
+                    <EmptyState icon="users" title="No employees added yet"
+                      description="Choose who should receive this allowance — it won't apply to anyone until you do."
                       action={<Button variant="primary" icon="plus" onClick={() => setPickerOpen(true)}>Add employees</Button>} />
                   ) : (
                     /* List header: count + edit action */
