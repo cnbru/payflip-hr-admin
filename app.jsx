@@ -6399,6 +6399,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
 
         {/* List */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+          <div key={deptFilter} style={{ animation: PREFERS_REDUCED_MOTION ? 'tableEnterReduced 150ms ' + EASE_OUT : 'tableEnter 150ms ' + EASE_OUT }}>
           {filtered.map(emp => {
             const on = selected.includes(emp.value);
             const subtitle = appEntity ? emp.dept : [emp.dept, emp.entity].filter(Boolean).join(' · ');
@@ -6431,6 +6432,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
           {filtered.length === 0 && (
             <div style={{ padding: '20px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, textAlign: 'center' }}>No results</div>
           )}
+          </div>
         </div>
 
         {/* Footer */}
