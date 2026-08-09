@@ -6347,7 +6347,7 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
   );
 }
 
-function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onClose }) {
+function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onClose, appEntity }) {
   const [selected, setSelected] = useState(singleSelect ? (value ? [value] : []) : (value || []));
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
@@ -6359,7 +6359,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
 
   const pool = candidates || Object.entries(EMPLOYEES)
     .filter(([, e]) => e.adminAccess)
-    .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || (e.isEmployee === false ? 'External' : ''), initials: e.initials, color: e.color }));
+    .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || (e.isEmployee === false ? 'External' : ''), entity: e.entity, initials: e.initials, color: e.color }));
 
   const depts = [...new Set(pool.map(e => e.dept).filter(Boolean))].sort();
 
@@ -6401,17 +6401,21 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
           {filtered.map(emp => {
             const on = selected.includes(emp.value);
+            const subtitle = appEntity ? emp.dept : [emp.dept, emp.entity].filter(Boolean).join(' · ');
             return (
               <div key={emp.value} onClick={() => toggle(emp.value, close)}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,13,40,0.04)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{emp.initials}</span>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{emp.name}</div>
-                  {emp.dept && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{emp.dept}</div>}
+                <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink }}>{emp.name}</span>
+                  {subtitle && <>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint }}>·</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{subtitle}</span>
+                  </>}
                 </div>
                 {singleSelect
                   ? <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${on ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `border-color 120ms` }}>
@@ -6883,7 +6887,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
 
   const allCandidates = Object.entries(EMPLOYEES)
     .filter(([, e]) => e.isEmployee !== false && (!appEntity || e.entityId === appEntity))
-    .map(([id, e]) => ({ value: id, name: e.name, dept: e.department, initials: e.initials, color: e.color }));
+    .map(([id, e]) => ({ value: id, name: e.name, dept: e.department, entity: e.entity, initials: e.initials, color: e.color }));
 
   return (
     <>
@@ -6895,6 +6899,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
         singleSelect={false}
         onSave={ids => setAssignedEmployees(ids)}
         onClose={() => setPickerOpen(false)}
+        appEntity={appEntity}
       />
     )}
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
