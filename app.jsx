@@ -264,6 +264,20 @@ function Switch({ checked, onChange, size = 'md', disabled = false }) {
   );
 }
 
+// ── Shared empty state ───────────────────────────────────────────────────────
+function EmptyState({ icon, title, description, action }) {
+  return (
+    <div style={{ padding: '40px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+        <Icon name={icon} size={20} color={P.inkSoft} strokeWidth={1.5} />
+      </div>
+      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, marginBottom: 4 }}>{title}</div>
+      {description && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, maxWidth: 280, lineHeight: 1.5, marginBottom: action ? 18 : 0 }}>{description}</div>}
+      {action}
+    </div>
+  );
+}
+
 function WeekCard({ entry, requestId, requests, isPending }) {
   const req = requests.find(function(rr) { return rr.id === requestId; });
   return (
@@ -473,7 +487,7 @@ function ChoicesTab({ empId }) {
       </div>
       <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'hidden' }}>
         {filtered.length === 0 ? (
-          <div style={{ padding: '32px 20px', textAlign: 'center', color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>No choices recorded yet</div>
+          <EmptyState icon="list" title="No choices recorded yet" />
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)', fontSize: 13 }}>
             <thead><tr style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -5362,10 +5376,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
               </div>
               <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'visible' }}>
               {empReqs.filter(r => r.status !== 'pending').length === 0 ? (
-                <div style={{ padding: '32px 20px', textAlign: 'center' }}>
-                  <Icon name="CalendarOff" size={28} color={P.border} style={{ marginBottom: 8 }} />
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint }}>No absences recorded yet</div>
-                </div>
+                <EmptyState icon="calendar-off" title="No absences recorded yet" />
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)', fontSize: 13 }}>
                   <thead>
@@ -6692,6 +6703,15 @@ const LEAVE_TYPE_AUDIT = {
   'Moving':                 { by: 'Bruno Coen',       at: '20 Jun 2026' },
 };
 
+const LEAVE_TYPE_EXCEPTIONS = {
+  'Statutory annual leave': [
+    { empId: 'emma-martens',   value: '25 days' },
+    { empId: 'stijn-laurent',  value: '29 days' },
+    { empId: 'noor-de-smedt',  value: '16 days' },
+    { empId: 'ruben-declercq', value: '25 days' },
+  ],
+};
+
 const CARRYOVER_OPTS = [
   { value: 'q1',        label: 'Carry over until 31 March', hint: 'Unused days must be taken before 31 March of the following year (Belgian statutory requirement)' },
   { value: 'forfeit',   label: 'No carry-over',          hint: 'Unused days are forfeited at year end' },
@@ -6714,346 +6734,13 @@ const DEFAULT_LEAVE_CONFIGS = {
 };
 
 const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
+const EXTRA_PALETTE_COLORS = [
+  '#fee2e2', '#ffedd5', '#fef9c3', '#dcfce7',
+  '#ccfbf1', '#e0f2fe', '#e0e7ff', '#f3e8ff',
+  '#fce7f3', '#f1f5f9', '#d1d5db', '#ecfccb',
+];
 const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
-function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onDelete, onClose, companyRegime = COMPANY_REGIME_DEFAULTS, onToast }) {
-  const isNew = !config;
-  const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, declaration: false, adminOnly: false, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, companyPolicy: false, statutoryDays: null, statutoryLabel: null, statutoryNote: null, section: 'time-off', carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0, deletable: true };
-  const [name, setName] = useState(defaults.name);
-  const [color, setColor] = useState(defaults.color);
-  const [active, setActive] = useState(defaults.active);
-  const [requiresApproval, setRequiresApproval] = useState(defaults.requiresApproval);
-  const [docRequired, setDocRequired] = useState(defaults.docRequired);
-  const [docThresholdDays, setDocThresholdDays] = useState(defaults.docThresholdDays ?? 0);
-  const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
-  const [maxDays, setMaxDays] = useState(defaults.maxDays);
-  const [editRequiresApproval, setEditRequiresApproval] = useState(defaults.editRequiresApproval ?? false);
-  const [cancelRequiresApproval, setCancelRequiresApproval] = useState(defaults.cancelRequiresApproval ?? false);
-  const [carryover, setCarryover] = useState(defaults.carryover ?? 'forfeit');
-  const [allowHalfDay, setAllowHalfDay] = useState(defaults.allowHalfDay ?? true);
-  const [advAwardMethod, setAdvAwardMethod] = useState(defaults.advAwardMethod ?? 'lump-sum');
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [tooltip, setTooltip] = useState(null); // { text, x, y }
-  const showsAnnualBalance = !defaults.declaration && !defaults.adminOnly && !defaults.statutory && defaults.section !== 'special-leave';
-
-  // Deduplicated color list and usage map
-  const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
-  const colorUsers = React.useMemo(() => {
-    const map = {};
-    allLeaveTypes.forEach(lt => {
-      if (lt.name === defaults.name) return; // skip self
-      if (!map[lt.color]) map[lt.color] = [];
-      map[lt.color].push(lt.name);
-    });
-    return map;
-  }, [allLeaveTypes, defaults.name]);
-
-  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
-
-  React.useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') close(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [close]);
-
-  const save = () => {
-    if (!name.trim()) return;
-    onSave({ name: name.trim(), color, active, requiresApproval, declaration: defaults.declaration, adminOnly: defaults.adminOnly, docRequired, docThresholdDays: docRequired ? docThresholdDays : 0, limitedDays, maxDays: (limitedDays || defaults.companyPolicy) ? (maxDays || 1) : null, editRequiresApproval, cancelRequiresApproval, carryover: showsAnnualBalance ? carryover : null, allowHalfDay, advAwardMethod: defaults.name === 'ADV / RTT' ? advAwardMethod : undefined, statutory: defaults.statutory, companyPolicy: defaults.companyPolicy, statutoryDays: defaults.statutoryDays, statutoryLabel: defaults.statutoryLabel, statutoryNote: defaults.statutoryNote, section: defaults.section, deletable: defaults.deletable ?? true });
-    onToast?.({ message: isNew ? `${name.trim()} created` : `${name.trim()} saved`, type: 'approve' });
-    close();
-  };
-
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
-  const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 };
-  const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' };
-  const toggleRow = (label, hint, checked, onChange, last, rightExtra) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
-        {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{hint}</div>}
-      </div>
-      {rightExtra}
-      <Switch size="sm" checked={checked} onChange={onChange} />
-    </div>
-  );
-
-  const borderForColor = (c) => {
-    const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
-    return entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
-  };
-
-  return (
-    <>
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white, borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        {/* Header */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-              {isNew ? 'New leave type' : (name || defaults.name)}
-            </div>
-            {!isNew && (() => {
-              const audit = LEAVE_TYPE_AUDIT[defaults.name];
-              return audit ? (
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 3 }}>
-                  Updated by {audit.by} · {audit.at}
-                </div>
-              ) : null;
-            })()}
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Active toggle zone */}
-        {!defaults.declaration && !defaults.adminOnly && (
-          <div style={{ flexShrink: 0, padding: '12px 24px', borderBottom: `1px solid ${P.border}`, background: P.bg }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Active</div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
-                  {active ? 'Employees can request this leave type' : 'Employees cannot submit new requests for this type'}
-                </div>
-              </div>
-              <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
-            </div>
-            {!active && (
-              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <Icon name="info" size={14} color="#3b82f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                Approved leave already on record is not affected. Pending requests will need to be handled manually.
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Body */}
-        <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-
-          {/* Appearance section */}
-          <div style={SL}>Appearance</div>
-          {defaults.adminOnly && (
-            <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
-              This leave type is recorded by HR on behalf of the employee — it cannot be self-requested from the employee app.
-            </div>
-          )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label style={labelStyle}>Name</label>
-              {!isNew && defaults.name === 'Statutory annual leave' ? (
-                <div style={{ ...inputStyle, background: P.bg, color: P.inkSoft, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>{name}</span>
-                  <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
-                </div>
-              ) : (
-                <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave" style={inputStyle} />
-              )}
-            </div>
-            <div>
-              <label style={{ ...labelStyle, marginBottom: 10 }}>Color</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {uniqueColors.map((c) => {
-                  const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
-                  const borderColor = entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
-                  const usedBy = colorUsers[c];
-                  return (
-                    <div key={c} onClick={() => setColor(c)}
-                      onMouseEnter={e => {
-                        if (usedBy) {
-                          const r = e.currentTarget.getBoundingClientRect();
-                          setTooltip({ text: `Used by ${usedBy.join(', ')}`, x: r.left + r.width / 2, y: r.top });
-                        }
-                      }}
-                      onMouseLeave={() => setTooltip(null)}
-                      style={{
-                        position: 'relative', width: 20, height: 20, borderRadius: '50%', background: c, cursor: 'pointer',
-                        border: `1.5px solid ${borderColor}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
-                      {color === c && <Icon name="check" size={11} color={P.ink} strokeWidth={2.5} style={{ pointerEvents: 'none' }} />}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 8 }}>Shown in calendar and leave overview</div>
-            </div>
-          </div>
-          <div style={{ borderTop: `1px solid ${P.border}`, marginTop: 24, paddingTop: 24, marginLeft: -24, marginRight: -24, paddingLeft: 24, paddingRight: 24 }}>
-          <div style={SL}>Policy</div>
-          <div>
-            {defaults.statutory ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
-                    <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
-                  </div>
-                  {defaults.statutoryNote && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{defaults.statutoryNote}</div>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {defaults.statutoryLabel && <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>{defaults.statutoryLabel}</span>}
-                </div>
-              </div>
-            ) : defaults.companyPolicy ? (
-              <div style={{ padding: '14px 0' }}>
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Day limit</div>
-                  {defaults.statutoryNote && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{defaults.statutoryNote}</div>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                    <button onClick={() => setMaxDays(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
-                    <input type="text" inputMode="numeric" value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                      style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
-                    <button onClick={() => setMaxDays(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
-                  </div>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                {defaults.declaration ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', opacity: 0.45 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
-                        <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>No cap — sick leave has no legal maximum under Belgian law</div>
-                    </div>
-                    <Switch size="sm" checked={false} onChange={() => {}} />
-                  </div>
-                ) : defaults.name === 'Extra-legal leave' ? (
-                  <>
-                    <div style={{ padding: '20px 0 0' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
-                        <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>Entitlement is set per employee or contract type</div>
-                    </div>
-                    <div style={{ margin: '8px 0 14px', padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <Icon name="info" size={14} color="#1d4ed8" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                      <span>Extra-legal leave is additional vacation above the statutory 20-day minimum. The number of days is configured per employee or contract type under their profile.</span>
-                    </div>
-                  </>
-                ) : defaults.name === 'ADV / RTT' ? (() => {
-                  const advFT = Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12);
-                  return (
-                    <>
-                      <div style={{ padding: '20px 0 14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
-                          <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
-                        </div>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>Calculated automatically from contracted hours</div>
-                      </div>
-                      {advFT === 0 && (
-                        <div style={{ margin: '8px 0 14px', padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                          <Icon name="info" size={14} color="#1d4ed8" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                          <span>Your company uses 38h/week contracts — no ADV days are generated. Update contracted hours in Payroll settings.</span>
-                        </div>
-                      )}
-                      <div style={{ padding: '14px 0' }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 6 }}>Accrual method</div>
-                        <select value={advAwardMethod} onChange={e => setAdvAwardMethod(e.target.value)}
-                          style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box', background: P.white }}>
-                          <option value="lump-sum">Lump-sum upfront</option>
-                          <option value="accrued">Monthly accrual</option>
-                        </select>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>
-                          {advAwardMethod === 'lump-sum'
-                            ? 'All days granted upfront — employees can book days not yet earned, requiring year-end corrections'
-                            : 'Days unlock month by month — employees can only book what they\'ve earned so far'}
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()
-                : toggleRow('Day limit', 'Cap the number of days per year — can be overridden per employee', limitedDays, () => setLimitedDays(v => !v), true)
-                }
-                {defaults.name !== 'ADV / RTT' && defaults.name !== 'Extra-legal leave' && !defaults.declaration && limitedDays && (
-                  <div style={{ paddingLeft: 16, borderLeft: `1px solid ${P.border}`, marginBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0 14px' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                        <button onClick={() => setMaxDays(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
-                        <input type="text" inputMode="numeric" value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                          style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
-                        <button onClick={() => setMaxDays(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
-                      </div>
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-            {showsAnnualBalance && (
-              <div style={{ padding: '14px 0' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 6 }}>Carry-over</div>
-                <SettingsSelect value={carryover} onChange={setCarryover} opts={CARRYOVER_OPTS} />
-                {CARRYOVER_OPTS.find(o => o.value === carryover)?.hint && (
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>{CARRYOVER_OPTS.find(o => o.value === carryover)?.hint}</div>
-                )}
-              </div>
-            )}
-            {!defaults.declaration && !defaults.adminOnly && (
-              <>
-                {toggleRow('Approval required', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v), true)}
-                {!defaults.statutory && !defaults.declaration && requiresApproval && (
-                  <div style={{ paddingLeft: 16, borderLeft: `1px solid ${P.border}`, marginBottom: 4 }}>
-                    {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v), true)}
-                    {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
-                  </div>
-                )}
-              </>
-            )}
-            {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
-            {!defaults.adminOnly && toggleRow('Allow half-day requests', 'Employees can request a morning or afternoon instead of a full day', allowHalfDay, () => setAllowHalfDay(v => !v), true)}
-          </div>
-          </div>
-          </div>
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))', pointerEvents: 'none' }} />
-        </div>
-
-        {/* Footer */}
-        <div style={{ flexShrink: 0, padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-          {!isNew && onDelete && (
-            confirmDelete ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 12, paddingLeft: 18, borderLeft: `1px solid ${P.border}` }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Delete this leave type?</span>
-                <button onClick={onDelete} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Confirm</button>
-                <button onClick={() => setConfirmDelete(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, padding: 0 }}>Cancel</button>
-              </div>
-            ) : defaults.deletable ? (
-              <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0, marginLeft: 12, paddingLeft: 18, borderLeft: `1px solid ${P.border}` }}>Delete</button>
-            ) : null
-          )}
-        </div>
-      </div>
-      {tooltip && (
-        <div style={{
-          position: 'fixed', left: tooltip.x, top: tooltip.y - 6,
-          transform: 'translateX(-50%) translateY(-100%)',
-          padding: '4px 8px', borderRadius: 6,
-          background: P.ink, color: '#fff',
-          fontSize: 12, fontWeight: 500, fontFamily: 'var(--font-body)',
-          whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 9999,
-        }}>{tooltip.text}</div>
-      )}
-    </div>
-    </>
-  );
-}
 
 function initLeaveTypes() {
   return LEAVE_SECTIONS.flatMap(section =>
@@ -7109,9 +6796,8 @@ function ConfirmDeleteModal({ name, onConfirm, onClose }) {
 }
 
 // Set to false to revert to the drawer pattern
-const LEAVE_TYPE_USE_PAGE = true;
 
-function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, onBack, companyRegime = COMPANY_REGIME_DEFAULTS, onToast }) {
+function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, onBack, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, onNav }) {
   const isNew = !config;
   const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, declaration: false, adminOnly: false, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, companyPolicy: false, statutoryDays: null, statutoryLabel: null, statutoryNote: null, section: 'time-off', carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0, deletable: true };
   const [name,                  setName]                  = useState(defaults.name);
@@ -7131,9 +6817,10 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
   const [confirmDelete,         setConfirmDelete]         = useState(false);
   const [tooltip,               setTooltip]               = useState(null);
   const [dayLimitTip,           setDayLimitTip]           = useState(false);
+  const [hoveredExc,            setHoveredExc]            = useState(null);
   const showsAnnualBalance = !defaults.declaration && !defaults.adminOnly && !defaults.statutory && defaults.section !== 'special-leave';
 
-  const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
+  const uniqueColors = [...new Set([...LEAVE_COLOR_VALUES, ...EXTRA_PALETTE_COLORS])];
   const colorUsers = React.useMemo(() => {
     const map = {};
     allLeaveTypes.forEach(lt => {
@@ -7275,8 +6962,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
           {(() => {
             const advFT = defaults.name === 'ADV / RTT' ? Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12) : 0;
             const isLocked = defaults.statutory || defaults.declaration || defaults.name === 'ADV / RTT' || defaults.name === 'Extra-legal leave';
-            const lockedChecked = (defaults.statutory && defaults.statutoryDays !== null) || (defaults.name === 'ADV / RTT' && advFT > 0);
-            const isChecked = isLocked ? lockedChecked : limitedDays;
+            const isChecked = isLocked ? false : limitedDays;
             const showBelow = isLocked || limitedDays;
 
             const tooltipText = defaults.statutory
@@ -7305,7 +6991,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
               <div style={card}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: showBelow ? `1px solid ${P.border}` : 'none' }}>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Day limit</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Limit days per year</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Cap the number of days per year — can be overridden per employee</div>
                   </div>
                   <div style={{ flexShrink: 0 }}
@@ -7316,13 +7002,18 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
                 </div>
                 {isLocked ? (
                   <div style={{ padding: '14px 20px' }}>
-                    {infoCallout && (
+                    {(infoCallout || (defaults.adminOnly && defaults.statutoryLabel)) && (
                       <div style={{ padding: '8px 12px', borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                         <Icon name="info" size={14} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
                         <span>
-                          {(defaults.statutory && defaults.statutoryLabel) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{defaults.statutoryLabel} — </strong>}
-                          {(defaults.name === 'ADV / RTT' && advFT > 0) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{advFT} days — </strong>}
-                          {infoCallout}
+                          {defaults.adminOnly
+                            ? <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{defaults.statutoryLabel}</strong>
+                            : (<>
+                                {(defaults.statutory && defaults.statutoryLabel) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{defaults.statutoryLabel} — </strong>}
+                                {(defaults.name === 'ADV / RTT' && advFT > 0) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{advFT} days — </strong>}
+                                {infoCallout}
+                              </>)
+                          }
                         </span>
                       </div>
                     )}
@@ -7362,7 +7053,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
           {showsAnnualBalance && (
             <div style={{ ...card, overflow: 'visible' }}>
               <div style={{ padding: '16px 20px', borderBottom: carryover === 'cap' ? `1px solid ${P.border}` : 'none' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>Carry-over</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>What happens to unused days?</div>
                 <SettingsSelect value={carryover} onChange={setCarryover} opts={CARRYOVER_OPTS} />
                 {CARRYOVER_OPTS.find(o => o.value === carryover)?.hint && (
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>{CARRYOVER_OPTS.find(o => o.value === carryover)?.hint}</div>
@@ -7394,20 +7085,24 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
 
           {!defaults.declaration && !defaults.adminOnly && (
             <div style={card}>
-              {settingsRow('Approval required', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v), !(!defaults.statutory && requiresApproval))}
-              <div style={{ display: 'grid', gridTemplateRows: (!defaults.statutory && requiresApproval) ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+              {settingsRow('Require approval', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v), !requiresApproval)}
+              <div style={{ display: 'grid', gridTemplateRows: requiresApproval ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
                 <div style={{ minHeight: 0 }}>
                   <div>
-                    {settingsRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v), false)}
+                    {settingsRow('Require approval to edit', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v), false)}
                   </div>
-                  {settingsRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
+                  {settingsRow('Require approval to cancel', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
                 </div>
               </div>
             </div>
           )}
 
           <div style={card}>
-            {settingsRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
+            {settingsRow(
+              defaults.adminOnly ? 'Request document from employee' : 'Require a supporting document',
+              defaults.adminOnly ? 'Employee receives a document request when this leave is recorded' : 'Employee must attach a supporting document',
+              docRequired, () => setDocRequired(v => !v), true
+            )}
           </div>
 
           {!defaults.adminOnly && (
@@ -7418,6 +7113,40 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
         </div>
 
         </div>{/* end fading sections */}
+
+        {/* Employee exceptions */}
+        {!isNew && (() => {
+          const exceptions = LEAVE_TYPE_EXCEPTIONS[defaults.name] || [];
+          if (!exceptions.length) return null;
+          return (
+            <div>
+              <div style={{ ...SL, marginBottom: 12 }}>Employee exceptions</div>
+              <div style={card}>
+                {exceptions.map((exc, i) => {
+                  const emp = EMPLOYEES[exc.empId];
+                  if (!emp) return null;
+                  const isHovered = hoveredExc === exc.empId;
+                  return (
+                    <div key={exc.empId}
+                      onMouseEnter={() => setHoveredExc(exc.empId)}
+                      onMouseLeave={() => setHoveredExc(null)}
+                      onClick={() => onNav?.('employee-detail:' + exc.empId + ':timeoff')}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: i < exceptions.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer', background: isHovered ? P.bg : P.white, transition: `background 120ms ${EASE_OUT}` }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11, color: P.ink, flexShrink: 0 }}>{emp.initials}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{emp.name}</div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 1 }}>{emp.department}</div>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink, flexShrink: 0 }}>{exc.value}</div>
+                      <Icon name="chevron-right" size={14} color={P.inkSoft} strokeWidth={2} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop: 8, fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Exceptions are set per employee and override these defaults.</div>
+            </div>
+          );
+        })()}
 
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8 }}>
@@ -7440,7 +7169,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
   );
 }
 
-function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, leaveTypes, setLeaveTypes }) {
+function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, onNav, leaveTypes, setLeaveTypes }) {
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
   const [tab, setTab] = useState('active');
   const [hoveredRow, setHoveredRow] = useState(null);
@@ -7460,7 +7189,7 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
     setLeaveModal(null);
   };
 
-  if (LEAVE_TYPE_USE_PAGE && leaveModal != null) {
+  if (leaveModal != null) {
     return (
       <LeaveTypeSettingsPage
         config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
@@ -7470,6 +7199,7 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
         onBack={() => setLeaveModal(null)}
         companyRegime={companyRegime}
         onToast={onToast}
+        onNav={onNav}
       />
     );
   }
@@ -7479,18 +7209,6 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
 
   return (
     <>
-    {!LEAVE_TYPE_USE_PAGE && leaveModal != null && (
-      <LeaveTypeDrawer
-        config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
-        allLeaveTypes={leaveTypes}
-        onSave={handleSave}
-        onDelete={leaveModal !== 'new' ? handleDelete : null}
-        onClose={() => setLeaveModal(null)}
-        companyRegime={companyRegime}
-        onToast={onToast}
-      />
-    )}
-
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
@@ -7520,8 +7238,8 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {tab === 'inactive' && inactiveCount === 0 && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 14, border: `1px dashed ${P.border}`, borderRadius: 16 }}>
-              No inactive leave types
+            <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 16 }}>
+              <EmptyState icon="moon" title="No inactive leave types" />
             </div>
           )}
           {LEAVE_SECTIONS.map(section => {
@@ -7556,12 +7274,11 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
                           <div style={{ width: 36, height: 36, borderRadius: 10, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Icon name={LEAVE_SECTION_ICONS[lt.section] || LEAVE_ICONS[lt.name] || 'calendar'} size={17} color="#3d4047" strokeWidth={1.5} />
                           </div>
-                          <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, boxShadow: '0 0 0 1.5px #fff' }} />
+                          <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: lt.color, boxShadow: '0 0 0 1.5px #fff' }} />
                         </div>
                         <span style={{ flex: 1 }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
-                            {lt.companyPolicy && <span style={{ padding: '1px 6px', borderRadius: 5, fontSize: 10, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>Company policy</span>}
                           </span>
                           {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>}
                         </span>
@@ -8025,21 +7742,21 @@ function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange
     </table>
   );
 
-  const EmptyState = ({ tabId }) => (
-    <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: '48px 24px', textAlign: 'center' }}>
-      <Icon name="file-text" size={28} color={P.border} strokeWidth={1.5} />
-      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, marginTop: 12 }}>
-        No {tabId === 'templates' ? 'templates' : 'documents'} yet
-      </div>
-      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 4, marginBottom: 20 }}>
-        {tabId === 'templates'
+  const DocEmptyState = ({ tabId }) => (
+    <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12 }}>
+      <EmptyState
+        icon="file-text"
+        title={`No ${tabId === 'templates' ? 'templates' : 'documents'} yet`}
+        description={tabId === 'templates'
           ? 'Add contract templates and policy documents your team can download.'
           : 'Add documents employees are required to provide, like ID copies or signed contracts.'}
-      </div>
-      <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 14px', background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>
-        <Icon name="plus" size={14} color={P.inkSoft} strokeWidth={2} />
-        Add {tabId === 'templates' ? 'template' : 'document'}{appEntity ? ` for ${entityName}` : ''}
-      </button>
+        action={
+          <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 14px', background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>
+            <Icon name="plus" size={14} color={P.inkSoft} strokeWidth={2} />
+            Add {tabId === 'templates' ? 'template' : 'document'}{appEntity ? ` for ${entityName}` : ''}
+          </button>
+        }
+      />
     </div>
   );
 
@@ -8123,7 +7840,7 @@ function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange
 
         {/* Templates tab */}
         {tab === 'templates' && (
-          rows.length === 0 ? <EmptyState tabId="templates" /> : (
+          rows.length === 0 ? <DocEmptyState tabId="templates" /> : (
             <React.Fragment>
               <TableFadeIn key={appEntity ?? 'all'}>
                 <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'clip' }}>
@@ -8144,7 +7861,7 @@ function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange
 
         {/* Documents tab */}
         {tab === 'company' && (
-          rows.length === 0 ? <EmptyState tabId="company" /> : (
+          rows.length === 0 ? <DocEmptyState tabId="company" /> : (
             <React.Fragment>
               <TableFadeIn key={appEntity ?? 'all'}>
                 <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'clip' }}>
@@ -8422,8 +8139,8 @@ function BenefitsSettings({ appEntity = null }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {tab === 'inactive' && inactiveCount === 0 && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 14, border: `1px dashed ${P.border}`, borderRadius: 16 }}>
-              No inactive benefit types
+            <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 16 }}>
+              <EmptyState icon="moon" title="No inactive benefit types" />
             </div>
           )}
           {(() => {
@@ -9247,7 +8964,7 @@ function App() {
         {screen === 'team-absences' && <TeamAbsencesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} pendingCount={pendingRequestsCount} onNav={setScreen} onShowDetail={setCalDetail} activeReqId={calDetail?.id} onSave={saveRequest} companyEvents={companyEvents} onCancelCompanyEvent={cancelCompanyEvent} initialDate={calendarJumpDate} initialDeptFilter={calendarDeptFilter} appEntity={appEntity} leaveTypes={leaveTypes} />}
         {screen === 'requests' && <RequestsScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onApprove={approve} onDecline={requestDecline} onSave={saveRequest} onCancel={requestCancel} onNav={setScreen} onViewInCalendar={(req) => { const d = req._selectedDates?.[0] || req.startDate; if (d) { const iso = typeof d === 'string' && d.match(/^\d{4}-/) ? d : null; setCalendarJumpDate(iso ? new Date(iso) : parseDisplayDate(d)); } setCalDetail(req); setScreen('team-absences'); }} appEntity={appEntity} />}
         {(screen === 'employees' || screen === 'employees:admin') && <EmployeesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} initialRoleFilter={screen === 'employees:admin' ? 'Admin' : 'All'} adminAccess={adminAccess} appEntity={appEntity} onAddEmployee={() => setAddEmployeeOpen(true)} />}
-        {screen.startsWith('employee-detail:') && <EmployeeDetailScreen employeeId={screen.split(':')[1]} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[screen.split(':')[1]]} onUpdateBalance={(newBal) => updateBalances(screen.split(':')[1], newBal)} needsSetup={needsBalanceSetup.has(screen.split(':')[1])} confirmedDate={balanceConfirmedDates[screen.split(':')[1]]} onConfirmBalances={() => confirmBalancesFor(screen.split(':')[1])} onToast={setToast} adminAccess={adminAccess} onAdminSave={handleAdminSave} companyRegime={companyRegime} onEmployeeUpdate={handleEmployeeUpdate} getEmpWithOverrides={getEmpWithOverrides} initialTab={freshEmployeeId === screen.split(':')[1] ? 'details' : 'choices'} />}
+        {screen.startsWith('employee-detail:') && (() => { const [, detailEmpId, detailTab] = screen.split(':'); return <EmployeeDetailScreen employeeId={detailEmpId} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[detailEmpId]} onUpdateBalance={(newBal) => updateBalances(detailEmpId, newBal)} needsSetup={needsBalanceSetup.has(detailEmpId)} confirmedDate={balanceConfirmedDates[detailEmpId]} onConfirmBalances={() => confirmBalancesFor(detailEmpId)} onToast={setToast} adminAccess={adminAccess} onAdminSave={handleAdminSave} companyRegime={companyRegime} onEmployeeUpdate={handleEmployeeUpdate} getEmpWithOverrides={getEmpWithOverrides} initialTab={detailTab || (freshEmployeeId === detailEmpId ? 'details' : 'choices')} />; })()}
         {screen === 'expenses' && <ExpensesScreen key={appEntity ?? 'all'} expenses={entityFilteredExpenses} categories={expenseCategories} onApprove={approveExpense} onDetail={(exp) => setExpDetail(exp)} onAdd={addExpense} appEntity={appEntity} />}
         {screen === 'choices' && <ChoicesScreen key={appEntity ?? 'all'} choices={entityFilteredChoices} onApprove={approveChoice} onDecline={declineChoice} onDetail={setChoiceDetail} appEntity={appEntity} />}
         {screen === 'payroll-overview' && <StubScreen title="Payroll Overview" description="Monthly payroll run and submission" />}
@@ -9255,7 +8972,7 @@ function App() {
         {screen === 'settings-expenses' && <ExpenseCategorySettings key={appEntity ?? 'all'} categories={expenseCategories} onSave={setExpenseCategories} appEntity={appEntity} />}
         {screen === 'settings-team' && <TeamAccessSettings key={appEntity ?? 'all'} onNav={setScreen} adminAccess={adminAccess} onAdminSave={handleAdminSave} appEntity={appEntity} />}
         {screen === 'settings-entities' && <EntitiesSettings key={appEntity ?? 'all'} onNav={setScreen} appEntity={appEntity} companyRegime={companyRegime} onRegimeChange={setCompanyRegime} />}
-        {screen === 'settings-timeoff' && <TimeOffSettings key={appEntity ?? 'all'} appEntity={appEntity} companyRegime={companyRegime} onToast={setToast} leaveTypes={leaveTypes} setLeaveTypes={setLeaveTypes} />}
+        {screen === 'settings-timeoff' && <TimeOffSettings key={appEntity ?? 'all'} appEntity={appEntity} companyRegime={companyRegime} onToast={setToast} onNav={(target) => { setSidebarMode('app'); handleNav(target); }} leaveTypes={leaveTypes} setLeaveTypes={setLeaveTypes} />}
         {screen === 'settings-documents' && <DocumentsSettings key={appEntity ?? 'all'} appEntity={appEntity} documents={settingsDocuments} onDocumentsChange={setSettingsDocuments} />}
         {screen === 'settings-payroll' && <PayrollSettings companyRegime={companyRegime} onRegimeChange={setCompanyRegime} appEntity={appEntity} onToast={setToast} />}
         {screen === 'settings-benefits' && <BenefitsSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
