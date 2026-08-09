@@ -8785,7 +8785,7 @@ function ChangelogScreen() {
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.6 }}>
                         <span style={{ color: P.ink, fontWeight: 500 }}>{item.summary}</span>
                         {item.detail && ' ' + item.detail}
-                        {item.why && <span style={{ display: 'block', marginTop: 2, color: P.inkFaint }}>Why: {item.why}</span>}
+                        {item.why && <span style={{ display: 'block', marginTop: 2, color: P.inkSoft }}>Why: {item.why}</span>}
                       </span>
                     </div>
                   ))}
