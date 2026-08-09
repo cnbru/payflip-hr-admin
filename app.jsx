@@ -30,66 +30,71 @@ const avatarUrl = (name, gender) => {
 };
 
 const LEAVE_COLORS = {
-  'Time off':                    '#c5dcfd',
+  'Statutory annual leave':                    '#c5dcfd',
   'ADV / RTT':                   '#fef3c7',
   'Extra-legal leave':           '#ede9fe',
   'Sick leave':                  '#fbd0e4',
+  'Paternity leave':                 '#d1fae5',
+  'Maternity leave':             '#fce7f3',
   'Wedding':                     '#fde9c8',
-  'Family wedding':              '#fde9c8',
-  'Bereavement — close family':  '#d8d3e3',
-  'Bereavement — family':        '#d8d3e3',
-  'Solemn communion':            '#fef3c7',
+  'Funeral leave':               '#d8d3e3',
+  'Ceremony':                    '#fef3c7',
   'Civic duty':                  '#c5dcfd',
   'Moving':                      '#fde9c8',
 };
 const LEAVE_BORDER_COLORS = {
-  'Time off':                    '#7aafe8',
+  'Statutory annual leave':                    '#7aafe8',
   'ADV / RTT':                   '#e5c87a',
   'Extra-legal leave':           '#a899e0',
   'Sick leave':                  '#e698b8',
+  'Paternity leave':                 '#6ee7b7',
+  'Maternity leave':             '#f9a8d4',
   'Wedding':                     '#e0b97a',
-  'Family wedding':              '#e0b97a',
-  'Bereavement — close family':  '#a99dba',
-  'Bereavement — family':        '#a99dba',
-  'Solemn communion':            '#e5c87a',
+  'Funeral leave':               '#a99dba',
+  'Ceremony':                    '#e5c87a',
   'Civic duty':                  '#7aafe8',
   'Moving':                      '#e0b97a',
 };
+// Reverse map: fill color hex → border color hex (for palette swatches)
+const COLOR_TO_BORDER = Object.fromEntries(
+  Object.entries(LEAVE_COLORS).map(([name, fill]) => [fill, LEAVE_BORDER_COLORS[name]])
+);
 
 const SPECIAL_LEAVE_METADATA = {
-  'Wedding':                    { statutory: true,  statutoryDays: 2,  statutoryNote: 'Own wedding' },
-  'Family wedding':             { statutory: true,  statutoryDays: 1,  statutoryNote: "Child's, sibling's or parent's wedding" },
-  'Bereavement — close family': { statutory: true,  statutoryDays: 10, statutoryNote: 'Spouse or child — 3 days immediate + 7 days at will within a year (updated 2021)' },
-  'Bereavement — family':       { statutory: true,  statutoryDays: 3,  statutoryNote: 'Parent or in-law: 3 days; sibling, grandparent: 1–2 days depending on cohabitation' },
-  'Solemn communion':           { statutory: true,  statutoryDays: 1,  statutoryNote: "Child's solemn communion or humanist coming-of-age ceremony" },
-  'Civic duty':                 { statutory: true,  statutoryDays: 5,  statutoryNote: 'Jury duty or court appearance — up to 5 days' },
-  'Moving':                     { statutory: false, statutoryDays: null, statutoryNote: null },
+  'Paternity leave':                 { statutory: true, statutoryDays: 20, statutoryLabel: '20 days', statutoryNote: 'First 3 days paid by employer at full salary — days 4–20 reimbursed by INAMI at 82%. Must be taken within 4 months of birth.' },
+  'Maternity leave':             { statutory: true, statutoryDays: null, statutoryLabel: '15 weeks', statutoryNote: 'Pre-natal: up to 6 weeks before due date (1 week mandatory). Post-natal: minimum 9 weeks mandatory. Paid by INAMI at 82% of capped salary.' },
+  'Wedding':                    { statutory: true,  statutoryDays: 2,  statutoryLabel: '1–2 days', statutoryNote: "Own wedding: 2 days · Child's, sibling's or parent's wedding: 1 day" },
+  'Funeral leave':              { statutory: true,  statutoryDays: 10, statutoryLabel: '1–10 days', statutoryNote: 'Spouse or child: 3 days immediate + 7 flexible (Royal Decree 2021). Parent or in-law: 3 days. Sibling, grandparent: 2 days. Other family: 1 day.' },
+  'Ceremony':                   { statutory: true,  statutoryDays: 1,  statutoryLabel: '1 day',    statutoryNote: "Child's solemn communion or humanist coming-of-age ceremony" },
+  'Civic duty':                 { statutory: true,  statutoryDays: null, statutoryLabel: 'Duration of duty', statutoryNote: 'For the duration of jury duty, court summons, or other civic obligation — no fixed maximum' },
+  'Moving':                     { statutory: false, companyPolicy: true, statutoryDays: 1, statutoryLabel: '1 day', statutoryNote: 'Company benefit — not legally mandated, freely configurable' },
 };
 
 const LEAVE_SECTIONS = [
-  { id: 'time-off',      label: 'Time off',     typeNames: ['Time off', 'ADV / RTT', 'Extra-legal leave'] },
-  { id: 'sick-leave',    label: 'Sick leave',    typeNames: ['Sick leave'] },
-  { id: 'special-leave', label: 'Special leave', typeNames: ['Wedding', 'Family wedding', 'Bereavement — close family', 'Bereavement — family', 'Solemn communion', 'Civic duty', 'Moving'] },
+  { id: 'time-off',      label: 'Time off',      typeNames: ['Statutory annual leave', 'ADV / RTT', 'Extra-legal leave'] },
+  { id: 'sick-leave',    label: 'Sick leave',     typeNames: ['Sick leave'] },
+  { id: 'parental',      label: 'Parental leave', typeNames: ['Paternity leave', 'Maternity leave'] },
+  { id: 'special-leave', label: 'Special leave',  typeNames: ['Wedding', 'Funeral leave', 'Ceremony', 'Civic duty', 'Moving'] },
 ];
 
 
+const LEAVE_SECTION_ICONS = {
+  'time-off':      'palmtree',
+  'sick-leave':    'stethoscope',
+  'parental':      'baby',
+  'special-leave': null, // uses per-name icons below
+};
 const LEAVE_ICONS = {
-  'Time off':          'Palmtree',
-  'ADV / RTT':         'Clock',
-  'Extra-legal leave': 'Star',
-  'Sick leave':        'Stethoscope',
-  'Special leave':     'Heart',
-  'Funeral leave':     'Flower2',
-  'Paternity leave':   'Baby',
-  'Maternity leave':   'Baby',
-  'Paid absence':      'Briefcase',
-  'Unpaid absence':    'Briefcase',
+  'Wedding':      'heart',
+  'Funeral leave':'flower-2',
+  'Ceremony':     'book-open',
+  'Civic duty':   'landmark',
+  'Moving':       'truck',
 };
 
 const ALL_LEAVE_TYPES = [
-  'Time off', 'ADV / RTT', 'Extra-legal leave',
-  'Sick leave', 'Special leave',
-  'Paternity leave', 'Maternity leave',
+  'Statutory annual leave', 'ADV / RTT', 'Extra-legal leave',
+  'Sick leave', 'Paternity leave', 'Maternity leave', 'Special leave',
 ];
 
 const ADMIN_ONLY_TYPES = new Set(['Paternity leave', 'Maternity leave', 'Paid absence', 'Unpaid absence']);
@@ -114,11 +119,11 @@ const SPECIAL_FUNERAL_WHO = [
 ];
 
 const ATTACHMENT_RULES = {
-  'Sick leave':      { label: 'Medical certificate', note: 'Required for absences of 2 or more consecutive days' },
-  'Special leave':   { label: 'Supporting document', note: 'Marriage/birth certificate or official event proof' },
-  'Funeral leave':   { label: 'Death certificate', note: 'Required to process bereavement leave' },
-  'Paternity leave': { label: 'Birth certificate', note: 'Required to activate paternity leave entitlement' },
-  'Maternity leave': { label: 'Medical certificate', note: 'Required to activate maternity leave entitlement' },
+  'Sick leave':       { label: 'Medical certificate', note: 'Required for absences of 2 or more consecutive days' },
+  'Special leave':    { label: 'Supporting document', note: 'Marriage/birth certificate or official event proof' },
+  'Funeral leave':    { label: 'Death certificate', note: 'Required to process bereavement leave' },
+  'Paternity leave':                { label: 'Birth certificate', note: 'Required to record birth leave entitlement' },
+  'Maternity leave':  { label: 'Medical certificate', note: 'Required to activate maternity leave entitlement' },
 };
 
 // ── Lucide icon helper ─────────────────────────────────────────────────────
@@ -239,13 +244,15 @@ function sheetPanelStyle(visible, closing) {
 }
 
 // ── Shared toggle switch ─────────────────────────────────────────────────────
-function Switch({ checked, onChange, size = 'md' }) {
+function Switch({ checked, onChange, size = 'md', disabled = false }) {
   const dims = size === 'sm' ? { w: 28, h: 16, knob: 12, pad: 2 } : { w: 34, h: 20, knob: 16, pad: 2 };
   return (
-    <div onClick={onChange} style={{
-      width: dims.w, height: dims.h, borderRadius: dims.h / 2, flexShrink: 0, cursor: 'pointer',
+    <div onClick={disabled ? undefined : onChange} style={{
+      width: dims.w, height: dims.h, borderRadius: dims.h / 2, flexShrink: 0,
+      cursor: disabled ? 'not-allowed' : 'pointer',
       background: checked ? P.action : '#d1d5db',
-      position: 'relative', transition: `background 150ms ${EASE_OUT}`,
+      opacity: disabled ? 0.45 : 1,
+      position: 'relative', transition: `background 150ms ${EASE_OUT}, opacity 150ms ${EASE_OUT}`,
     }}>
       <div style={{
         position: 'absolute', top: dims.pad,
@@ -303,8 +310,8 @@ const HOLIDAY_ICON = {
 // ── Entity data ───────────────────────────────────────────────────────────
 const ENTITIES = [
   { id: 'lumio-group',  name: 'Lumio Group',       jc: 'PC 200', payrollProvider: 'SD Worx', integrationId: 'SDWX-4821',  country: 'Belgium',     employeeCount: 15 },
-  { id: 'lumio-france', name: 'Lumio France',      jc: 'CCN 66', payrollProvider: 'ADP',     integrationId: 'ADP-FR-1192', country: 'France',      employeeCount: 4  },
-  { id: 'lumio-nl',     name: 'Lumio Netherlands', jc: null,     payrollProvider: 'Visma',   integrationId: null,          country: 'Netherlands', employeeCount: 4  },
+  { id: 'lumio-france', name: 'Lumio France',      jc: 'CCN 66', payrollProvider: 'ADP',     integrationId: 'ADP-FR-1192', country: 'France',      employeeCount: 4,  emailDomain: 'lumio.fr' },
+  { id: 'lumio-nl',     name: 'Lumio Netherlands', jc: null,     payrollProvider: 'Visma',   integrationId: null,          country: 'Netherlands', employeeCount: 4,  emailDomain: 'lumio.nl' },
 ];
 
 // ── Employee data ──────────────────────────────────────────────────────────
@@ -320,7 +327,7 @@ const EMPLOYEES = {
   'mathias-de-smedt':  { name: 'Mathias De Smedt',  initials: 'MD', color: '#fde68a', entitlement: 23, department: 'Design',       email: 'mathias.de-smedt@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 6250,  role: 'Employee', status: 'Active', gender: 'm' },
   'thomas-vandenberghe': { name: 'Thomas Vandenberghe', initials: 'TV', color: '#99f6e4', entitlement: 20, department: 'Design',    email: 'thomas.vandenberghe@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 0, role: 'Employee', status: 'Active', gender: 'm' },
   'thomas-janssens':     { name: 'Thomas Janssens',    initials: 'TJ', color: '#d9f99d', entitlement: 23, department: 'Design',    email: 'thomas.janssens@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 3000, role: 'Employee', status: 'Active', gender: 'm' },
-  'charlotte-pieters':   { name: 'Charlotte Pieters',  initials: 'CP', color: '#fecdd3', entitlement: 20, department: 'Design',    email: 'charlotte.pieters@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 2500, role: 'Employee', status: 'Active', gender: 'f' },
+  'charlotte-pieters':   { name: 'Charlotte Pieters',  initials: 'CP', color: '#fecdd3', entitlement: 20, department: 'Design',    email: 'charlotte.pieters@lumiogroup.be', entity: 'Lumio Group', entityId: 'lumio-group', budget: 2500, role: 'Employee', status: 'Active', gender: 'f', fte: 0.8, workSchedule: [1,2,3,4] },
   'lasse-willems':       { name: 'Lasse Willems',      initials: 'LW', color: '#c7d2fe', entitlement: 23, department: 'Design',    email: 'lasse.willems@lumiogroup.be',   entity: 'Lumio Group', entityId: 'lumio-group', budget: 4000, role: 'Employee', status: 'Active', gender: 'm' },
   'nathalie-cox':        { name: 'Nathalie Cox',        initials: 'NC', color: '#a7f3d0', entitlement: 20, department: 'Design',    email: 'nathalie.cox@lumiogroup.be',    entity: 'Lumio Group', entityId: 'lumio-group', budget: 3200, role: 'Employee', status: 'Active', gender: 'f' },
   'ruben-declercq':      { name: 'Ruben Declercq',     initials: 'RD', color: '#fed7aa', entitlement: 25, department: 'Design',    email: 'ruben.declercq@lumiogroup.be',  entity: 'Lumio Group', entityId: 'lumio-group', budget: 5500, role: 'Employee', status: 'Active', gender: 'm' },
@@ -339,7 +346,7 @@ const EMPLOYEES = {
   'pieter-mertens':    { name: 'Pieter Mertens',     initials: 'PM', color: '#a7f3d0', entitlement: 29, department: 'Marketing',   email: 'pieter.mertens@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 8500,  role: 'Admin',  status: 'Active', gender: 'm' },
   'sarah-de-smedt':    { name: 'Sarah De Smedt',     initials: 'SD', color: '#fecdd3', entitlement: 23, department: 'Marketing',   email: 'sarah.de-smedt@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 2750,  role: 'Employee', status: 'Active', gender: 'f' },
   'julie-goossens':    { name: 'Julie Goossens',     initials: 'JG', color: '#fed7aa', entitlement: 20, department: 'Marketing',   email: 'julie.goossens@lumio.nl',         entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 5000,  role: 'Admin',  status: 'Active', gender: 'f' },
-  'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumio.nl',          entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 0,     role: 'Employee', status: 'Active', gender: 'f' },
+  'noor-de-smedt':     { name: 'Noor De Smedt',      initials: 'ND', color: '#fde68a', entitlement: 20, department: 'Marketing',   email: 'noor.de-smedt@lumio.nl',          entity: 'Lumio Netherlands', entityId: 'lumio-nl', budget: 0,     role: 'Employee', status: 'Active', gender: 'f', fte: 0.8, workSchedule: [1,2,4,5] },
 };
 const CURRENT_USER = EMPLOYEES['bruno-coen'];
 
@@ -359,11 +366,23 @@ const EMP_EXTRA = {
   'julie-goossens':      { payrollId: '000011', hireDate: '03/09/2019', lang: 'Dutch'   },
   'noor-de-smedt':       { payrollId: '000043', hireDate: '22/09/2025', lang: 'Dutch'   },
 };
+// ── Work regime helpers ───────────────────────────────────────────────────
+const COMPANY_REGIME_DEFAULTS = { contractedHours: 40, emailDomain: 'lumiogroup.be' };
+function calcAdvDays(companyRegime, emp) {
+  const contracted = companyRegime.contractedHours;
+  const fullTimeAdv = Math.max(0, ((contracted - 38) / 2) * 12);
+  const fte = emp.fte ?? 1.0;
+  return Math.round(fullTimeAdv * fte * 10) / 10;
+}
+function calcLegalLeave(emp) {
+  return Math.round(20 * (emp.fte ?? 1.0));
+}
+
 function _eseed(id, s) { let h = 0; const k = id + s; for (let i = 0; i < k.length; i++) h = ((h * 31) + k.charCodeAt(i)) >>> 0; return h; }
 function _eur(n) { const [i, d] = (n / 100).toFixed(2).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + d + ' EUR'; }
-function genSalary(id) {
+function genSalary(id, regimeHours) {
   const h = _eseed(id, 'sal'), base = 3100 + (h % 2300), p1 = base - 50 - (h >> 4 & 127), p2 = p1 - 40 - (h >> 6 & 95);
-  const regime = (h & 1) ? '40:00' : '38:00', hd = (EMP_EXTRA[id] || {}).hireDate || '01/01/2022';
+  const regime = (regimeHours || 40) + ':00', hd = (EMP_EXTRA[id] || {}).hireDate || '01/01/2022';
   const allC = [
     { type: 'PC', icon: 'Laptop', end: 'N/A' },
     { type: 'Smartphone', icon: 'Smartphone', end: '04/11/2027' },
@@ -524,8 +543,27 @@ function BudgetsTab({ empId }) {
     </div>
   );
 }
-function SalaryTab({ empId }) {
-  const { history, components } = genSalary(empId);
+function SalaryTab({ empId, emp, companyRegime, onEmployeeUpdate }) {
+  const { history, components } = genSalary(empId, companyRegime?.contractedHours);
+  const regime = companyRegime || COMPANY_REGIME_DEFAULTS;
+  const [localFte, setLocalFte] = React.useState(emp?.fte ?? 1.0);
+  const [localSchedule, setLocalSchedule] = React.useState(emp?.workSchedule ?? [1,2,3,4,5]);
+  const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri'];
+  const advDays = calcAdvDays(regime, { ...emp, fte: localFte });
+  const legalLeave = calcLegalLeave({ ...emp, fte: localFte });
+  const handleFteChange = (newFte) => {
+    setLocalFte(newFte);
+    const defaultSchedule = newFte >= 1.0 ? [1,2,3,4,5] : newFte >= 0.9 ? [1,2,3,4,5] : newFte >= 0.8 ? [1,2,3,4] : [1,2,3];
+    setLocalSchedule(defaultSchedule);
+    if (onEmployeeUpdate) onEmployeeUpdate(empId, { fte: newFte, workSchedule: defaultSchedule });
+  };
+  const toggleDay = (day) => {
+    const next = localSchedule.includes(day) ? localSchedule.filter(d => d !== day) : [...localSchedule, day].sort();
+    setLocalSchedule(next);
+    if (onEmployeeUpdate) onEmployeeUpdate(empId, { fte: localFte, workSchedule: next });
+  };
+  const fieldStyle = { background: P.white, border: `1px solid ${P.border}`, borderRadius: 8, padding: '10px 14px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink };
+  const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, marginBottom: 6 };
   const th = { textAlign: 'left', padding: '9px 16px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 11, color: P.inkFaint, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' };
   const SalSecHead = ({ title, onAdd }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -537,6 +575,58 @@ function SalaryTab({ empId }) {
   );
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+      <div>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, margin: '0 0 14px' }}>Contract</h3>
+        <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: 20 }}>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>FTE</label>
+            <select value={localFte} onChange={e => handleFteChange(parseFloat(e.target.value))}
+              style={{ ...fieldStyle, width: '100%', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: 32 }}>
+              {[1.0, 0.9, 0.8, 0.6, 0.5].map(v => <option key={v} value={v}>{v === 1.0 ? '1.0 — Full-time' : `${v} — Part-time`}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Contracted hours</label>
+            <div style={{ ...fieldStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg }}>
+              <span>{regime.contractedHours}:00 / week</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint, background: P.white, padding: '2px 6px', borderRadius: 4, border: `1px solid ${P.border}` }}>Company default</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStyle}>Work schedule</label>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {DAY_LABELS.map((label, i) => {
+              const day = i + 1;
+              const active = localSchedule.includes(day);
+              return (
+                <button key={day} onClick={() => toggleDay(day)}
+                  style={{ width: 48, height: 36, borderRadius: 8, border: `1.5px solid ${active ? P.action : P.border}`, background: active ? '#f3f0ff' : 'transparent', color: active ? P.action : P.inkSoft, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 120ms ease' }}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>ADV entitlement</label>
+            <div style={{ ...fieldStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg }}>
+              <span>{advDays} days / year</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#059669', background: '#ecfdf5', padding: '2px 6px', borderRadius: 4 }}>Auto</span>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={labelStyle}>Legal leave</label>
+            <div style={{ ...fieldStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg }}>
+              <span>{legalLeave} days{localFte < 1.0 ? ` (${localFte} FTE)` : ''}</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#059669', background: '#ecfdf5', padding: '2px 6px', borderRadius: 4 }}>Auto</span>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
       <div>
         <SalSecHead title="Salary" onAdd={() => {}} />
         <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'hidden' }}>
@@ -606,7 +696,7 @@ function SalaryTab({ empId }) {
     </div>
   );
 }
-function DetailsTab({ emp, empId, onNav, adminAccess, onAdminSave }) {
+function DetailsTab({ emp, empId, onNav, adminAccess, onAdminSave, companyRegime, onEmployeeUpdate }) {
   const [isEmployeeLocal, setIsEmployeeLocal] = React.useState(emp.isEmployee !== false);
   const ex = EMP_EXTRA[empId] || {};
   const parts = emp.name.split(' ');
@@ -689,34 +779,34 @@ function DetailsTab({ emp, empId, onNav, adminAccess, onAdminSave }) {
 }
 
 const generatedRequests = [
-  { id: 'gen-1', employee: 'david', type: 'Time off', startDate: 'Mon 1 Jun', endDate: 'Thu 11 Jun', days: 9, status: 'approved', submittedAt: '12 May', note: 'Summer holiday', _selectedDates: ['2026-06-01','2026-06-02','2026-06-03','2026-06-04','2026-06-05','2026-06-08','2026-06-09','2026-06-10','2026-06-11'] },
-  { id: 'gen-2', employee: 'emma-martens', type: 'Time off', startDate: 'Mon 13 Jul', endDate: 'Fri 17 Jul', days: 5, status: 'pending', submittedAt: '20 Jun', note: '' },
-  { id: 'gen-3', employee: 'mathias-de-smedt', type: 'Time off', startDate: 'Wed 8 Jul', endDate: 'Wed 8 Jul', days: 1, status: 'approved', submittedAt: '10 Jun', note: '', _selectedDates: ['2026-07-08'] },
+  { id: 'gen-1', employee: 'david', type: 'Statutory annual leave', startDate: 'Mon 1 Jun', endDate: 'Thu 11 Jun', days: 9, status: 'approved', submittedAt: '12 May', note: 'Summer holiday', _selectedDates: ['2026-06-01','2026-06-02','2026-06-03','2026-06-04','2026-06-05','2026-06-08','2026-06-09','2026-06-10','2026-06-11'] },
+  { id: 'gen-2', employee: 'emma-martens', type: 'Statutory annual leave', startDate: 'Mon 13 Jul', endDate: 'Fri 17 Jul', days: 5, status: 'pending', submittedAt: '20 Jun', note: '' },
+  { id: 'gen-3', employee: 'mathias-de-smedt', type: 'Statutory annual leave', startDate: 'Wed 8 Jul', endDate: 'Wed 8 Jul', days: 1, status: 'approved', submittedAt: '10 Jun', note: '', _selectedDates: ['2026-07-08'] },
   { id: 'gen-4', employee: 'stijn-laurent', type: 'Special leave', startDate: 'Fri 3 Jul', endDate: 'Fri 3 Jul', days: 1, status: 'approved', submittedAt: '25 Jun', note: 'Wedding', _selectedDates: ['2026-07-03'] },
   { id: 'gen-5', employee: 'laura-mertens', type: 'Sick leave', startDate: 'Tue 7 Jul', endDate: 'Tue 7 Jul', days: 1, status: 'approved', submittedAt: '7 Jul', note: '', _selectedDates: ['2026-07-07'] },
   { id: 'gen-11', employee: 'laura-mertens', type: 'Sick leave', startDate: 'Tue 14 Jul', endDate: 'Tue 14 Jul', days: 1, status: 'approved', submittedAt: '14 Jul', note: '', _selectedDates: ['2026-07-14'] },
   { id: 'gen-6c', employee: 'bram-goossens', type: 'Special leave', startDate: 'Thu 19 Mar', endDate: 'Thu 19 Mar', days: 1, status: 'approved', submittedAt: '10 Mar', note: 'Wedding', document: 'wedding_certificate.pdf', _selectedDates: ['2026-03-19'] },
   { id: 'gen-6d', employee: 'bram-goossens', type: 'Sick leave', startDate: 'Mon 5 May', endDate: 'Tue 6 May', days: 2, status: 'approved', submittedAt: '5 May', document: 'medical_certificate.pdf', note: '', _selectedDates: ['2026-05-05','2026-05-06'] },
-  { id: 'gen-6b', employee: 'bram-goossens', type: 'Time off', startDate: 'Fri 19 Jun', endDate: 'Fri 19 Jun', days: 0.5, halfDay: 'PM', status: 'approved', submittedAt: '18 Jun', note: '', _selectedDates: ['2026-06-19'], _halfDay: { '2026-06-19': 'pm' } },
+  { id: 'gen-6b', employee: 'bram-goossens', type: 'Statutory annual leave', startDate: 'Fri 19 Jun', endDate: 'Fri 19 Jun', days: 0.5, halfDay: 'PM', status: 'approved', submittedAt: '18 Jun', note: '', _selectedDates: ['2026-06-19'], _halfDay: { '2026-06-19': 'pm' } },
   { id: 'gen-6', employee: 'bram-goossens', type: 'ADV / RTT', startDate: 'Mon 22 Jun', endDate: 'Tue 23 Jun', days: 2, status: 'approved', submittedAt: '15 Jun', note: '', _selectedDates: ['2026-06-22','2026-06-23'] },
-  { id: 'gen-7', employee: 'jana-goossens', type: 'Time off', startDate: 'Thu 25 Jun', endDate: 'Fri 27 Jun', days: 3, status: 'approved', submittedAt: '10 Jun', note: 'Long weekend', _selectedDates: ['2026-06-25','2026-06-26','2026-06-27'] },
+  { id: 'gen-7', employee: 'jana-goossens', type: 'Statutory annual leave', startDate: 'Thu 25 Jun', endDate: 'Fri 27 Jun', days: 3, status: 'approved', submittedAt: '10 Jun', note: 'Long weekend', _selectedDates: ['2026-06-25','2026-06-26','2026-06-27'] },
   { id: 'gen-8', employee: 'pieter-mertens', type: 'Extra-legal leave', startDate: 'Wed 1 Jul', endDate: 'Wed 1 Jul', days: 1, status: 'approved', submittedAt: '28 Jun', note: '', _selectedDates: ['2026-07-01'] },
-  { id: 'gen-12', employee: 'pieter-mertens', type: 'Time off', startDate: 'Mon 13 Jul', endDate: 'Wed 15 Jul', days: 3, status: 'approved', submittedAt: '1 Jul', note: '', _selectedDates: ['2026-07-13','2026-07-14','2026-07-15'] },
-  { id: 'gen-13', employee: 'sarah-de-smedt', type: 'Time off', startDate: 'Tue 14 Jul', endDate: 'Thu 16 Jul', days: 3, status: 'approved', submittedAt: '3 Jul', note: '', _selectedDates: ['2026-07-14','2026-07-15','2026-07-16'] },
-  { id: 'gen-14', employee: 'jana-goossens', type: 'Time off', startDate: 'Thu 16 Jul', endDate: 'Fri 17 Jul', days: 2, status: 'approved', submittedAt: '5 Jul', note: '', _selectedDates: ['2026-07-16','2026-07-17'] },
-  { id: 'gen-15', employee: 'julie-goossens', type: 'Time off', startDate: 'Wed 22 Jul', endDate: 'Fri 24 Jul', days: 3, status: 'approved', submittedAt: '9 Jul', note: '', _selectedDates: ['2026-07-22','2026-07-23','2026-07-24'] },
-  { id: 'gen-9', employee: 'thomas-janssens', type: 'Time off', startDate: 'Mon 20 Jul', endDate: 'Fri 24 Jul', days: 5, status: 'pending', submittedAt: '8 Jul', note: 'Family trip', _selectedDates: ['2026-07-20','2026-07-21','2026-07-22','2026-07-23','2026-07-24'] },
-  { id: 'gen-10', employee: 'bram-goossens', type: 'Time off', startDate: 'Thu 23 Jul', endDate: 'Fri 24 Jul', days: 2, status: 'pending', submittedAt: '10 Jul', note: '', _selectedDates: ['2026-07-23','2026-07-24'] },
-  { id: 'gen-16', employee: 'mathias-de-smedt', type: 'Time off', startDate: 'Mon 4 Aug', endDate: 'Wed 6 Aug', days: 3, status: 'pending', submittedAt: '14 Jul', note: '', _selectedDates: ['2026-08-04','2026-08-05','2026-08-06'] },
+  { id: 'gen-12', employee: 'pieter-mertens', type: 'Statutory annual leave', startDate: 'Mon 13 Jul', endDate: 'Wed 15 Jul', days: 3, status: 'approved', submittedAt: '1 Jul', note: '', _selectedDates: ['2026-07-13','2026-07-14','2026-07-15'] },
+  { id: 'gen-13', employee: 'sarah-de-smedt', type: 'Statutory annual leave', startDate: 'Tue 14 Jul', endDate: 'Thu 16 Jul', days: 3, status: 'approved', submittedAt: '3 Jul', note: '', _selectedDates: ['2026-07-14','2026-07-15','2026-07-16'] },
+  { id: 'gen-14', employee: 'jana-goossens', type: 'Statutory annual leave', startDate: 'Thu 16 Jul', endDate: 'Fri 17 Jul', days: 2, status: 'approved', submittedAt: '5 Jul', note: '', _selectedDates: ['2026-07-16','2026-07-17'] },
+  { id: 'gen-15', employee: 'julie-goossens', type: 'Statutory annual leave', startDate: 'Wed 22 Jul', endDate: 'Fri 24 Jul', days: 3, status: 'approved', submittedAt: '9 Jul', note: '', _selectedDates: ['2026-07-22','2026-07-23','2026-07-24'] },
+  { id: 'gen-9', employee: 'thomas-janssens', type: 'Statutory annual leave', startDate: 'Mon 20 Jul', endDate: 'Fri 24 Jul', days: 5, status: 'pending', submittedAt: '8 Jul', note: 'Family trip', _selectedDates: ['2026-07-20','2026-07-21','2026-07-22','2026-07-23','2026-07-24'] },
+  { id: 'gen-10', employee: 'bram-goossens', type: 'Statutory annual leave', startDate: 'Thu 23 Jul', endDate: 'Fri 24 Jul', days: 2, status: 'pending', submittedAt: '10 Jul', note: '', _selectedDates: ['2026-07-23','2026-07-24'] },
+  { id: 'gen-16', employee: 'mathias-de-smedt', type: 'Statutory annual leave', startDate: 'Mon 4 Aug', endDate: 'Wed 6 Aug', days: 3, status: 'pending', submittedAt: '14 Jul', note: '', _selectedDates: ['2026-08-04','2026-08-05','2026-08-06'] },
   // Pending: sick leave with medical certificate
   { id: 'req-sick-tv', employee: 'thomas-vandenberghe', type: 'Sick leave', startDate: 'Mon 28 Jul', endDate: 'Wed 30 Jul', days: 3, status: 'pending', submittedAt: '17 Jul', note: '', document: 'medical_certificate.pdf', _selectedDates: ['2026-07-28','2026-07-29','2026-07-30'] },
   // Pending: special leave wedding with many colleagues off
   { id: 'req-wedding-lm', employee: 'laura-mertens', type: 'Special leave', startDate: 'Thu 30 Jul', endDate: 'Fri 1 Aug', days: 2, status: 'pending', submittedAt: '17 Jul', note: "Sister's wedding", document: 'wedding_invitation.pdf', _selectedDates: ['2026-07-30','2026-07-31'] },
   // Approved: Design colleagues off same week as TV sick leave (create conflict)
-  { id: 'gen-17', employee: 'emma-martens', type: 'Time off', startDate: 'Mon 28 Jul', endDate: 'Wed 30 Jul', days: 3, status: 'approved', submittedAt: '12 Jul', note: '', _selectedDates: ['2026-07-28','2026-07-29','2026-07-30'] },
+  { id: 'gen-17', employee: 'emma-martens', type: 'Statutory annual leave', startDate: 'Mon 28 Jul', endDate: 'Wed 30 Jul', days: 3, status: 'approved', submittedAt: '12 Jul', note: '', _selectedDates: ['2026-07-28','2026-07-29','2026-07-30'] },
   // Approved: Engineering colleagues off same days as Laura's wedding (create overlap)
-  { id: 'gen-18', employee: 'david', type: 'Time off', startDate: 'Mon 28 Jul', endDate: 'Fri 1 Aug', days: 5, status: 'approved', submittedAt: '5 Jul', note: 'Summer break', _selectedDates: ['2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31'] },
-  { id: 'gen-19', employee: 'stijn-laurent', type: 'Time off', startDate: 'Mon 27 Jul', endDate: 'Fri 1 Aug', days: 6, status: 'approved', submittedAt: '8 Jul', note: '', _selectedDates: ['2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31'] },
+  { id: 'gen-18', employee: 'david', type: 'Statutory annual leave', startDate: 'Mon 28 Jul', endDate: 'Fri 1 Aug', days: 5, status: 'approved', submittedAt: '5 Jul', note: 'Summer break', _selectedDates: ['2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31'] },
+  { id: 'gen-19', employee: 'stijn-laurent', type: 'Statutory annual leave', startDate: 'Mon 27 Jul', endDate: 'Fri 1 Aug', days: 6, status: 'approved', submittedAt: '8 Jul', note: '', _selectedDates: ['2026-07-27','2026-07-28','2026-07-29','2026-07-30','2026-07-31'] },
   { id: 'gen-20', employee: 'jana-goossens', type: 'ADV / RTT', startDate: 'Thu 30 Jul', endDate: 'Fri 31 Jul', days: 2, status: 'approved', submittedAt: '11 Jul', note: '', _selectedDates: ['2026-07-30','2026-07-31'] },
 ];
 
@@ -1054,6 +1144,46 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
 
 const PERSONAL_IDS = ['settings-notifications', 'settings-account'];
 const COMPANY_IDS  = ['settings-entities','settings-budgets','settings-benefits','settings-packages','settings-documents','settings-timeoff','settings-payroll','settings-expenses','settings-cardrules','settings-integrations','settings-team'];
+
+const ROUTE_MAP = [
+  { screen: 'dashboard',              path: '/hr-admin' },
+  { screen: 'requests',               path: '/hr-admin/time-off' },
+  { screen: 'team-absences',          path: '/hr-admin/time-off/calendar' },
+  { screen: 'employees',              path: '/hr-admin/people' },
+  { screen: 'expenses',               path: '/hr-admin/expenses' },
+  { screen: 'choices',                path: '/hr-admin/choices' },
+  { screen: 'payroll-overview',       path: '/hr-admin/payroll' },
+  { screen: 'payroll-reports',        path: '/hr-admin/payroll/reports' },
+  { screen: 'settings-notifications', path: '/hr-admin/settings/notifications' },
+  { screen: 'settings-account',       path: '/hr-admin/settings/account' },
+  { screen: 'settings-entities',      path: '/hr-admin/settings/entities' },
+  { screen: 'settings-budgets',       path: '/hr-admin/settings/budgets' },
+  { screen: 'settings-benefits',      path: '/hr-admin/settings/benefits' },
+  { screen: 'settings-packages',      path: '/hr-admin/settings/packages' },
+  { screen: 'settings-documents',     path: '/hr-admin/settings/documents' },
+  { screen: 'settings-timeoff',       path: '/hr-admin/settings/time-off' },
+  { screen: 'settings-payroll',       path: '/hr-admin/settings/payroll' },
+  { screen: 'settings-expenses',      path: '/hr-admin/settings/expenses' },
+  { screen: 'settings-cardrules',     path: '/hr-admin/settings/card-rules' },
+  { screen: 'settings-integrations',  path: '/hr-admin/settings/integrations' },
+  { screen: 'settings-team',          path: '/hr-admin/settings/team' },
+  { screen: 'settings-billing',       path: '/hr-admin/settings/billing' },
+];
+
+function screenToPath(screen) {
+  if (screen.startsWith('employee-detail:')) return '/hr-admin/people/' + screen.split(':')[1];
+  if (screen === 'employees:admin') return '/hr-admin/people';
+  const entry = ROUTE_MAP.find(r => r.screen === screen);
+  return entry ? entry.path : '/hr-admin';
+}
+
+function pathToScreen(path) {
+  const clean = path.replace(/\/$/, '') || '/hr-admin';
+  const empMatch = clean.match(/^\/hr-admin\/people\/(.+)$/);
+  if (empMatch) return 'employee-detail:' + empMatch[1];
+  const entry = ROUTE_MAP.find(r => r.path === clean);
+  return entry ? entry.screen : 'dashboard';
+}
 
 function SettingsModeSidebar({ active, onNav }) {
   const [personalOpen, setPersonalOpen] = useState(true);
@@ -1741,6 +1871,51 @@ function SelectField({ value, onChange, children, style }) {
   );
 }
 
+function SettingsSelect({ value, onChange, opts }) {
+  const [open, setOpen] = useState(false);
+  const { rendered: menuRendered, visible: menuVisible } = usePopoverTransition(open);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
+  const selected = opts.find(o => o.value === value);
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        width: '100%', padding: '9px 12px', borderRadius: 8,
+        border: `1px solid ${open ? P.borderStrong : P.border}`, background: P.white, color: P.ink,
+        cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, textAlign: 'left', boxSizing: 'border-box',
+      }}>
+        <span>{selected?.label ?? '—'}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={P.inkFaint} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0, transition: `transform 150ms ${EASE_OUT}`, transform: open ? 'rotate(180deg)' : 'none' }}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {menuRendered && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 50,
+          background: P.white, border: `1px solid ${P.border}`, borderRadius: 10,
+          boxShadow: '0 4px 16px rgba(15,13,40,0.10)', overflow: 'hidden',
+          ...popoverStyle(menuVisible, 'top left'),
+        }}>
+          {opts.map(o => (
+            <button key={o.value} onClick={() => { onChange(o.value); setOpen(false); }} style={{
+              display: 'block', width: '100%', textAlign: 'left', padding: '9px 12px',
+              border: 'none', cursor: 'pointer', background: value === o.value ? P.bg : 'transparent',
+              fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink,
+            }}>{o.label}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function EmployeeCombobox({ value, onChange, employees, error, autoFocus }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -2026,7 +2201,7 @@ function AddTimeOffModal({ existing, onClose, onSave, requests = [], defaultDate
   const isEdit = !!existing?.id;
   const lockEmployee = existing?._lockEmployee;
   const [empId, setEmpId]     = useState(existing?.employee || defaultEmployee || '');
-  const [type, setType]       = useState(existing?.type || 'Time off');
+  const [type, setType]       = useState(existing?.type || 'Statutory annual leave');
   const [specialReason, setSpecialReason] = useState(existing?._specialReason || '');
   const [specialWho, setSpecialWho]       = useState(existing?._specialWho || '');
   const [note, setNote]       = useState(existing?.note || '');
@@ -2275,6 +2450,19 @@ function AddTimeOffModal({ existing, onClose, onSave, requests = [], defaultDate
               </SelectField>
             </div>
           )}
+
+          {/* Paternity leave / Maternity leave entitlement note */}
+          {!allEmployees && (type === 'Paternity leave' || type === 'Maternity leave') && (() => {
+            const meta = SPECIAL_LEAVE_METADATA[type];
+            return (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '8px 10px', borderRadius: 7, background: P.bg, border: `1px solid ${P.border}` }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={P.inkSoft} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 1, flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, lineHeight: 1.4 }}>
+                  Entitlement: {meta.statutoryLabel} — {meta.statutoryNote}
+                </span>
+              </div>
+            );
+          })()}
 
           {/* Special leave cascading selects */}
           {!allEmployees && type === 'Special leave' && (() => {
@@ -3942,7 +4130,7 @@ function ViewSwitcher({ mode, onChange }) {
 }
 
 // ── Filter toolbar ─────────────────────────────────────────────────────────
-const LEAVE_FILTER_OPTS = [['all', 'All time-off types'], ['Time off', 'Time off'], ['ADV / RTT', 'ADV / RTT'], ['Extra-legal leave', 'Extra-legal leave'], ['Sick leave', 'Sick leave'], ['Special leave', 'Special leave']];
+const LEAVE_FILTER_OPTS = [['all', 'All time-off types'], ['Statutory annual leave', 'Statutory annual leave'], ['ADV / RTT', 'ADV / RTT'], ['Extra-legal leave', 'Extra-legal leave'], ['Sick leave', 'Sick leave'], ['Special leave', 'Special leave']];
 
 function FilterDropdown({ label, active, opts, onSelect, minWidth }) {
   const [open, setOpen] = useState(false);
@@ -4054,7 +4242,9 @@ function FilterToolbar({ searchText, onSearch, filter, onFilter, filterOpts, dep
 }
 
 // ── Team absences screen ───────────────────────────────────────────────────
-function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activeReqId, onSave, companyEvents = [], onCancelCompanyEvent, initialDate, initialDeptFilter, appEntity = null }) {
+function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activeReqId, onSave, companyEvents = [], onCancelCompanyEvent, initialDate, initialDeptFilter, appEntity = null, leaveTypes = [] }) {
+  const getLvColor = (type) => leaveTypes.find(lt => lt.name === type)?.color || LEAVE_COLORS[type] || '#2563eb';
+  const getLvBorder = (type) => COLOR_TO_BORDER[getLvColor(type)] || LEAVE_BORDER_COLORS[type] || '#999';
   const today = new Date(); today.setHours(0,0,0,0);
   const todayISO = isoDate(today);
 
@@ -4400,7 +4590,7 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
                           const isCollective = closureSet.has(iso);
                           const entry = absenceMap[empId]?.[iso];
                           const show = entry && (leaveFilter === 'all' || entry.type === leaveFilter);
-                          const barColor = show ? (LEAVE_COLORS[entry.type] || '#2563eb') : null;
+                          const barColor = show ? getLvColor(entry.type) : null;
                           const isPending = show && entry.status === 'pending';
 
                           // Connected bar styling
@@ -4489,11 +4679,11 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
                                       onClick={() => { if (fullReq && onShowDetail) onShowDetail(fullReq); }}
                                       style={{
                                         flex: 1, borderRadius: barRadius, background: barColor,
-                                        borderTop: isPending ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                        borderBottom: isPending ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                        borderLeft: isPending && half === 'am' ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                        borderRight: isPending && half === 'pm' ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                        boxShadow: activeReqId && entry.requestId === activeReqId ? `inset 0 0 0 2px ${LEAVE_BORDER_COLORS[entry.type] || P.inkSoft}` : undefined,
+                                        borderTop: isPending ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                        borderBottom: isPending ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                        borderLeft: isPending && half === 'am' ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                        borderRight: isPending && half === 'pm' ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                        boxShadow: activeReqId && entry.requestId === activeReqId ? `inset 0 0 0 2px ${getLvBorder(entry.type)}` : undefined,
                                         cursor: 'pointer',
                                         padding: '5px 8px',
                                         display: 'flex', alignItems: 'center', flexDirection: 'column', justifyContent: 'center',
@@ -4548,11 +4738,11 @@ function TeamAbsencesScreen({ requests, pendingCount, onNav, onShowDetail, activ
                                     width: '100%',
                                     borderRadius: isStart && isEnd ? 5 : isStart ? '5px 0 0 5px' : isEnd ? '0 5px 5px 0' : 0,
                                     background: barColor,
-                                    borderTop: isPending ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                    borderBottom: isPending ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                    borderLeft: isPending && isStart ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                    borderRight: isPending && isEnd ? `1.5px dashed ${LEAVE_BORDER_COLORS[entry.type] || '#999'}` : 'none',
-                                    boxShadow: activeReqId && entry.requestId === activeReqId ? `inset 0 0 0 2px ${LEAVE_BORDER_COLORS[entry.type] || P.inkSoft}` : undefined,
+                                    borderTop: isPending ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                    borderBottom: isPending ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                    borderLeft: isPending && isStart ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                    borderRight: isPending && isEnd ? `1.5px dashed ${getLvBorder(entry.type)}` : 'none',
+                                    boxShadow: activeReqId && entry.requestId === activeReqId ? `inset 0 0 0 2px ${getLvBorder(entry.type)}` : undefined,
                                     cursor: 'pointer',
                                     padding: isWeekCard ? '5px 8px' : 0,
                                     display: isWeekCard ? 'flex' : 'block',
@@ -4700,7 +4890,7 @@ function EmployeeRow({ emp, onNav }) {
 }
 
 // ── Employees screen ──────────────────────────────────────────────────────
-function EmployeesScreen({ requests, onNav, initialRoleFilter = 'All', adminAccess = {}, appEntity = null }) {
+function EmployeesScreen({ requests, onNav, initialRoleFilter = 'All', adminAccess = {}, appEntity = null, onAddEmployee }) {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState(initialRoleFilter);
   const [statusFilter, setStatusFilter] = useState('Active');
@@ -4734,7 +4924,7 @@ function EmployeesScreen({ requests, onNav, initialRoleFilter = 'All', adminAcce
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: `1px solid ${P.border}`, borderRadius: 8, background: P.white, color: P.ink, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
             <Icon name="Settings2" size={14} /> Bulk actions
           </button>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: 'none', borderRadius: 8, background: P.action, color: P.white, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={onAddEmployee} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: 'none', borderRadius: 8, background: P.action, color: P.white, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
             <Icon name="Plus" size={14} color={P.white} /> Add a user
           </button>
         </div>
@@ -4784,8 +4974,14 @@ function EmployeesScreen({ requests, onNav, initialRoleFilter = 'All', adminAcce
 // ── Edit balances modal ────────────────────────────────────────────────────
 const BALANCE_SECTIONS = [
   {
+    label: 'Auto-calculated',
+    types: ['ADV / RTT'],
+    editable: false,
+    calculated: true,
+  },
+  {
     label: 'Set by you',
-    types: ['Time off', 'ADV / RTT', 'Extra-legal leave'],
+    types: ['Statutory annual leave', 'Extra-legal leave'],
     editable: true,
   },
   {
@@ -4799,7 +4995,7 @@ const BALANCE_SECTIONS = [
 
 function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onConfirm }) {
   const [values, setValues] = useState(() =>
-    ['Time off', 'ADV / RTT', 'Extra-legal leave'].reduce((acc, type) => {
+    ['Statutory annual leave', 'Extra-legal leave'].reduce((acc, type) => {
       acc[type] = balances[type] != null ? String(balances[type]) : '';
       return acc;
     }, {})
@@ -4816,7 +5012,7 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
 
   const handleSave = () => {
     const next = { ...balances };
-    for (const type of ['Time off', 'ADV / RTT', 'Extra-legal leave']) {
+    for (const type of ['Statutory annual leave', 'Extra-legal leave']) {
       const v = parseInt(values[type], 10);
       next[type] = isNaN(v) ? 0 : Math.max(0, v);
     }
@@ -4856,7 +5052,7 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
                 {section.label}
               </div>
               {section.types.map((type, ti) => {
-                const dot = LEAVE_COLORS[type] || '#ccc';
+                const dot = getLvColor(type);
                 const isLast = ti === section.types.length - 1;
                 if (section.editable) {
                   return (
@@ -4879,11 +5075,12 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
                   const defaultVal = section.defaults?.[type];
                   const displayVal = balances[type] != null ? balances[type] : defaultVal;
                   return (
-                    <div key={type} style={{ display: 'flex', alignItems: 'center', padding: '10px 22px', borderTop: ti > 0 ? `1px solid ${P.border}` : 'none', opacity: 0.7 }}>
+                    <div key={type} style={{ display: 'flex', alignItems: 'center', padding: '10px 22px', borderTop: ti > 0 ? `1px solid ${P.border}` : 'none', opacity: section.calculated ? 1 : 0.7 }}>
                       <span style={{ width: 9, height: 9, borderRadius: '50%', background: dot, flexShrink: 0, marginRight: 10 }} />
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, flex: 1 }}>{type}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: P.inkSoft }}>{displayVal ?? '—'}</span>
+                        {section.calculated && <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#059669', background: '#ecfdf5', padding: '2px 6px', borderRadius: 4 }}>Auto</span>}
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: section.calculated ? P.ink : P.inkSoft }}>{displayVal ?? '—'}</span>
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>days</span>
                       </div>
                     </div>
@@ -4907,9 +5104,9 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
 }
 
 // ── Employee detail screen ────────────────────────────────────────────────
-function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, onApprove, onDecline, onViewTeamCalendar, employeeBalance, onUpdateBalance, needsSetup, confirmedDate, onConfirmBalances, onToast, adminAccess, onAdminSave }) {
-  const emp = EMPLOYEES[employeeId];
-  const [activeTab, setActiveTab] = useState('choices');
+function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, onApprove, onDecline, onViewTeamCalendar, employeeBalance, onUpdateBalance, needsSetup, confirmedDate, onConfirmBalances, onToast, adminAccess, onAdminSave, companyRegime, onEmployeeUpdate, getEmpWithOverrides, initialTab = 'choices' }) {
+  const emp = getEmpWithOverrides ? getEmpWithOverrides(employeeId) : EMPLOYEES[employeeId];
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [addModal, setAddModal] = useState(null); // null | 'add' | request object (edit)
   const [cancelAction, setCancelAction] = useState(null);
   const [editBalancesOpen, setEditBalancesOpen] = useState(false);
@@ -4940,7 +5137,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
     return ALL_LEAVE_TYPES.map(type => {
       const active = empReqs.filter(r => r.type === type && r.status !== 'rejected');
       const used = active.reduce((s, r) => s + (r.days || 1), 0);
-      const defaultEntitled = type === 'Time off' ? emp.entitlement : type === 'ADV / RTT' ? 12 : type === 'Extra-legal leave' ? 4 : null;
+      const defaultEntitled = type === 'Statutory annual leave' ? emp.entitlement : type === 'ADV / RTT' ? calcAdvDays(companyRegime || COMPANY_REGIME_DEFAULTS, emp) : type === 'Extra-legal leave' ? 4 : null;
       const entitled = (employeeBalance && employeeBalance[type] !== undefined) ? employeeBalance[type] : defaultEntitled;
       return { type, entitled, used, remaining: entitled != null ? Math.max(0, entitled - used) : null };
     });
@@ -4953,7 +5150,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
   const tabs = [
     { id: 'choices', label: 'Choices' },
     { id: 'budgets', label: 'Budgets' },
-    { id: 'salary', label: 'Salary & components' },
+    { id: 'salary', label: 'Compensation' },
     { id: 'details', label: 'Details & roles' },
     { id: 'timeoff', label: 'Leave & absences' },
   ];
@@ -5219,9 +5416,9 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
         ) : activeTab === 'budgets' ? (
           <div><BudgetsTab empId={employeeId} /></div>
         ) : activeTab === 'salary' ? (
-          <div><SalaryTab empId={employeeId} /></div>
+          <div><SalaryTab empId={employeeId} emp={emp} companyRegime={companyRegime || COMPANY_REGIME_DEFAULTS} onEmployeeUpdate={onEmployeeUpdate} /></div>
         ) : activeTab === 'details' ? (
-          <div><DetailsTab emp={emp} empId={employeeId} onNav={onNav} adminAccess={adminAccess} onAdminSave={onAdminSave} /></div>
+          <div><DetailsTab emp={emp} empId={employeeId} onNav={onNav} adminAccess={adminAccess} onAdminSave={onAdminSave} companyRegime={companyRegime || COMPANY_REGIME_DEFAULTS} onEmployeeUpdate={onEmployeeUpdate} /></div>
         ) : (
           <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, padding: 24, maxWidth: 480, color: P.inkFaint, fontFamily: 'var(--font-body)', fontSize: 13 }}>
             Coming soon
@@ -6065,13 +6262,6 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
           </div>
         </div>
 
-        <div>
-          <div style={SL}>Approval</div>
-          <div style={card}>
-            {settingRow(() => setSettingModal('approval'), 'check-circle', 'Who approves?', approvalLabel, true)}
-          </div>
-        </div>
-
       </div>
     </div>
     </>
@@ -6476,46 +6666,75 @@ const TIMEOFF_APPROVAL_OPTS = [
   { value: 'hr',      label: 'HR manager',     hint: 'Person assigned in Team & access' },
   { value: 'auto',    label: 'Auto-approve',   hint: 'Requests under 3 days are approved automatically' },
 ];
+const BENEFIT_TYPES_SEED = [
+  { id: 'home-office', label: 'Home office',              icon: 'monitor',         hint: 'Equipment and furniture for remote work',                              active: true,  requiresApproval: true,  receiptRequired: true,  budgetCap: 500  },
+  { id: 'learning',    label: 'Learning & Development',   icon: 'graduation-cap',  hint: 'Courses, books, conferences, and training',                            active: true,  requiresApproval: true,  receiptRequired: true,  budgetCap: null },
+  { id: 'mobility',    label: 'Mobility',                 icon: 'bike',            hint: 'Bike lease, public transit, and commuting costs',                      active: true,  requiresApproval: true,  receiptRequired: false, budgetCap: null },
+  { id: 'pension',     label: 'Pension savings',          icon: 'piggy-bank',      hint: 'Individual pension savings (fiscale pensioensparen) — capped by law',  active: true,  requiresApproval: false, receiptRequired: false, budgetCap: 990  },
+  { id: 'meal',        label: 'Meal vouchers',            icon: 'utensils',        hint: 'Daily meal contribution via Payflip card — up to €8 / day',            active: true,  requiresApproval: false, receiptRequired: false, budgetCap: null },
+];
+
 const ENTITLEMENT_OPTS = [
   { value: 'legal',   label: 'Legal minimum',    hint: 'Belgian statutory: 20 days for full-time, prorated for part-time' },
   { value: 'company', label: 'Company policy',   hint: 'Set a custom entitlement above the legal minimum' },
 ];
+const LEAVE_TYPE_AUDIT = {
+  'Statutory annual leave': { by: 'Jana Goossens',    at: '3 Feb 2026'  },
+  'ADV / RTT':              { by: 'Bruno Coen',       at: '8 Aug 2026'  },
+  'Extra-legal leave':      { by: 'Jana Goossens',    at: '12 Mar 2026' },
+  'Sick leave':             { by: 'Thomas Janssens',  at: '15 Jan 2026' },
+  'Paternity leave':        { by: 'Jana Goossens',    at: '2 Jan 2026'  },
+  'Maternity leave':        { by: 'Jana Goossens',    at: '2 Jan 2026'  },
+  'Wedding':                { by: 'Bruno Coen',       at: '10 May 2026' },
+  'Funeral leave':          { by: 'Jana Goossens',    at: '3 Feb 2026'  },
+  'Ceremony':               { by: 'Jana Goossens',    at: '3 Feb 2026'  },
+  'Civic duty':             { by: 'Thomas Janssens',  at: '18 Mar 2026' },
+  'Moving':                 { by: 'Bruno Coen',       at: '20 Jun 2026' },
+};
+
 const CARRYOVER_OPTS = [
+  { value: 'q1',        label: 'Carry over until 31 March', hint: 'Unused days must be taken before 31 March of the following year (Belgian statutory requirement)' },
   { value: 'forfeit',   label: 'No carry-over',          hint: 'Unused days are forfeited at year end' },
   { value: 'cap',       label: 'Limited carry-over',       hint: 'Set a maximum number of days that roll over to January' },
   { value: 'unlimited', label: 'Carry over all unused',   hint: 'All remaining days roll over' },
   { value: 'payout',    label: 'Pay out unused days',     hint: 'Remaining balance is included in the last payroll of the year' },
 ];
 const DEFAULT_LEAVE_CONFIGS = {
-  'Time off':                    { docRequired: false, maxDays: 20,   editRequiresApproval: false, cancelRequiresApproval: false },
-  'ADV / RTT':                   { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
-  'Extra-legal leave':           { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
-  'Sick leave':                  { docRequired: true,  maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
-  'Wedding':                     { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
-  'Family wedding':              { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
-  'Bereavement — close family':  { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
-  'Bereavement — family':        { docRequired: false, maxDays: null, editRequiresApproval: true,  cancelRequiresApproval: true  },
-  'Solemn communion':            { docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
-  'Civic duty':                  { docRequired: true,  maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false },
-  'Moving':                      { docRequired: false, maxDays: 1,   editRequiresApproval: false, cancelRequiresApproval: false },
+  'Statutory annual leave':      { requiresApproval: true,  declaration: false, docRequired: false, maxDays: 20,   editRequiresApproval: false, cancelRequiresApproval: false, carryover: 'q1',      allowHalfDay: true,  docThresholdDays: 0 },
+  'ADV / RTT':                   { requiresApproval: true,  declaration: false, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: 'forfeit', allowHalfDay: true,  docThresholdDays: 0, advAwardMethod: 'accrued' },
+  'Extra-legal leave':           { requiresApproval: true,  declaration: false, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: 'forfeit', allowHalfDay: true,  docThresholdDays: 0 },
+  'Sick leave':                  { requiresApproval: false, declaration: true,  docRequired: true,  maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null,      allowHalfDay: false, docThresholdDays: 2 },
+  'Paternity leave':                 { requiresApproval: false, declaration: false, adminOnly: true, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Maternity leave':             { requiresApproval: false, declaration: false, adminOnly: true, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Wedding':                     { requiresApproval: false, declaration: false, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Funeral leave':               { requiresApproval: false, declaration: false, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Ceremony':                    { requiresApproval: false, declaration: false, docRequired: false, maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Civic duty':                  { requiresApproval: false, declaration: false, docRequired: true,  maxDays: null, editRequiresApproval: false, cancelRequiresApproval: false, carryover: null, allowHalfDay: false, docThresholdDays: 0 },
+  'Moving':                      { requiresApproval: false, declaration: false, docRequired: false, maxDays: 1,    editRequiresApproval: false, cancelRequiresApproval: false, carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0 },
 };
 
 const LEAVE_COLOR_VALUES = Object.values(LEAVE_COLORS);
 const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
-function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
+function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onDelete, onClose, companyRegime = COMPANY_REGIME_DEFAULTS, onToast }) {
   const isNew = !config;
-  const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, statutoryDays: null, statutoryNote: null, section: 'time-off' };
+  const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, declaration: false, adminOnly: false, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, companyPolicy: false, statutoryDays: null, statutoryLabel: null, statutoryNote: null, section: 'time-off', carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0, deletable: true };
   const [name, setName] = useState(defaults.name);
   const [color, setColor] = useState(defaults.color);
   const [active, setActive] = useState(defaults.active);
   const [requiresApproval, setRequiresApproval] = useState(defaults.requiresApproval);
   const [docRequired, setDocRequired] = useState(defaults.docRequired);
+  const [docThresholdDays, setDocThresholdDays] = useState(defaults.docThresholdDays ?? 0);
   const [limitedDays, setLimitedDays] = useState(defaults.limitedDays);
   const [maxDays, setMaxDays] = useState(defaults.maxDays);
   const [editRequiresApproval, setEditRequiresApproval] = useState(defaults.editRequiresApproval ?? false);
   const [cancelRequiresApproval, setCancelRequiresApproval] = useState(defaults.cancelRequiresApproval ?? false);
+  const [carryover, setCarryover] = useState(defaults.carryover ?? 'forfeit');
+  const [allowHalfDay, setAllowHalfDay] = useState(defaults.allowHalfDay ?? true);
+  const [advAwardMethod, setAdvAwardMethod] = useState(defaults.advAwardMethod ?? 'lump-sum');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [tooltip, setTooltip] = useState(null); // { text, x, y }
+  const showsAnnualBalance = !defaults.declaration && !defaults.adminOnly && !defaults.statutory && defaults.section !== 'special-leave';
 
   // Deduplicated color list and usage map
   const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
@@ -6539,7 +6758,8 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
 
   const save = () => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), color, active, requiresApproval, docRequired, limitedDays, maxDays: limitedDays ? (maxDays || 20) : null, editRequiresApproval, cancelRequiresApproval, statutory: defaults.statutory, statutoryDays: defaults.statutoryDays, statutoryNote: defaults.statutoryNote, section: defaults.section });
+    onSave({ name: name.trim(), color, active, requiresApproval, declaration: defaults.declaration, adminOnly: defaults.adminOnly, docRequired, docThresholdDays: docRequired ? docThresholdDays : 0, limitedDays, maxDays: (limitedDays || defaults.companyPolicy) ? (maxDays || 1) : null, editRequiresApproval, cancelRequiresApproval, carryover: showsAnnualBalance ? carryover : null, allowHalfDay, advAwardMethod: defaults.name === 'ADV / RTT' ? advAwardMethod : undefined, statutory: defaults.statutory, companyPolicy: defaults.companyPolicy, statutoryDays: defaults.statutoryDays, statutoryLabel: defaults.statutoryLabel, statutoryNote: defaults.statutoryNote, section: defaults.section, deletable: defaults.deletable ?? true });
+    onToast?.({ message: isNew ? `${name.trim()} created` : `${name.trim()} saved`, type: 'approve' });
     close();
   };
 
@@ -6574,24 +6794,30 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
       }}>
         {/* Header */}
         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: `1.5px solid ${borderForColor(color)}`, flexShrink: 0 }} />
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
               {isNew ? 'New leave type' : (name || defaults.name)}
-            </span>
+            </div>
+            {!isNew && (() => {
+              const audit = LEAVE_TYPE_AUDIT[defaults.name];
+              return audit ? (
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 3 }}>
+                  Updated by {audit.by} · {audit.at}
+                </div>
+              ) : null;
+            })()}
           </div>
           <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-          {/* Enabled status — top-level, not a "rule" */}
-          <div style={{ paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
+        {/* Active toggle zone */}
+        {!defaults.declaration && !defaults.adminOnly && (
+          <div style={{ flexShrink: 0, padding: '12px 24px', borderBottom: `1px solid ${P.border}`, background: P.bg }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Active</div>
                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
                   {active ? 'Employees can request this leave type' : 'Employees cannot submit new requests for this type'}
                 </div>
@@ -6605,16 +6831,33 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
               </div>
             )}
           </div>
+        )}
 
-          {/* General section */}
-          <div style={SL}>General</div>
+        {/* Body */}
+        <div style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+
+          {/* Appearance section */}
+          <div style={SL}>Appearance</div>
+          {defaults.adminOnly && (
+            <div style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>
+              This leave type is recorded by HR on behalf of the employee — it cannot be self-requested from the employee app.
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label style={labelStyle}>Name</label>
-              <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave" style={inputStyle} />
+              {!isNew && defaults.name === 'Statutory annual leave' ? (
+                <div style={{ ...inputStyle, background: P.bg, color: P.inkSoft, cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>{name}</span>
+                  <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                </div>
+              ) : (
+                <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave" style={inputStyle} />
+              )}
             </div>
             <div>
-              <label style={labelStyle}>Color</label>
+              <label style={{ ...labelStyle, marginBottom: 10 }}>Color</label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {uniqueColors.map((c) => {
                   const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
@@ -6630,58 +6873,171 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
                       }}
                       onMouseLeave={() => setTooltip(null)}
                       style={{
-                        width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer',
+                        position: 'relative', width: 20, height: 20, borderRadius: '50%', background: c, cursor: 'pointer',
                         border: `1.5px solid ${borderColor}`,
-                        outline: color === c ? `2px solid ${P.ink}` : '2px solid transparent',
-                        outlineOffset: 2,
-                        transition: `outline 120ms ${EASE_OUT}`,
-                      }} />
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}>
+                      {color === c && <Icon name="check" size={11} color={P.ink} strokeWidth={2.5} style={{ pointerEvents: 'none' }} />}
+                    </div>
                   );
                 })}
               </div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 8 }}>Shown in calendar and leave overview</div>
             </div>
           </div>
-          <div style={{ marginTop: 16 }}>
+          <div style={{ borderTop: `1px solid ${P.border}`, marginTop: 24, paddingTop: 24, marginLeft: -24, marginRight: -24, paddingLeft: 24, paddingRight: 24 }}>
+          <div style={SL}>Policy</div>
+          <div>
             {defaults.statutory ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0' }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Days allowed</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
+                    <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                  </div>
                   {defaults.statutoryNote && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{defaults.statutoryNote}</div>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink }}>{defaults.statutoryDays} {defaults.statutoryDays === 1 ? 'day' : 'days'}</span>
-                  <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' }}>Belgian law</span>
+                  {defaults.statutoryLabel && <span style={{ padding: '2px 7px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>{defaults.statutoryLabel}</span>}
+                </div>
+              </div>
+            ) : defaults.companyPolicy ? (
+              <div style={{ padding: '14px 0' }}>
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Day limit</div>
+                  {defaults.statutoryNote && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{defaults.statutoryNote}</div>}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                    <button onClick={() => setMaxDays(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
+                    <input type="text" inputMode="numeric" value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                      style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
+                    <button onClick={() => setMaxDays(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
                 </div>
               </div>
             ) : (
               <>
-                {toggleRow('Day limit', 'Maximum number of days employees can request per year', limitedDays, () => setLimitedDays(v => !v), true)}
-                {limitedDays && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
-                    <input type="number" min={1} value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
-                      style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 8, padding: '8px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center' }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+                {defaults.declaration ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', opacity: 0.45 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
+                        <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>No cap — sick leave has no legal maximum under Belgian law</div>
+                    </div>
+                    <Switch size="sm" checked={false} onChange={() => {}} />
+                  </div>
+                ) : defaults.name === 'Extra-legal leave' ? (
+                  <>
+                    <div style={{ padding: '20px 0 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
+                        <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>Entitlement is set per employee or contract type</div>
+                    </div>
+                    <div style={{ margin: '8px 0 14px', padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <Icon name="info" size={14} color="#1d4ed8" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                      <span>Extra-legal leave is additional vacation above the statutory 20-day minimum. The number of days is configured per employee or contract type under their profile.</span>
+                    </div>
+                  </>
+                ) : defaults.name === 'ADV / RTT' ? (() => {
+                  const advFT = Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12);
+                  return (
+                    <>
+                      <div style={{ padding: '20px 0 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.inkSoft }}>Day limit</div>
+                          <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>Calculated automatically from contracted hours</div>
+                      </div>
+                      {advFT === 0 && (
+                        <div style={{ margin: '8px 0 14px', padding: '8px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                          <Icon name="info" size={14} color="#1d4ed8" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                          <span>Your company uses 38h/week contracts — no ADV days are generated. Update contracted hours in Payroll settings.</span>
+                        </div>
+                      )}
+                      <div style={{ padding: '14px 0' }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 6 }}>Accrual method</div>
+                        <select value={advAwardMethod} onChange={e => setAdvAwardMethod(e.target.value)}
+                          style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box', background: P.white }}>
+                          <option value="lump-sum">Lump-sum upfront</option>
+                          <option value="accrued">Monthly accrual</option>
+                        </select>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>
+                          {advAwardMethod === 'lump-sum'
+                            ? 'All days granted upfront — employees can book days not yet earned, requiring year-end corrections'
+                            : 'Days unlock month by month — employees can only book what they\'ve earned so far'}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()
+                : toggleRow('Day limit', 'Cap the number of days per year — can be overridden per employee', limitedDays, () => setLimitedDays(v => !v), true)
+                }
+                {defaults.name !== 'ADV / RTT' && defaults.name !== 'Extra-legal leave' && !defaults.declaration && limitedDays && (
+                  <div style={{ paddingLeft: 16, borderLeft: `1px solid ${P.border}`, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0 14px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                        <button onClick={() => setMaxDays(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
+                        <input type="text" inputMode="numeric" value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+                          style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
+                        <button onClick={() => setMaxDays(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+                      </div>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+                    </div>
                   </div>
                 )}
               </>
             )}
-          </div>
-          <div style={{ marginBottom: 32 }} />
-          {/* Rules section */}
-          <div style={SL}>Rules</div>
-          <div>
-            {toggleRow('Approval required', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v))}
+            {showsAnnualBalance && (
+              <div style={{ padding: '14px 0' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 6 }}>Carry-over</div>
+                <SettingsSelect value={carryover} onChange={setCarryover} opts={CARRYOVER_OPTS} />
+                {CARRYOVER_OPTS.find(o => o.value === carryover)?.hint && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>{CARRYOVER_OPTS.find(o => o.value === carryover)?.hint}</div>
+                )}
+              </div>
+            )}
+            {!defaults.declaration && !defaults.adminOnly && (
+              <>
+                {toggleRow('Approval required', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v), true)}
+                {!defaults.statutory && !defaults.declaration && requiresApproval && (
+                  <div style={{ paddingLeft: 16, borderLeft: `1px solid ${P.border}`, marginBottom: 4 }}>
+                    {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v), true)}
+                    {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
+                  </div>
+                )}
+              </>
+            )}
             {toggleRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
-            <div style={{ ...SL, marginTop: 32 }}>After approval</div>
-            {toggleRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v))}
-            {toggleRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
+            {!defaults.adminOnly && toggleRow('Allow half-day requests', 'Employees can request a morning or afternoon instead of a full day', allowHalfDay, () => setAllowHalfDay(v => !v), true)}
           </div>
+          </div>
+          </div>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))', pointerEvents: 'none' }} />
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div style={{ flexShrink: 0, padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
           <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
           <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+          {!isNew && onDelete && (
+            confirmDelete ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 12, paddingLeft: 18, borderLeft: `1px solid ${P.border}` }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Delete this leave type?</span>
+                <button onClick={onDelete} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Confirm</button>
+                <button onClick={() => setConfirmDelete(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, padding: 0 }}>Cancel</button>
+              </div>
+            ) : defaults.deletable ? (
+              <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0, marginLeft: 12, paddingLeft: 18, borderLeft: `1px solid ${P.border}` }}>Delete</button>
+            ) : null
+          )}
         </div>
       </div>
       {tooltip && (
@@ -6699,31 +7055,395 @@ function LeaveTypeDrawer({ config, allLeaveTypes = [], onSave, onClose }) {
   );
 }
 
-function TimeOffSettings({ appEntity = null }) {
-  const [leaveTypes, setLeaveTypes] = useState(() =>
-    LEAVE_SECTIONS.flatMap(section =>
-      section.typeNames.map(name => {
-        const meta = SPECIAL_LEAVE_METADATA[name];
-        const cfg = DEFAULT_LEAVE_CONFIGS[name] || {};
-        return {
-          name,
-          section: section.id,
-          color: LEAVE_COLORS[name],
-          active: true,
-          requiresApproval: true,
-          docRequired: cfg.docRequired || false,
-          statutory: meta?.statutory || false,
-          statutoryDays: meta?.statutoryDays || null,
-          statutoryNote: meta?.statutoryNote || null,
-          limitedDays: !meta?.statutory && cfg.maxDays != null,
-          maxDays: cfg.maxDays || 20,
-          editRequiresApproval: cfg.editRequiresApproval ?? false,
-          cancelRequiresApproval: cfg.cancelRequiresApproval ?? false,
-        };
-      })
-    )
+function initLeaveTypes() {
+  return LEAVE_SECTIONS.flatMap(section =>
+    section.typeNames.map(name => {
+      const meta = SPECIAL_LEAVE_METADATA[name];
+      const cfg = DEFAULT_LEAVE_CONFIGS[name] || {};
+      return {
+        name,
+        section: section.id,
+        color: LEAVE_COLORS[name],
+        active: true,
+        requiresApproval: cfg.requiresApproval ?? true,
+        declaration: cfg.declaration || false,
+        adminOnly: cfg.adminOnly || false,
+        docRequired: cfg.docRequired || false,
+        statutory: meta?.statutory || false,
+        companyPolicy: meta?.companyPolicy || false,
+        statutoryDays: meta?.statutoryDays || null,
+        statutoryLabel: meta?.statutoryLabel || null,
+        statutoryNote: meta?.statutoryNote || null,
+        limitedDays: !meta?.statutory && cfg.maxDays != null,
+        maxDays: cfg.maxDays || 20,
+        editRequiresApproval: cfg.editRequiresApproval ?? false,
+        cancelRequiresApproval: cfg.cancelRequiresApproval ?? false,
+        carryover: cfg.carryover ?? null,
+        allowHalfDay: cfg.allowHalfDay ?? true,
+        docThresholdDays: cfg.docThresholdDays ?? 0,
+        advAwardMethod: cfg.advAwardMethod ?? undefined,
+        deletable: !meta?.statutory && !cfg.adminOnly && !cfg.declaration && name !== 'Statutory annual leave',
+      };
+    })
   );
+}
+
+function ConfirmDeleteModal({ name, onConfirm, onClose }) {
+  const { visible, close } = useModalTransition(onClose);
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 380, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', ...modalPanelStyle(visible) }}>
+        <div style={{ padding: '24px 24px 20px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, marginBottom: 8 }}>Delete {name}?</div>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>
+            This will permanently remove the leave type. Existing leave records won't be affected, but employees can no longer request it.
+          </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 16px 16px' }}>
+          <button onClick={close} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, color: P.ink, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+          <button onClick={onConfirm} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Delete leave type</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Set to false to revert to the drawer pattern
+const LEAVE_TYPE_USE_PAGE = true;
+
+function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, onBack, companyRegime = COMPANY_REGIME_DEFAULTS, onToast }) {
+  const isNew = !config;
+  const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, declaration: false, adminOnly: false, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, companyPolicy: false, statutoryDays: null, statutoryLabel: null, statutoryNote: null, section: 'time-off', carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0, deletable: true };
+  const [name,                  setName]                  = useState(defaults.name);
+  const [color,                 setColor]                 = useState(defaults.color);
+  const [active,                setActive]                = useState(defaults.active);
+  const [requiresApproval,      setRequiresApproval]      = useState(defaults.requiresApproval);
+  const [docRequired,           setDocRequired]           = useState(defaults.docRequired);
+  const [docThresholdDays,      setDocThresholdDays]      = useState(defaults.docThresholdDays ?? 0);
+  const [limitedDays,           setLimitedDays]           = useState(defaults.limitedDays);
+  const [maxDays,               setMaxDays]               = useState(defaults.maxDays);
+  const [editRequiresApproval,  setEditRequiresApproval]  = useState(defaults.editRequiresApproval ?? false);
+  const [cancelRequiresApproval,setCancelRequiresApproval]= useState(defaults.cancelRequiresApproval ?? false);
+  const [carryover,             setCarryover]             = useState(defaults.carryover ?? 'forfeit');
+  const [carryoverCap,          setCarryoverCap]          = useState(defaults.carryoverCap ?? 5);
+  const [allowHalfDay,          setAllowHalfDay]          = useState(defaults.allowHalfDay ?? true);
+  const [advAwardMethod,        setAdvAwardMethod]        = useState(defaults.advAwardMethod ?? 'lump-sum');
+  const [confirmDelete,         setConfirmDelete]         = useState(false);
+  const [tooltip,               setTooltip]               = useState(null);
+  const [dayLimitTip,           setDayLimitTip]           = useState(false);
+  const showsAnnualBalance = !defaults.declaration && !defaults.adminOnly && !defaults.statutory && defaults.section !== 'special-leave';
+
+  const uniqueColors = [...new Set(LEAVE_COLOR_VALUES)];
+  const colorUsers = React.useMemo(() => {
+    const map = {};
+    allLeaveTypes.forEach(lt => {
+      if (lt.name === defaults.name) return;
+      if (!map[lt.color]) map[lt.color] = [];
+      map[lt.color].push(lt.name);
+    });
+    return map;
+  }, [allLeaveTypes, defaults.name]);
+
+  const save = () => {
+    if (!name.trim()) return;
+    onSave({ name: name.trim(), color, active, requiresApproval, declaration: defaults.declaration, adminOnly: defaults.adminOnly, docRequired, docThresholdDays: docRequired ? docThresholdDays : 0, limitedDays, maxDays: (limitedDays || defaults.companyPolicy) ? (maxDays || 1) : null, editRequiresApproval, cancelRequiresApproval, carryover: showsAnnualBalance ? carryover : null, carryoverCap: carryover === 'cap' ? (carryoverCap || 5) : null, allowHalfDay, advAwardMethod: defaults.name === 'ADV / RTT' ? advAwardMethod : undefined, statutory: defaults.statutory, companyPolicy: defaults.companyPolicy, statutoryDays: defaults.statutoryDays, statutoryLabel: defaults.statutoryLabel, statutoryNote: defaults.statutoryNote, section: defaults.section, deletable: defaults.deletable ?? true });
+    onToast?.({ message: isNew ? `${name.trim()} created` : `${name.trim()} saved`, type: 'approve' });
+    onBack();
+  };
+
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
+  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
+  const audit = !isNew ? LEAVE_TYPE_AUDIT[defaults.name] : null;
+
+  const settingsRow = (label, hint, checked, onChange, last) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
+      <div>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</div>
+        {hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>{hint}</div>}
+      </div>
+      <Switch size="sm" checked={checked} onChange={onChange} />
+    </div>
+  );
+
+  const stepper = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+        <button onClick={() => setMaxDays(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
+        <input type="text" inputMode="numeric" value={maxDays} onChange={e => setMaxDays(parseInt(e.target.value) || '')}
+          style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
+        <button onClick={() => setMaxDays(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+      </div>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days per year</span>
+    </div>
+  );
+
+  return (
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      {tooltip && (
+        <div style={{ position: 'fixed', left: tooltip.x, top: tooltip.y - 6, transform: 'translateX(-50%) translateY(-100%)', padding: '4px 8px', borderRadius: 6, background: P.ink, color: '#fff', fontSize: 12, fontWeight: 500, fontFamily: 'var(--font-body)', whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 9999 }}>{tooltip.text}</div>
+      )}
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 32px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+        {/* Back */}
+        <button onClick={onBack} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, alignSelf: 'flex-start' }}>
+          <Icon name="chevron-left" size={14} color={P.inkSoft} strokeWidth={2.5} />
+          Time off
+        </button>
+
+        {/* Header */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>
+                  {name || 'New leave type'}
+                </h1>
+              </div>
+              {audit && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 6 }}>Last updated by {audit.by} · {audit.at}</div>}
+            </div>
+            {!defaults.declaration && !defaults.adminOnly && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 6, flexShrink: 0 }}>
+                <span key={active ? 'active' : 'inactive'} style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, animation: PREFERS_REDUCED_MOTION ? 'none' : `labelFadeIn 120ms ${EASE_OUT}` }}>{active ? 'Active' : 'Inactive'}</span>
+                <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateRows: (!active && !defaults.declaration && !defaults.adminOnly) ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+            <div style={{ minHeight: 0 }}>
+              <div style={{ marginTop: 14, padding: '12px 16px', borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <Icon name="info" size={14} color="#3b82f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                Approved leave already on record is not affected. Pending requests will need to be handled manually.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Admin-only callout — above all sections */}
+        {defaults.adminOnly && (
+          <div style={{ padding: '12px 16px', borderRadius: 10, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <Icon name="info" size={14} color="#3b82f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+            This leave type is recorded by HR on behalf of the employee — it cannot be self-requested from the employee app.
+          </div>
+        )}
+
+        {/* Settings sections — faded when inactive */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32, opacity: active ? 1 : 0.4, transition: PREFERS_REDUCED_MOTION ? 'none' : `opacity 200ms ${EASE_OUT}` }}>
+
+        {/* Appearance */}
+        <div>
+          <div style={SL}>Appearance</div>
+          <div style={card}>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${P.border}` }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 6 }}>Name</div>
+              {!isNew && defaults.name === 'Statutory annual leave' ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.bg, border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>{name}</span>
+                  <Icon name="lock" size={13} color={P.inkFaint} strokeWidth={2} />
+                </div>
+              ) : (
+                <input autoFocus={isNew} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Parental leave"
+                  style={{ width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
+              )}
+            </div>
+            <div style={{ padding: '16px 20px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 10 }}>Color</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {uniqueColors.map((c) => {
+                  const entry = LEAVE_COLOR_ENTRIES.find(([, v]) => v === c);
+                  const borderColor = entry ? (LEAVE_BORDER_COLORS[entry[0]] || P.border) : P.border;
+                  const usedBy = colorUsers[c];
+                  return (
+                    <div key={c} onClick={() => setColor(c)}
+                      onMouseEnter={e => { if (usedBy) { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ text: `Used by ${usedBy.join(', ')}`, x: r.left + r.width / 2, y: r.top }); } }}
+                      onMouseLeave={() => setTooltip(null)}
+                      style={{ position: 'relative', width: 22, height: 22, borderRadius: '50%', background: c, cursor: 'pointer', border: `1.5px solid ${borderColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {color === c && <Icon name="check" size={12} color={P.ink} strokeWidth={2.5} style={{ pointerEvents: 'none' }} />}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 8 }}>Shown in calendar and leave overview</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Allowance */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={SL}>Allowance</div>
+
+          {/* Day limit card */}
+          {(() => {
+            const advFT = defaults.name === 'ADV / RTT' ? Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12) : 0;
+            const isLocked = defaults.statutory || defaults.declaration || defaults.name === 'ADV / RTT' || defaults.name === 'Extra-legal leave';
+            const lockedChecked = (defaults.statutory && defaults.statutoryDays !== null) || (defaults.name === 'ADV / RTT' && advFT > 0);
+            const isChecked = isLocked ? lockedChecked : limitedDays;
+            const showBelow = isLocked || limitedDays;
+
+            const tooltipText = defaults.statutory
+              ? 'Set by Belgian law — cannot be changed'
+              : defaults.declaration
+              ? 'No legal maximum for this leave type'
+              : defaults.name === 'ADV / RTT'
+              ? 'Calculated automatically from contracted hours'
+              : defaults.name === 'Extra-legal leave'
+              ? 'Configured per employee or contract type'
+              : null;
+
+            const infoCallout = defaults.statutory
+              ? defaults.statutoryNote
+              : defaults.declaration
+              ? 'Sick leave has no legal maximum under Belgian law'
+              : defaults.name === 'ADV / RTT'
+              ? (advFT === 0
+                  ? 'Your company uses 38h/week contracts — no ADV days are generated. Update contracted hours in Payroll settings.'
+                  : `Based on contracted hours (${companyRegime.contractedHours}h/week)`)
+              : defaults.name === 'Extra-legal leave'
+              ? 'Extra-legal leave is additional vacation above the statutory 20-day minimum. The number of days is configured per employee or contract type under their profile.'
+              : null;
+
+            return (
+              <div style={card}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: showBelow ? `1px solid ${P.border}` : 'none' }}>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Day limit</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Cap the number of days per year — can be overridden per employee</div>
+                  </div>
+                  <div style={{ flexShrink: 0 }}
+                    onMouseEnter={e => { if (isLocked && tooltipText) { const r = e.currentTarget.getBoundingClientRect(); setTooltip({ text: tooltipText, x: r.left + r.width / 2, y: r.top }); } }}
+                    onMouseLeave={() => setTooltip(null)}>
+                    <Switch size="sm" checked={isChecked} onChange={isLocked ? undefined : () => setLimitedDays(v => !v)} disabled={isLocked} />
+                  </div>
+                </div>
+                {isLocked ? (
+                  <div style={{ padding: '14px 20px' }}>
+                    {infoCallout && (
+                      <div style={{ padding: '8px 12px', borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <Icon name="info" size={14} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span>
+                          {(defaults.statutory && defaults.statutoryLabel) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{defaults.statutoryLabel} — </strong>}
+                          {(defaults.name === 'ADV / RTT' && advFT > 0) && <strong style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>{advFT} days — </strong>}
+                          {infoCallout}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateRows: limitedDays ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+                    <div style={{ minHeight: 0 }}>
+                      <div style={{ padding: '14px 20px' }}>
+                        {stepper}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ADV Accrual method card */}
+          {defaults.name === 'ADV / RTT' && (
+            <div style={{ ...card, overflow: 'visible' }}>
+              <div style={{ padding: '16px 20px' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>Accrual method</div>
+                <SettingsSelect value={advAwardMethod} onChange={setAdvAwardMethod} opts={[
+                  { value: 'lump-sum', label: 'Lump-sum upfront' },
+                  { value: 'accrued', label: 'Monthly accrual' },
+                ]} />
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>
+                  {advAwardMethod === 'lump-sum'
+                    ? 'All days granted upfront — employees can book days not yet earned, requiring year-end corrections'
+                    : 'Days unlock month by month — employees can only book what they\'ve earned so far'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Carry-over card */}
+          {showsAnnualBalance && (
+            <div style={{ ...card, overflow: 'visible' }}>
+              <div style={{ padding: '16px 20px', borderBottom: carryover === 'cap' ? `1px solid ${P.border}` : 'none' }}>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>Carry-over</div>
+                <SettingsSelect value={carryover} onChange={setCarryover} opts={CARRYOVER_OPTS} />
+                {CARRYOVER_OPTS.find(o => o.value === carryover)?.hint && (
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>{CARRYOVER_OPTS.find(o => o.value === carryover)?.hint}</div>
+                )}
+              </div>
+              <div style={{ display: 'grid', gridTemplateRows: carryover === 'cap' ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+                <div style={{ minHeight: 0 }}>
+                  <div style={{ padding: '14px 20px' }}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginBottom: 8 }}>Maximum days that roll over</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                        <button onClick={() => setCarryoverCap(v => Math.max(1, (parseInt(v) || 1) - 1))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
+                        <input type="text" inputMode="numeric" value={carryoverCap} onChange={e => setCarryoverCap(parseInt(e.target.value) || '')}
+                          style={{ width: 48, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
+                        <button onClick={() => setCarryoverCap(v => (parseInt(v) || 0) + 1)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+                      </div>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>days</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Requests */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={SL}>Requests</div>
+
+          {!defaults.declaration && !defaults.adminOnly && (
+            <div style={card}>
+              {settingsRow('Approval required', 'Each request must be approved before leave is confirmed', requiresApproval, () => setRequiresApproval(v => !v), !(!defaults.statutory && requiresApproval))}
+              <div style={{ display: 'grid', gridTemplateRows: (!defaults.statutory && requiresApproval) ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+                <div style={{ minHeight: 0 }}>
+                  <div>
+                    {settingsRow('Editing requires approval', 'Changes to approved leave are sent back for HR review', editRequiresApproval, () => setEditRequiresApproval(v => !v), false)}
+                  </div>
+                  {settingsRow('Cancellation requires approval', 'HR must approve before days are returned to balance', cancelRequiresApproval, () => setCancelRequiresApproval(v => !v), true)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div style={card}>
+            {settingsRow('Document required', 'Employee must attach a supporting document', docRequired, () => setDocRequired(v => !v), true)}
+          </div>
+
+          {!defaults.adminOnly && (
+            <div style={card}>
+              {settingsRow('Allow half-day requests', 'Employees can request a morning or afternoon instead of a full day', allowHalfDay, () => setAllowHalfDay(v => !v), true)}
+            </div>
+          )}
+        </div>
+
+        </div>{/* end fading sections */}
+
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8 }}>
+          <div>
+            {!isNew && onDelete && defaults.deletable && (
+              <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Delete leave type</button>
+            )}
+          </div>
+          <button onClick={save} disabled={!name.trim()}
+            style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: name.trim() ? P.action : P.bg, color: name.trim() ? '#fff' : P.inkSoft, cursor: name.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
+            {isNew ? 'Create leave type' : 'Save changes'}
+          </button>
+        </div>
+        {confirmDelete && (
+          <ConfirmDeleteModal name={name} onConfirm={onDelete} onClose={() => setConfirmDelete(false)} />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, leaveTypes, setLeaveTypes }) {
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
+  const [tab, setTab] = useState('active');
+  const [hoveredRow, setHoveredRow] = useState(null);
 
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
@@ -6735,14 +7455,39 @@ function TimeOffSettings({ appEntity = null }) {
     }
   };
 
+  const handleDelete = () => {
+    setLeaveTypes(prev => prev.filter((_, i) => i !== leaveModal));
+    setLeaveModal(null);
+  };
+
+  if (LEAVE_TYPE_USE_PAGE && leaveModal != null) {
+    return (
+      <LeaveTypeSettingsPage
+        config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
+        allLeaveTypes={leaveTypes}
+        onSave={handleSave}
+        onDelete={leaveModal !== 'new' ? handleDelete : null}
+        onBack={() => setLeaveModal(null)}
+        companyRegime={companyRegime}
+        onToast={onToast}
+      />
+    );
+  }
+
+  const activeCount = leaveTypes.filter(lt => lt.active).length;
+  const inactiveCount = leaveTypes.length - activeCount;
+
   return (
     <>
-    {leaveModal != null && (
+    {!LEAVE_TYPE_USE_PAGE && leaveModal != null && (
       <LeaveTypeDrawer
         config={leaveModal === 'new' ? null : leaveTypes[leaveModal]}
         allLeaveTypes={leaveTypes}
         onSave={handleSave}
+        onDelete={leaveModal !== 'new' ? handleDelete : null}
         onClose={() => setLeaveModal(null)}
+        companyRegime={companyRegime}
+        onToast={onToast}
       />
     )}
 
@@ -6761,9 +7506,27 @@ function TimeOffSettings({ appEntity = null }) {
           </button>
         </div>
 
+        <div style={{ borderBottom: `1px solid ${P.border}` }}>
+          <TabBar
+            tabs={[
+              { id: 'active', label: `Active${activeCount > 0 ? ` (${activeCount})` : ''}` },
+              { id: 'inactive', label: `Inactive${inactiveCount > 0 ? ` (${inactiveCount})` : ''}` },
+            ]}
+            activeTab={tab}
+            onTabChange={setTab}
+            padding="0"
+          />
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {tab === 'inactive' && inactiveCount === 0 && (
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 14, border: `1px dashed ${P.border}`, borderRadius: 16 }}>
+              No inactive leave types
+            </div>
+          )}
           {LEAVE_SECTIONS.map(section => {
-            const sectionTypes = leaveTypes.filter(lt => lt.section === section.id);
+            const sectionTypes = leaveTypes.filter(lt => lt.section === section.id && lt.active === (tab === 'active'));
+            if (sectionTypes.length === 0) return null;
             return (
               <div key={section.id}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{section.label}</div>
@@ -6772,22 +7535,37 @@ function TimeOffSettings({ appEntity = null }) {
                     const globalIdx = leaveTypes.indexOf(lt);
                     const subtitle = (() => {
                       const parts = [];
-                      if (!lt.active) parts.push('Inactive');
-                      if (lt.requiresApproval) parts.push('Approval required');
-                      if (lt.docRequired) parts.push('Doc required');
-                      if (lt.statutory && lt.statutoryDays) parts.push(`${lt.statutoryDays} ${lt.statutoryDays === 1 ? 'day' : 'days'}`);
+                      if (lt.adminOnly) parts.push('Admin only');
+                      else if (lt.declaration) parts.push('Declaration');
+                      else if (lt.requiresApproval) parts.push('Approval required');
+                      if (lt.statutory && lt.statutoryLabel) parts.push(lt.statutoryLabel);
+                      else if (lt.name === 'ADV / RTT') {
+                        const advFT = Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12);
+                        if (advFT > 0) parts.push(`${advFT} days`);
+                      } else if (lt.companyPolicy && lt.maxDays) parts.push(`${lt.maxDays} ${lt.maxDays === 1 ? 'day' : 'days'}`);
                       else if (lt.limitedDays && lt.maxDays) parts.push(`${lt.maxDays} ${lt.maxDays === 1 ? 'day' : 'days'}`);
+                      if (lt.docRequired) parts.push('Doc required');
                       return parts.length > 0 ? parts.join(' · ') : null;
                     })();
                     return (
                       <div key={lt.name + globalIdx} onClick={() => setLeaveModal(globalIdx)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < sectionTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }} />
+                        onMouseEnter={() => setHoveredRow(globalIdx)}
+                        onMouseLeave={() => setHoveredRow(null)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < sectionTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer', background: hoveredRow === globalIdx ? '#fafafa' : 'transparent', transition: PREFERS_REDUCED_MOTION ? 'none' : `background 150ms ${EASE_OUT}` }}>
+                        <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon name={LEAVE_SECTION_ICONS[lt.section] || LEAVE_ICONS[lt.name] || 'calendar'} size={17} color="#3d4047" strokeWidth={1.5} />
+                          </div>
+                          <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: lt.color, border: `1.5px solid ${LEAVE_BORDER_COLORS[lt.name] || P.border}`, boxShadow: '0 0 0 1.5px #fff' }} />
+                        </div>
                         <span style={{ flex: 1 }}>
-                          <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
-                          {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginTop: 2 }}>{subtitle}</span>}
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
+                            {lt.companyPolicy && <span style={{ padding: '1px 6px', borderRadius: 5, fontSize: 10, fontFamily: 'var(--font-display)', fontWeight: 500, background: P.bg, color: P.inkSoft, border: `1px solid ${P.border}` }}>Company policy</span>}
+                          </span>
+                          {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>}
                         </span>
-                        <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                        <Icon name="chevron-right" size={16} color="#3d4047" strokeWidth={1.75} style={{ flexShrink: 0 }} />
                       </div>
                     );
                   })}
@@ -6923,8 +7701,15 @@ function ChoicesScreen({ choices, onApprove, onDecline, onDetail, appEntity = nu
 
 
 // ── Entities settings screen ──────────────────────────────────────────────
-function EntitiesSettings({ onNav, appEntity = null }) {
+function EntitiesSettings({ onNav, appEntity = null, companyRegime = COMPANY_REGIME_DEFAULTS, onRegimeChange }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [editingDomain, setEditingDomain] = useState(false);
+  const [domainInput, setDomainInput] = useState(companyRegime.emailDomain || '');
+  const saveDomain = () => {
+    const v = domainInput.trim().toLowerCase().replace(/^@/, '');
+    if (v) onRegimeChange?.({ ...companyRegime, emailDomain: v });
+    setEditingDomain(false);
+  };
 
   const ENTITY_OVERRIDES_DEMO = {
     'lumio-france': ['Entitlement', 'Approval workflow'],
@@ -6955,6 +7740,36 @@ function EntitiesSettings({ onNav, appEntity = null }) {
 
         <div>
           <div style={SL}>All entities</div>
+          <div style={{ ...card, marginBottom: 8 }}>
+            <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft, marginBottom: 4 }}>Email domain</div>
+                {editingDomain ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      autoFocus
+                      value={domainInput}
+                      onChange={e => setDomainInput(e.target.value.toLowerCase().replace(/^@/, ''))}
+                      onKeyDown={e => { if (e.key === 'Enter') saveDomain(); if (e.key === 'Escape') setEditingDomain(false); }}
+                      placeholder="company.com"
+                      style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink, border: `1px solid ${P.action}`, borderRadius: 6, padding: '4px 8px', outline: 'none', width: 180 }}
+                    />
+                    <button onClick={saveDomain} style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.white, background: P.action, border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer' }}>Save</button>
+                    <button onClick={() => setEditingDomain(false)} style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, background: 'transparent', border: `1px solid ${P.border}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}>Cancel</button>
+                  </div>
+                ) : (
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink }}>{companyRegime.emailDomain}</div>
+                )}
+                {!editingDomain && <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft, marginTop: 3 }}>Used to validate work emails during employee onboarding. Entities can override this with their own domain.</div>}
+              </div>
+              {editingDomain ? null : (
+                <button onClick={() => { setDomainInput(companyRegime.emailDomain || ''); setEditingDomain(true); }}
+                  style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, background: 'transparent', border: `1px solid ${P.border}`, borderRadius: 6, padding: '4px 10px', cursor: 'pointer', flexShrink: 0 }}>
+                  Edit
+                </button>
+              )}
+            </div>
+          </div>
           <div style={card}>
             {ENTITIES.map((ent, idx) => {
               const isExpanded = expandedId === ent.id;
@@ -6986,6 +7801,7 @@ function EntitiesSettings({ onNav, appEntity = null }) {
                           ['Joint committee', ent.jc || '—'],
                           ['Payroll provider', ent.payrollProvider],
                           ['Integration ID', ent.integrationId || '—'],
+                          ['Email domain', ent.emailDomain ? `${ent.emailDomain} (override)` : `${companyRegime.emailDomain} (inherited)`],
                           ['Employees', `${ent.employeeCount}`],
                           ['Overrides', overrides.length > 0 ? overrides.join(', ') : 'None — fully inherited'],
                         ].map(([label, value]) => (
@@ -7352,6 +8168,301 @@ function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange
   );
 }
 
+function PayrollSettings({ companyRegime, onRegimeChange, appEntity = null, onToast }) {
+  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
+  const advDays = Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12);
+  const HOUR_OPTIONS = [
+    { value: 38, label: '38h / week', sub: 'Standard — no ADV days' },
+    { value: 39, label: '39h / week', sub: '6 ADV days / year' },
+    { value: 40, label: '40h / week', sub: '12 ADV days / year' },
+  ];
+  return (
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div>
+          {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Payroll</h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '4px 0 0' }}>Configure work regime and payroll integration</p>
+        </div>
+
+        <div>
+          <div style={SL}>Work regime</div>
+          <div style={card}>
+            <div style={{ padding: 20 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.ink, marginBottom: 4 }}>Contracted hours</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginBottom: 16 }}>The weekly hours in your employment contracts. Hours above the 38h legal standard generate ADV days.</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {HOUR_OPTIONS.map(opt => {
+                  const active = companyRegime.contractedHours === opt.value;
+                  return (
+                    <button key={opt.value} onClick={() => { onRegimeChange({ ...companyRegime, contractedHours: opt.value }); onToast?.({ message: 'Work regime saved', type: 'approve' }); }}
+                      style={{ flex: 1, padding: '12px 14px', borderRadius: 10, border: `1.5px solid ${active ? P.action : P.border}`, background: active ? '#f3f0ff' : 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: active ? P.action : P.ink }}>{opt.label}</div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: active ? P.action : P.inkSoft, marginTop: 2, opacity: active ? 0.85 : 1 }}>{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div style={{ borderTop: `1px solid ${P.border}`, padding: '12px 20px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <Icon name="info" size={14} color={P.inkSoft} strokeWidth={1.75} style={{ flexShrink: 0, marginTop: 1 }} />
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, lineHeight: 1.5 }}>
+                Under PC 200, employees working more than 38h/week are entitled to ADV days. The balance is calculated automatically per employee based on FTE and the contracted hours above.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BenefitTypeDrawer({ config, onSave, onDelete, onClose }) {
+  const isNew = !config;
+  const defaults = config || { id: '', label: '', icon: 'gift', hint: '', active: true, requiresApproval: true, receiptRequired: false, budgetCap: null };
+  const [label, setLabel] = useState(defaults.label);
+  const [hint, setHint] = useState(defaults.hint);
+  const [active, setActive] = useState(defaults.active);
+  const [requiresApproval, setRequiresApproval] = useState(defaults.requiresApproval);
+  const [receiptRequired, setReceiptRequired] = useState(defaults.receiptRequired);
+  const [hasBudget, setHasBudget] = useState(defaults.budgetCap != null);
+  const [budgetCap, setBudgetCap] = useState(defaults.budgetCap ?? 500);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
+
+  React.useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [close]);
+
+  const save = () => {
+    if (!label.trim()) return;
+    onSave({ ...defaults, label: label.trim(), hint: hint.trim(), active, requiresApproval, receiptRequired, budgetCap: hasBudget ? (budgetCap || 1) : null });
+    close();
+  };
+
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
+  const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 };
+  const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' };
+  const toggleRow = (rowLabel, rowHint, checked, onChange, last) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 0', borderBottom: last ? 'none' : `1px solid ${P.border}` }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{rowLabel}</div>
+        {rowHint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{rowHint}</div>}
+      </div>
+      <Switch size="sm" checked={checked} onChange={onChange} />
+    </div>
+  );
+
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
+        background: P.white, borderRadius: 20,
+        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        ...sheetPanelStyle(visible, closing),
+      }}>
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Icon name={defaults.icon} size={18} color={P.inkSoft} strokeWidth={1.75} />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
+              {isNew ? 'New benefit type' : (label || defaults.label)}
+            </span>
+          </div>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          {/* Enabled */}
+          <div style={{ paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enabled</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>
+                  {active ? 'Employees can request this benefit' : 'Employees cannot submit new requests for this benefit'}
+                </div>
+              </div>
+              <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
+            </div>
+            {!active && (
+              <div style={{ marginTop: 12, padding: '10px 12px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontFamily: 'var(--font-body)', fontSize: 13, color: '#1d4ed8', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <Icon name="info" size={14} color="#3b82f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                Existing approved benefits are not affected.
+              </div>
+            )}
+          </div>
+
+          {/* General */}
+          <div style={SL}>General</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+            <div>
+              <label style={labelStyle}>Name</label>
+              <input autoFocus={isNew} value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Wellbeing" style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Description</label>
+              <input value={hint} onChange={e => setHint(e.target.value)} placeholder="Short description shown to employees" style={inputStyle} />
+            </div>
+          </div>
+
+          {/* Budget */}
+          <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 24, marginBottom: 0 }}>
+            <div style={SL}>Budget</div>
+            {toggleRow('Annual budget cap', 'Limit how much each employee can request per year', hasBudget, () => setHasBudget(v => !v), !hasBudget)}
+            {hasBudget && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 0 14px' }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                  <button onClick={() => setBudgetCap(v => Math.max(1, (parseInt(v) || 1) - 50))} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>−</button>
+                  <input type="number" min={1} value={budgetCap} onChange={e => setBudgetCap(parseInt(e.target.value) || '')}
+                    style={{ width: 64, height: 36, border: 'none', borderLeft: `1px solid ${P.border}`, borderRight: `1px solid ${P.border}`, padding: '0 4px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'center', background: P.white }} />
+                  <button onClick={() => setBudgetCap(v => (parseInt(v) || 0) + 50)} style={{ width: 32, height: 36, border: 'none', background: P.bg, color: P.inkSoft, cursor: 'pointer', fontSize: 16, fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>+</button>
+                </div>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>per employee / year</span>
+              </div>
+            )}
+          </div>
+
+          {/* Rules */}
+          <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 24 }}>
+            <div style={SL}>Rules</div>
+            {toggleRow('Approval required', 'Each request must be approved before the benefit is granted', requiresApproval, () => setRequiresApproval(v => !v), false)}
+            {toggleRow('Receipt required', 'Employee must attach proof of purchase or invoice', receiptRequired, () => setReceiptRequired(v => !v), true)}
+          </div>
+        </div>
+
+        <div style={{ flexShrink: 0, padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+          {!isNew && onDelete && (
+            confirmDelete ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginRight: 'auto' }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Delete this benefit type?</span>
+                <button onClick={onDelete} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Confirm</button>
+                <button onClick={() => setConfirmDelete(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, padding: 0 }}>Cancel</button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0, marginRight: 'auto' }}>Delete</button>
+            )
+          )}
+          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BenefitsSettings({ appEntity = null }) {
+  const [benefits, setBenefits] = useState(BENEFIT_TYPES_SEED);
+  const [modal, setModal] = useState(null); // index or 'new'
+
+  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
+
+  const handleSave = (updated) => {
+    if (modal === 'new') {
+      setBenefits(prev => [...prev, { ...updated, id: updated.label.toLowerCase().replace(/\s+/g, '-') }]);
+    } else {
+      setBenefits(prev => prev.map((b, i) => i === modal ? updated : b));
+    }
+    setModal(null);
+  };
+
+  const handleDelete = () => {
+    setBenefits(prev => prev.filter((_, i) => i !== modal));
+    setModal(null);
+  };
+
+  const activeCount  = benefits.filter(b => b.active).length;
+  const inactiveCount = benefits.length - activeCount;
+  const [tab, setTab] = useState('active');
+
+  return (
+    <>
+    {modal != null && (
+      <BenefitTypeDrawer
+        config={modal === 'new' ? null : benefits[modal]}
+        onSave={handleSave}
+        onDelete={modal !== 'new' ? handleDelete : null}
+        onClose={() => setModal(null)}
+      />
+    )}
+
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Benefits</h1>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Configure the benefit types employees can request</p>
+          </div>
+          <button onClick={() => setModal('new')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
+            <Icon name="plus" size={14} color="#fff" strokeWidth={2.5} />
+            Add benefit type
+          </button>
+        </div>
+
+        <div style={{ borderBottom: `1px solid ${P.border}` }}>
+          <TabBar
+            tabs={[
+              { id: 'active',   label: `Active${activeCount > 0 ? ` (${activeCount})` : ''}` },
+              { id: 'inactive', label: `Inactive${inactiveCount > 0 ? ` (${inactiveCount})` : ''}` },
+            ]}
+            activeTab={tab}
+            onTabChange={setTab}
+            padding="0"
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {tab === 'inactive' && inactiveCount === 0 && (
+            <div style={{ padding: '32px 20px', textAlign: 'center', color: P.inkSoft, fontFamily: 'var(--font-body)', fontSize: 14, border: `1px dashed ${P.border}`, borderRadius: 16 }}>
+              No inactive benefit types
+            </div>
+          )}
+          {(() => {
+            const visible = benefits.filter(b => b.active === (tab === 'active'));
+            if (visible.length === 0) return null;
+            return (
+              <div style={card}>
+                {visible.map((b, visIdx) => {
+                  const globalIdx = benefits.indexOf(b);
+                  const budgetLabel = b.budgetCap != null ? `€ ${b.budgetCap} / year` : 'No cap';
+                  const rulesParts = [];
+                  if (b.requiresApproval) rulesParts.push('Approval required');
+                  if (b.receiptRequired) rulesParts.push('Receipt required');
+                  const subtitle = [budgetLabel, ...rulesParts].join(' · ');
+                  return (
+                    <div key={b.id + globalIdx} onClick={() => setModal(globalIdx)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: visIdx < visible.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: b.active ? 1 : 0.45 }}>
+                        <Icon name={b.icon} size={16} color={P.inkSoft} strokeWidth={1.75} />
+                      </div>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: b.active ? P.ink : P.inkSoft }}>{b.label}</span>
+                        <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>
+                      </span>
+                      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+
+      </div>
+    </div>
+    </>
+  );
+}
+
 function StubScreen({ title, description }) {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
@@ -7466,9 +8577,394 @@ function FollowUpBanner({ prompt, onLog, onDismiss }) {
   );
 }
 
+// ── Add Employee Wizard ────────────────────────────────────────────────────
+const ENTITY_DOMAINS = {
+  'lumio-group':  'lumiogroup.be',
+  'lumio-france': 'lumio.fr',
+  'lumio-nl':     'lumio.nl',
+};
+
+function AddEmployeeWizard({ onClose, onCreated, companyRegime }) {
+  const { visible, close } = useModalTransition(onClose, SHEET_CLOSE_DUR);
+  const [step, setStep] = useState(1);
+  const stepDirRef = React.useRef('forward');
+  const [emailFlash, setEmailFlash] = useState(false);
+
+  const goForward = () => { stepDirRef.current = 'forward';  setStep(s => s + 1); };
+  const goBack    = () => { stepDirRef.current = 'backward'; setStep(s => s - 1); };
+
+  // Inject CSS keyframes once
+  React.useEffect(() => {
+    if (!document.getElementById('wiz-anims')) {
+      const s = document.createElement('style');
+      s.id = 'wiz-anims';
+      s.textContent = `
+        @keyframes wizSlideFromRight { from { opacity:0; transform:translateX(28px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes wizSlideFromLeft  { from { opacity:0; transform:translateX(-28px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes wizFadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes wizEmailFlash { 0%,20% { background:#f3f0ff; } 100% { background:#fff; } }
+      `;
+      document.head.appendChild(s);
+    }
+  }, []);
+
+  // Step 1 — Personal info
+  const [firstName, setFirstName]       = useState('');
+  const [lastName,  setLastName]        = useState('');
+  const [dob,       setDob]             = useState('');
+  const [gender,    setGender]          = useState('');
+  const [lang,      setLang]            = useState('Dutch');
+  const [niss,      setNiss]            = useState('');
+  const [iban,      setIban]            = useState('');
+
+  // Step 2 — Employment
+  const [entityId,        setEntityId]        = useState('lumio-group');
+  const [department,      setDepartment]      = useState('');
+  const [startDate,       setStartDate]       = useState('08/08/2026');
+  const [roles,           setRoles]           = useState(['Employee']);
+  const [contractType,    setContractType]    = useState('cdi');
+  const [contractEndDate, setContractEndDate] = useState('');
+
+  // Step 3 — Schedule
+  const [fte,          setFte]          = useState(1.0);
+  const [workSchedule, setWorkSchedule] = useState([1,2,3,4,5]);
+
+  // Step 4 — Compensation
+  const suggestedWorkEmail = React.useMemo(() => {
+    const domain = ENTITIES.find(e => e.id === entityId)?.emailDomain ?? (companyRegime || COMPANY_REGIME_DEFAULTS).emailDomain ?? 'company.com';
+    const f = firstName.trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-z]/g, '');
+    const l = lastName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z-]/g, '');
+    return f && l ? `${f}.${l}@${domain}` : '';
+  }, [firstName, lastName, entityId]);
+  const [workEmail,      setWorkEmail]      = useState('');
+  const [grossSalary,    setGrossSalary]    = useState('');
+  const [employerNsso,   setEmployerNsso]   = useState('25.00');
+  const [employeeNsso,   setEmployeeNsso]   = useState('13.07');
+  const [components,     setComponents]     = useState(['meal-vouchers']);
+  const [sendInvite,     setSendInvite]     = useState(true);
+
+  // Auto-populate work email when reaching step 2
+  React.useEffect(() => {
+    if (step === 2 && !workEmail && suggestedWorkEmail) {
+      setWorkEmail(suggestedWorkEmail);
+      setEmailFlash(true);
+      const t = setTimeout(() => setEmailFlash(false), 800);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
+  const regime = companyRegime || COMPANY_REGIME_DEFAULTS;
+
+  React.useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [close]);
+
+  const step1Valid = firstName.trim() && lastName.trim() && dob.trim() && gender && niss.trim();
+  const entityDomain = ENTITIES.find(e => e.id === entityId)?.emailDomain ?? (companyRegime || COMPANY_REGIME_DEFAULTS).emailDomain;
+  const emailDomainValid = !workEmail.trim() || !entityDomain || workEmail.trim().toLowerCase().endsWith('@' + entityDomain);
+  const step2Valid = department && startDate.trim() && workEmail.trim() && emailDomainValid;
+  const step3Valid = true;
+  const step4Valid = grossSalary.trim() && parseFloat(grossSalary) > 0;
+  const canAdvance = step === 1 ? step1Valid : step === 2 ? step2Valid : step === 3 ? step3Valid : step4Valid;
+
+  const handleCreate = () => {
+    const slug = firstName.toLowerCase().replace(/\s+/g, '-') + '-' + lastName.toLowerCase().replace(/\s+/g, '-');
+    const id   = slug + '-' + String(Date.now()).slice(-5);
+    const palette = ['#bfdbfe','#ddd6fe','#fde68a','#a7f3d0','#fecdd3','#fed7aa','#c7d2fe'];
+    const color = palette[id.charCodeAt(0) % palette.length];
+    const entity = ENTITIES.find(e => e.id === entityId);
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    onCreated(id, {
+      name: fullName,
+      initials: `${firstName[0]}${lastName[0]}`.toUpperCase(),
+      color,
+      email: workEmail.trim(),
+      entitlement: 20,
+      department,
+      entity: entity?.name || entityId,
+      entityId,
+      budget: 0,
+      role: roles.includes('Admin') ? 'Admin' : 'Employee',
+      status: 'Active',
+      gender: gender === 'M' ? 'm' : 'f',
+      fte,
+      workSchedule,
+      dob: dob.trim(),
+      niss: niss.trim(),
+      iban: iban.trim(),
+      contractType,
+      contractEndDate: contractType === 'cdd' ? contractEndDate : undefined,
+      grossSalary: parseFloat(grossSalary),
+      employerNsso: parseFloat(employerNsso),
+      employeeNsso: parseFloat(employeeNsso),
+      components,
+    }, {
+      payrollId: String(100000 + id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 900000),
+      hireDate: startDate,
+      lang,
+    }, fullName);
+    close();
+  };
+
+  const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box', background: P.white };
+  const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft, marginBottom: 6, letterSpacing: '0.01em' };
+  const SL2        = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 20 };
+  const StepHeading = ({ title, sub }) => (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, marginBottom: 4 }}>{title}</div>
+      {sub && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{sub}</div>}
+    </div>
+  );
+  const hint       = { fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 5 };
+  const fieldIn    = (i) => ({ animation: 'wizFadeUp 220ms ease-out both', animationDelay: `${i * 50}ms` });
+  const segBtn     = (active) => ({ flex: 1, padding: '9px 14px', borderRadius: 8, border: `1.5px solid ${active ? P.action : P.border}`, background: active ? '#f3f0ff' : 'transparent', color: active ? P.action : P.ink, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, cursor: 'pointer', transition: 'all 120ms ease' });
+  const chevron    = { ...inputStyle, appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b80' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: 32, cursor: 'pointer' };
+
+  const StepDots = () => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {[1,2,3,4].map((s, i) => (
+        <React.Fragment key={s}>
+          {i > 0 && (
+            <div style={{ width: 20, height: 1, background: P.border, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: 0, background: P.action, transformOrigin: 'left center', transform: s <= step ? 'scaleX(1)' : 'scaleX(0)', transition: 'transform 280ms ease-out' }} />
+            </div>
+          )}
+          <div style={{ width: s === step ? 8 : 6, height: s === step ? 8 : 6, borderRadius: '50%', background: s <= step ? P.action : P.border, transition: 'all 280ms cubic-bezier(0.34,1.56,0.64,1)' }} />
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 201, background: P.bg, display: 'flex', flexDirection: 'column', opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(16px)', transition: `opacity ${SHEET_CLOSE_DUR}ms ${EASE_OUT}, transform ${SHEET_CLOSE_DUR}ms ${EASE_OUT}` }}>
+
+      {/* Header */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: 60, borderBottom: `1px solid ${P.border}` }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink, minWidth: 140 }}>Add employee</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+          <StepDots />
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>Step {step} of 4</div>
+        </div>
+        <div style={{ minWidth: 140, display: 'flex', justifyContent: 'flex-end' }}>
+          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 32px' }}>
+        <form autoComplete="off" onSubmit={e => e.preventDefault()} style={{ maxWidth: 560, margin: '0 auto', padding: '48px 0 80px' }}>
+        <div key={step} style={{ animation: `${stepDirRef.current === 'forward' ? 'wizSlideFromRight' : 'wizSlideFromLeft'} 200ms ease-out both` }}>
+
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <StepHeading title="Personal info" sub="Identity and banking details required for payroll and Dimona declaration." />
+              <div style={{ ...fieldIn(0), display: 'flex', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>First name</label>
+                  <input autoFocus autoComplete="off" value={firstName} onChange={e => setFirstName(e.target.value)} style={inputStyle} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Last name</label>
+                  <input autoComplete="off" value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ ...fieldIn(1), display: 'flex', gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Date of birth</label>
+                  <input autoComplete="off" value={dob} onChange={e => setDob(e.target.value)} placeholder="DD/MM/YYYY" style={inputStyle} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Gender</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {['M','F'].map(g => (
+                      <button key={g} onClick={() => setGender(g)} style={segBtn(gender === g)}>{g === 'M' ? 'Male' : 'Female'}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div style={fieldIn(2)}>
+                <label style={labelStyle}>Language</label>
+                <select value={lang} onChange={e => setLang(e.target.value)} style={chevron}>
+                  <option value="Dutch">Dutch</option>
+                  <option value="French">French</option>
+                  <option value="English">English</option>
+                </select>
+              </div>
+              <div style={fieldIn(3)}>
+                <label style={labelStyle}>NISS number</label>
+                <input autoComplete="off" value={niss} onChange={e => setNiss(e.target.value)} placeholder="XX.XX.XX-XXX.XX" style={inputStyle} />
+                <div style={hint}>National registry number — required for Dimona declaration.</div>
+              </div>
+              <div style={fieldIn(4)}>
+                <label style={labelStyle}>Bank account (IBAN)</label>
+                <input autoComplete="off" value={iban} onChange={e => setIban(e.target.value.toUpperCase())} placeholder="BE68 5390 0754 7034" style={inputStyle} />
+                <div style={hint}>Used for salary payments. Can be added later if not available now.</div>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <StepHeading title="Employment" sub="Contract details and access level within Payflip." />
+              <div style={fieldIn(0)}>
+                <label style={labelStyle}>Entity</label>
+                <select value={entityId} onChange={e => setEntityId(e.target.value)} style={chevron}>
+                  {ENTITIES.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+              </div>
+              <div style={fieldIn(1)}>
+                <label style={labelStyle}>Department</label>
+                <select value={department} onChange={e => setDepartment(e.target.value)} style={chevron}>
+                  <option value="">Select department…</option>
+                  {['Design','Engineering','Marketing','Operations','Finance','HR'].map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={fieldIn(2)}>
+                <label style={labelStyle}>Start date</label>
+                <input autoComplete="off" value={startDate} onChange={e => setStartDate(e.target.value)} placeholder="DD/MM/YYYY" style={inputStyle} />
+              </div>
+              <div style={fieldIn(3)}>
+                <label style={labelStyle}>Work email</label>
+                <input autoComplete="off" value={workEmail} onChange={e => setWorkEmail(e.target.value)} placeholder={`name@${entityDomain || 'company.com'}`} type="email" style={{ ...inputStyle, animation: emailFlash ? 'wizEmailFlash 700ms ease-out forwards' : 'none', borderColor: workEmail.trim() && !emailDomainValid ? '#ef4444' : undefined }} />
+                {workEmail.trim() && !emailDomainValid
+                  ? <div style={{ ...hint, color: '#ef4444' }}>Must use a {entityDomain} address — personal emails cause SSO issues.</div>
+                  : <div style={hint}>Used for payslips and Payflip account login.</div>
+                }
+              </div>
+              <div style={fieldIn(4)}>
+                <label style={labelStyle}>Access</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {['Employee','Admin'].map(r => {
+                    const active = roles.includes(r);
+                    return (
+                      <button key={r} onClick={() => setRoles(prev => active ? prev.filter(x => x !== r) : [...prev, r])} style={segBtn(active)}>{r}</button>
+                    );
+                  })}
+                </div>
+                <div style={hint}>Employee access: view payslips, request leave. Admin: manage the team in Payflip.</div>
+              </div>
+              <div style={fieldIn(5)}>
+                <label style={labelStyle}>Contract type</label>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  {[{v:'cdi',l:'CDI'},{v:'cdd',l:'CDD'}].map(ct => (
+                    <button key={ct.v} onClick={() => setContractType(ct.v)} style={segBtn(contractType === ct.v)}>{ct.l}</button>
+                  ))}
+                </div>
+                <div style={hint}>{contractType === 'cdi' ? 'Unlimited duration — standard Belgian employment contract.' : 'Fixed-term — specify an end date below.'}</div>
+              </div>
+              {contractType === 'cdd' && (
+                <div style={fieldIn(6)}>
+                  <label style={labelStyle}>Contract end date</label>
+                  <input autoComplete="off" value={contractEndDate} onChange={e => setContractEndDate(e.target.value)} placeholder="DD/MM/YYYY" style={inputStyle} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <StepHeading title="Schedule" sub="Working regime and contracted hours for payroll." />
+              <div style={fieldIn(0)}>
+                <label style={labelStyle}>Working regime</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{v:1.0,l:'Full-time',sub:'5 days'},{v:0.8,l:'4 days',sub:'per week'},{v:0.6,l:'3 days',sub:'per week'},{v:0.5,l:'Half-time',sub:'2½ days'}].map(opt => (
+                    <button key={opt.v} onClick={() => { setFte(opt.v); setWorkSchedule(opt.v === 1.0 ? [1,2,3,4,5] : opt.v === 0.8 ? [1,2,3,4] : opt.v === 0.6 ? [1,2,3] : [1,2,3]); }}
+                      style={{ ...segBtn(fte === opt.v), flexDirection: 'column', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <span>{opt.l}</span>
+                      <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>{opt.sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={fieldIn(1)}>
+                <label style={labelStyle}>Contracted hours</label>
+                <div style={{ border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', background: P.bg, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{regime.contractedHours}h / week</span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft, background: P.white, padding: '2px 8px', borderRadius: 4, border: `1px solid ${P.border}` }}>Company default</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <StepHeading title="Compensation" sub="Gross salary, social contributions, and benefits." />
+                <div style={fieldIn(0)}>
+                  <label style={labelStyle}>Monthly gross salary</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
+                    <input autoComplete="off" value={grossSalary} onChange={e => setGrossSalary(e.target.value)} placeholder="0,00" type="number" min="0" step="0.01" style={{ ...inputStyle, paddingLeft: 28 }} />
+                  </div>
+                  <div style={hint}>Gross amount before social contributions, paid on the last working day of the month.</div>
+                </div>
+                <div style={fieldIn(1)}>
+                  <label style={labelStyle}>Social contributions</label>
+                  <div style={{ border: `1px solid ${P.border}`, borderRadius: 8, overflow: 'hidden' }}>
+                    {[
+                      {label:'Employer NSSO', value: employerNsso, set: setEmployerNsso},
+                      {label:'Employee NSSO', value: employeeNsso, set: setEmployeeNsso},
+                    ].map((row, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: i > 0 ? `1px solid ${P.border}` : 'none', background: P.bg, gap: 12 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, whiteSpace: 'nowrap' }}>{row.label}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <input
+                            autoComplete="off"
+                            value={row.value}
+                            onChange={e => row.set(e.target.value)}
+                            type="number" min="0" max="100" step="0.01"
+                            style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 6, padding: '4px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, outline: 'none', background: P.white, textAlign: 'right' }}
+                          />
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={hint}>Belgian statutory rates — adjust only if this employee has a special regime.</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+        </form>
+      </div>
+
+      {/* Footer */}
+      <div style={{ flexShrink: 0, padding: '14px 32px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: P.white }}>
+        {step > 1
+          ? <button onClick={goBack} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Back</button>
+          : <div />
+        }
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {step === 4 && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <div onClick={() => setSendInvite(v => !v)}
+                style={{ width: 18, height: 18, borderRadius: 4, border: `1.5px solid ${sendInvite ? P.action : P.border}`, background: sendInvite ? P.action : P.white, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 120ms ease' }}>
+                {sendInvite && <Icon name="Check" size={11} color={P.white} strokeWidth={3} />}
+              </div>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink }}>Send invite email</span>
+            </label>
+          )}
+          {step < 4
+            ? <button onClick={goForward} disabled={!canAdvance} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: canAdvance ? P.action : P.border, color: P.white, cursor: canAdvance ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, transition: 'background 150ms ease' }}>Next</button>
+            : <button onClick={handleCreate} disabled={!canAdvance} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: canAdvance ? P.action : P.border, color: P.white, cursor: canAdvance ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>{sendInvite ? 'Create & send invite' : 'Create employee'}</button>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Root App ───────────────────────────────────────────────────────────────
 function App() {
-  const [screen, setScreen] = useState('dashboard');
+  const [screen, setScreen] = useState(() => pathToScreen(window.location.pathname));
   const [adminAccess, setAdminAccess] = useState(() =>
     Object.entries(EMPLOYEES)
       .filter(([, u]) => u.adminAccess)
@@ -7480,18 +8976,49 @@ function App() {
       return { ...prev, [adminId]: newAccess };
     });
   };
+  const [companyRegime, setCompanyRegime] = useState(COMPANY_REGIME_DEFAULTS);
+  const [leaveTypes, setLeaveTypes] = useState(initLeaveTypes);
+  const [employeeOverrides, setEmployeeOverrides] = useState({});
+  const handleEmployeeUpdate = (empId, overrides) => {
+    setEmployeeOverrides(prev => ({ ...prev, [empId]: { ...(prev[empId] || {}), ...overrides } }));
+  };
+  const getEmpWithOverrides = (empId) => {
+    const base = EMPLOYEES[empId];
+    const over = employeeOverrides[empId];
+    return over ? { ...base, ...over } : base;
+  };
   const [sidebarMode, setSidebarMode] = useState('app');
   const [appEntity, setAppEntity] = useState(null);
   const [requests, setRequests] = useState(() => mergeRequests(generatedRequests, readLS()));
   const [companyEvents, setCompanyEvents] = useState([]);
   const [toast, setToast] = useState(null);
+  const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
+  const [freshEmployeeId, setFreshEmployeeId] = useState(null);
+  const handleAddEmployee = (id, emp, extra, fullName) => {
+    EMPLOYEES[id] = emp;
+    EMP_EXTRA[id] = extra;
+    setFreshEmployeeId(id);
+    setScreen('employee-detail:' + id);
+    setToast({ message: sendInvite ? `${fullName} added — invite sent` : `${fullName} added`, type: 'approve' });
+  };
   const [calDetail, setCalDetail] = useState(null);
   const [calendarJumpDate, setCalendarJumpDate] = useState(null);
   const [calendarDeptFilter, setCalendarDeptFilter] = useState(null);
   const handleNav = (id) => {
     if (id === 'team-absences') setCalendarJumpDate(null);
     setScreen(id);
+    history.pushState({ screen: id }, '', screenToPath(id));
   };
+  React.useEffect(() => {
+    history.replaceState({ screen }, '', screenToPath(screen));
+    const onPop = (e) => {
+      const s = e.state?.screen ?? pathToScreen(window.location.pathname);
+      if (s === 'team-absences') setCalendarJumpDate(null);
+      setScreen(s);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const [choices, setChoices] = useState(CHOICES_SEED);
   const [choiceDetail, setChoiceDetail] = useState(null);
   const approveChoice = (id) => {
@@ -7630,7 +9157,7 @@ function App() {
     const init = {};
     for (const [id, emp] of Object.entries(EMPLOYEES)) {
       init[id] = {
-        'Time off': emp.entitlement,
+        'Statutory annual leave': emp.entitlement,
         'Sick leave': null,
         'Special leave': null,
         'Paid absence': null,
@@ -7693,6 +9220,10 @@ function App() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+        @keyframes labelFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
         @keyframes fileRowIn {
           from { opacity: 0; transform: translateY(5px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -7713,20 +9244,22 @@ function App() {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {screen === 'dashboard' && <DashboardScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} onToast={setToast} appEntity={appEntity} />}
-        {screen === 'team-absences' && <TeamAbsencesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} pendingCount={pendingRequestsCount} onNav={setScreen} onShowDetail={setCalDetail} activeReqId={calDetail?.id} onSave={saveRequest} companyEvents={companyEvents} onCancelCompanyEvent={cancelCompanyEvent} initialDate={calendarJumpDate} initialDeptFilter={calendarDeptFilter} appEntity={appEntity} />}
+        {screen === 'team-absences' && <TeamAbsencesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} pendingCount={pendingRequestsCount} onNav={setScreen} onShowDetail={setCalDetail} activeReqId={calDetail?.id} onSave={saveRequest} companyEvents={companyEvents} onCancelCompanyEvent={cancelCompanyEvent} initialDate={calendarJumpDate} initialDeptFilter={calendarDeptFilter} appEntity={appEntity} leaveTypes={leaveTypes} />}
         {screen === 'requests' && <RequestsScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onApprove={approve} onDecline={requestDecline} onSave={saveRequest} onCancel={requestCancel} onNav={setScreen} onViewInCalendar={(req) => { const d = req._selectedDates?.[0] || req.startDate; if (d) { const iso = typeof d === 'string' && d.match(/^\d{4}-/) ? d : null; setCalendarJumpDate(iso ? new Date(iso) : parseDisplayDate(d)); } setCalDetail(req); setScreen('team-absences'); }} appEntity={appEntity} />}
-        {(screen === 'employees' || screen === 'employees:admin') && <EmployeesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} initialRoleFilter={screen === 'employees:admin' ? 'Admin' : 'All'} adminAccess={adminAccess} appEntity={appEntity} />}
-        {screen.startsWith('employee-detail:') && <EmployeeDetailScreen employeeId={screen.split(':')[1]} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[screen.split(':')[1]]} onUpdateBalance={(newBal) => updateBalances(screen.split(':')[1], newBal)} needsSetup={needsBalanceSetup.has(screen.split(':')[1])} confirmedDate={balanceConfirmedDates[screen.split(':')[1]]} onConfirmBalances={() => confirmBalancesFor(screen.split(':')[1])} onToast={setToast} adminAccess={adminAccess} onAdminSave={handleAdminSave} />}
+        {(screen === 'employees' || screen === 'employees:admin') && <EmployeesScreen key={appEntity ?? 'all'} requests={entityFilteredRequests} onNav={setScreen} initialRoleFilter={screen === 'employees:admin' ? 'Admin' : 'All'} adminAccess={adminAccess} appEntity={appEntity} onAddEmployee={() => setAddEmployeeOpen(true)} />}
+        {screen.startsWith('employee-detail:') && <EmployeeDetailScreen employeeId={screen.split(':')[1]} requests={requests} onNav={setScreen} onSave={saveRequest} onCancel={cancelRequest} onApprove={approve} onDecline={requestDecline} onViewTeamCalendar={(dept) => { setCalendarDeptFilter(dept || null); setScreen('team-absences'); }} employeeBalance={employeeBalances[screen.split(':')[1]]} onUpdateBalance={(newBal) => updateBalances(screen.split(':')[1], newBal)} needsSetup={needsBalanceSetup.has(screen.split(':')[1])} confirmedDate={balanceConfirmedDates[screen.split(':')[1]]} onConfirmBalances={() => confirmBalancesFor(screen.split(':')[1])} onToast={setToast} adminAccess={adminAccess} onAdminSave={handleAdminSave} companyRegime={companyRegime} onEmployeeUpdate={handleEmployeeUpdate} getEmpWithOverrides={getEmpWithOverrides} initialTab={freshEmployeeId === screen.split(':')[1] ? 'details' : 'choices'} />}
         {screen === 'expenses' && <ExpensesScreen key={appEntity ?? 'all'} expenses={entityFilteredExpenses} categories={expenseCategories} onApprove={approveExpense} onDetail={(exp) => setExpDetail(exp)} onAdd={addExpense} appEntity={appEntity} />}
         {screen === 'choices' && <ChoicesScreen key={appEntity ?? 'all'} choices={entityFilteredChoices} onApprove={approveChoice} onDecline={declineChoice} onDetail={setChoiceDetail} appEntity={appEntity} />}
         {screen === 'payroll-overview' && <StubScreen title="Payroll Overview" description="Monthly payroll run and submission" />}
         {screen === 'payroll-reports' && <StubScreen title="Payroll Reports" description="Reporting and exports" />}
         {screen === 'settings-expenses' && <ExpenseCategorySettings key={appEntity ?? 'all'} categories={expenseCategories} onSave={setExpenseCategories} appEntity={appEntity} />}
         {screen === 'settings-team' && <TeamAccessSettings key={appEntity ?? 'all'} onNav={setScreen} adminAccess={adminAccess} onAdminSave={handleAdminSave} appEntity={appEntity} />}
-        {screen === 'settings-entities' && <EntitiesSettings key={appEntity ?? 'all'} onNav={setScreen} appEntity={appEntity} />}
-        {screen === 'settings-timeoff' && <TimeOffSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
+        {screen === 'settings-entities' && <EntitiesSettings key={appEntity ?? 'all'} onNav={setScreen} appEntity={appEntity} companyRegime={companyRegime} onRegimeChange={setCompanyRegime} />}
+        {screen === 'settings-timeoff' && <TimeOffSettings key={appEntity ?? 'all'} appEntity={appEntity} companyRegime={companyRegime} onToast={setToast} leaveTypes={leaveTypes} setLeaveTypes={setLeaveTypes} />}
         {screen === 'settings-documents' && <DocumentsSettings key={appEntity ?? 'all'} appEntity={appEntity} documents={settingsDocuments} onDocumentsChange={setSettingsDocuments} />}
-        {screen.startsWith('settings-') && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
+        {screen === 'settings-payroll' && <PayrollSettings companyRegime={companyRegime} onRegimeChange={setCompanyRegime} appEntity={appEntity} onToast={setToast} />}
+        {screen === 'settings-benefits' && <BenefitsSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
+        {screen.startsWith('settings-') && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && screen !== 'settings-payroll' && screen !== 'settings-benefits' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
       </div>
 
       {calDetail && (
@@ -7784,6 +9317,7 @@ function App() {
         />
       )}
 
+      {addEmployeeOpen && <AddEmployeeWizard onClose={() => setAddEmployeeOpen(false)} onCreated={handleAddEmployee} companyRegime={companyRegime} />}
       {toast && <Toast toast={toast} onDone={() => setToast(null)} />}
       {followUpPrompt && !followUpModalOpen && (
         <FollowUpBanner
