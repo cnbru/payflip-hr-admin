@@ -6404,7 +6404,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
             const subtitle = appEntity ? emp.dept : [emp.dept, emp.entity].filter(Boolean).join(' · ');
             return (
               <div key={emp.value} onClick={() => toggle(emp.value, close)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,13,40,0.04)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                 <div style={{ width: 22, height: 22, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -7074,7 +7074,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     const emp = EMPLOYEES[id];
                     const subtitle = appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ');
                     return (
-                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px' }}>
+                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px' }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{emp.initials}</span>
                         </div>
