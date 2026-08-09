@@ -286,16 +286,22 @@ function sheetPanelStyle(visible, closing) {
 // ── Icon button — the circular icon-only button used for modal/drawer close,
 // back navigation, and similar chrome actions. One size/opacity spec so
 // close buttons stop drifting between 28px and 30px screen to screen.
-function IconButton({ icon, onClick, size = 30, iconSize = 14, color = P.ink, blur, style }) {
+function IconButton({ icon, onClick, size = 30, iconSize = 14, color = P.ink, blur, danger, style }) {
+  const [hovered, setHovered] = useState(false);
+  const isDangerHover = danger && hovered;
   return (
-    <button onClick={onClick} style={{
-      border: 'none', cursor: 'pointer', width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(60,60,67,0.1)',
-      ...(blur ? { backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' } : {}),
-      ...style,
-    }}>
-      <Icon name={icon} size={iconSize} color={color} strokeWidth={2.5} />
+    <button onClick={onClick}
+      onMouseEnter={() => danger && setHovered(true)}
+      onMouseLeave={() => danger && setHovered(false)}
+      style={{
+        border: 'none', cursor: 'pointer', width: size, height: size, borderRadius: '50%', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: isDangerHover ? '#fee2e2' : 'rgba(60,60,67,0.1)',
+        transition: danger ? 'background 120ms' : undefined,
+        ...(blur ? { backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' } : {}),
+        ...style,
+      }}>
+      <Icon name={icon} size={iconSize} color={isDangerHover ? '#dc2626' : color} strokeWidth={2.5} />
     </button>
   );
 }
@@ -7041,7 +7047,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     return <>
                   {/* Truly empty — this allowance currently applies to nobody, not just "nobody visible here" */}
                   {assignedEmployees.length === 0 ? (
-                    <div style={{ borderTop: `1px solid ${P.border}`, padding: '14px 20px', display: 'flex', alignItems: 'flex-start', gap: 9, background: '#fff7ed' }}>
+                    <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'flex-start', gap: 9, background: '#fff7ed' }}>
                       <Icon name="triangle-alert" size={14} color="#ea580c" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
                       <div style={{ flex: 1 }}>
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#9a3412', lineHeight: 1.5 }}>This allowance won't apply to anyone until you add at least one employee.</span>
@@ -7052,23 +7058,20 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     </div>
                   ) : (
                     /* List header: count + edit action */
-                    <div style={{ borderTop: `1px solid ${P.border}`, padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${P.border}` }}>
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
                         {visibleAssigned.length === 0 ? 'No employees in this entity' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
                       </span>
-                      <button onClick={() => setPickerOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, padding: '4px 0' }}>
-                        <Icon name="pencil" size={12} color={P.ink} strokeWidth={2.5} />
-                        Edit selection
-                      </button>
+                      <Button variant="text" icon="pencil" iconSize={12} onClick={() => setPickerOpen(true)} style={{ color: P.inkSoft, fontSize: 12 }}>Edit selection</Button>
                     </div>
                   )}
-                  {visibleAssigned.map(id => {
+                  {visibleAssigned.map((id, i) => {
                     const emp = EMPLOYEES[id];
                     const subtitle = appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ');
                     return (
-                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', borderTop: `1px solid ${P.border}` }}>
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
+                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', borderBottom: i < visibleAssigned.length - 1 ? `1px solid ${P.border}` : 'none' }}>
+                        <div style={{ width: 22, height: 22, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{emp.initials}</span>
                         </div>
                         <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 5 }}>
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink }}>{emp.name}</span>
@@ -7077,13 +7080,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                             <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{subtitle}</span>
                           </>}
                         </div>
-                        <button
-                          onClick={() => setAssignedEmployees(prev => prev.filter(e => e !== id))}
-                          style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 120ms' }}
-                          onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.querySelector('svg').style.stroke = '#dc2626'; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.querySelector('svg').style.stroke = P.inkSoft; }}>
-                          <Icon name="x" size={13} color={P.inkSoft} strokeWidth={2} />
-                        </button>
+                        <IconButton icon="x" size={26} iconSize={13} color={P.inkSoft} danger onClick={() => setAssignedEmployees(prev => prev.filter(e => e !== id))} />
                       </div>
                     );
                   })}
