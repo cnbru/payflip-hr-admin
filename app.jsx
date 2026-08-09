@@ -6398,12 +6398,12 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
         </div>
 
         {/* List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
           {filtered.map(emp => {
             const on = selected.includes(emp.value);
             return (
               <div key={emp.value} onClick={() => toggle(emp.value, close)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', cursor: 'pointer', borderRadius: 8 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,13,40,0.04)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                 <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
