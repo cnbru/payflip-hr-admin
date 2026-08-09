@@ -7063,7 +7063,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     const emp = EMPLOYEES[id];
                     const subtitle = appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ');
                     return (
-                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', borderBottom: i < visibleAssigned.length - 1 ? `1px solid ${P.border}` : 'none' }}>
+                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px' }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 9, color: P.ink }}>{emp.initials}</span>
                         </div>
