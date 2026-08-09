@@ -1259,7 +1259,7 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
         <SidebarItem icon="settings" label="Settings" onClick={onEnterSettings} />
 
         <div style={{ marginTop: 'auto', paddingTop: 10 }}>
-          <SidebarItem icon="sparkles" label="Changelog" isActive={active === 'changelog'} onClick={() => onNav('changelog')} />
+          <SidebarItem icon="sparkles" label="Product changelog" isActive={active === 'changelog'} onClick={() => onNav('changelog')} />
         </div>
       </nav>
     </React.Fragment>
@@ -8685,95 +8685,82 @@ function BenefitsSettings({ appEntity = null }) {
 const CHANGELOG_ENTRIES = [
   {
     date: '9 Aug 2026',
-    title: 'Settings screens: shared components, entity scoping fixes, and a changelog page',
+    title: 'Allowances: surfacing legal ceiling risk, and where reference info belongs',
     items: [
-      { summary: 'In-app Changelog page added, linked from the sidebar.', detail: 'Renders the same content as the repo-level CHANGELOG.md so the product team can see what shipped and why without opening a markdown file.' },
-      { summary: 'SettingsCard + SettingsRow extracted as shared components.', detail: 'Migrated into AllowancesListPage, ExpenseCategorySettings, TimeOffSettings, TeamAccessSettings, and BenefitsSettings — five screens that had each independently hand-rolled the same row pattern with details quietly drifting apart (Benefits used a 32px icon box while everywhere else used 36px).', why: 'A padding fix applied to one settings screen wasn’t reaching the others, because there was no actual shared component to fix.' },
-      { summary: 'Entity-scoping bug fixed across three settings screens.', detail: 'Leave type exceptions, Team & access admins, and an allowance’s eligible-employee picker/assignment list were all showing employees from every entity regardless of the sidebar entity switcher — in two of three cases the screen never even received the selected entity as a prop. Filtered with the same pattern used for requests/expenses/choices; "All entities" view now shows department · entity so a cross-entity list is legible.' },
-      { summary: 'Expenses settings: policy settings moved above the category list.', detail: '"Reimbursement cycle" and "Require receipt above" were sitting below a variable-length category list, easy to miss. Moved to the top, split into their own sections, icon boxes dropped so they read as form fields rather than list items.' },
-      { summary: 'Mileage rate hint de-duplicated.', detail: 'The callout was restating a number already visible in the field above it. Now only shows the official rate when the value has actually been changed away from default.' },
-      { summary: 'Design token consistency: Switch track and tabs background unified.', detail: 'Two near-identical one-off grays (#d1d5db, #ebebed) replaced with the existing P.borderStrong / P.border tokens, tuned per role — a switch track needs contrast to read as a control, a tab bar background stays lighter as a passive surface.' },
+      { summary: 'NSSS ceiling feedback redesigned as callouts that escalate from neutral to red.', why: "Admins configure these rates rarely, and the ceiling warning previously looked identical to routine informational text — it needed to visually escalate so it can't be missed the one time it actually matters." },
+      { summary: '"How it works" info moved out of an always-visible card and into an on-demand modal', detail: 'Triggered by a small ⓘ next to the page title.', why: "This is reference info, not a setting. A white card and a card-less inline version were both tried first and still read as competing with the actual settings — information that explains a feature shouldn't cost permanent space or look interactive." },
+      { summary: 'Eligible employees list redesigned', detail: 'Count + inline edit/add action in the header, explicit remove control per row.', why: 'The previous layout had no clear "how many, how do I change this" entry point.' },
     ],
   },
   {
     date: '9 Aug 2026',
-    title: 'Allowances: rate ceiling callouts, employee list & picker polish',
+    title: 'Settings screens: consistency, and getting multi-entity scoping right',
     items: [
-      { summary: 'NSSS ceiling feedback redesigned as callouts.', detail: "The amount hint below the rate field was plain inline text with no visual weight — easy to miss, and identical whether the rate was fine or over the legal ceiling. It's now a bordered callout: neutral by default, red when the entered rate exceeds the NSSS ceiling.", why: 'Admins set these rates rarely and need the ceiling warning to actually stand out, not blend into body copy.' },
-      { summary: 'Enable/disable toggle bug fixed.', detail: 'The switch for turning an allowance on/off could get stuck in the "on" position — the click handler was passing the raw click event into the state setter instead of toggling the boolean.', why: 'Broke the primary control on every allowance settings page.' },
-      { summary: '"How it works" moved into an on-demand modal.', detail: 'Triggered by a small ⓘ next to the page title, after a white-card version and a card-less inline version both still read as competing with real settings on the page.', why: "This is reference info, not a setting — it shouldn't cost permanent vertical space or look interactive." },
-      { summary: 'Eligible employees list redesigned.', detail: 'Replaced an orphaned "Edit employees" button + raw name list with a header (count + inline edit/add action) and a real remove control per row.' },
-      { summary: 'Employee picker modal rows reworked.', detail: 'Checkbox moved from leading to trailing position to stop crowding the avatar; rows gained a hover state they were missing entirely.' },
-      { summary: 'Copy fix: "Enable home office" → "Enable home office allowance".', detail: 'Clearer when read out of context, e.g. in a settings list.' },
-      { summary: 'Footer button relabeled "Done" → "Cancel".', detail: "It didn't commit anything — it just closed the screen. Relabeled to match its actual behavior." },
+      { summary: 'Multi-entity data isolation enforced for employee-linked settings lists', detail: '(leave type exceptions, Team & access admins, allowance eligibility).', why: 'A hard product rule, not a preference — an admin scoped to one legal entity must never see or assign employees belonging to a different entity. Two of three affected screens weren\'t enforcing this yet. Under "All entities," rows now show department · entity so a cross-entity list reads intentionally instead of looking like an unscoped mistake.' },
+      { summary: 'Row and icon treatment unified across every settings list screen', detail: '(Allowances, Expenses, Time off, Team & access, Benefits).', why: 'These screens evolved independently and drifted apart in small ways nobody chose deliberately (Benefits had a smaller icon box than everywhere else). Now backed by one shared component, so a fix in one place reaches all of them.' },
+      { summary: 'Expenses settings: company-wide policy moved above the category list', detail: 'Reimbursement cycle and receipt threshold split into their own sections, since they aren\'t related to each other.', why: 'They\'re global policy, not a list to manage — below a variable-length category list, they could scroll off-screen and go unnoticed.' },
+      { summary: 'Design tokens: Switch track and segmented-control background unified', detail: 'Onto the existing border tokens instead of two near-identical one-off grays, tuned per role — a switch track needs contrast to read as a control, a tab bar background stays lighter as a passive surface.' },
+      { summary: 'In-app Product Changelog page added, linked from the sidebar', detail: 'So this document is visible to the whole team without opening a markdown file.' },
     ],
   },
   {
     date: '7–9 Aug 2026',
     title: 'Leave type settings: from drawer to full settings page',
     items: [
-      { summary: 'Drawer replaced with a full settings page per leave type.', detail: 'Matches the pattern later reused for Allowances.', why: 'Leave type configuration grew too many interdependent fields (approval, day limits, document requirements, employee permissions, Belgian statutory sub-types) to fit comfortably in a drawer.' },
-      { summary: 'Day limit pattern unified', detail: 'One consistent sub-field style across all leave types, replacing several ad-hoc inline-input variants tried along the way.' },
-      { summary: 'Belgian special leave sub-types added', detail: 'Grouped under clear section headers, alongside a "Requires approval" reframing that replaced generic "edit/cancel" toggles with copy that states the actual behavior and payroll consequences.' },
-      { summary: 'Employee-level exceptions added', detail: "An admin can override a leave type's default rules for specific employees without creating a whole separate leave type." },
-      { summary: 'Delete flow added with confirmation, and a disabled-state callout', detail: 'A turned-off leave type still explains what disabling it means instead of just graying out.' },
-      { summary: "List view surfaces a type's key properties as a subtitle", detail: '(approval required, doc required, day limit) with dot separators, so admins can scan the list without opening each type.' },
+      { summary: 'Drawer replaced with a full settings page per leave type.', why: 'Configuration had accumulated too many interdependent fields (approval, day limits, document requirements, employee permissions, Belgian statutory sub-types) to fit a drawer without feeling cramped. This became the pattern later reused for Allowances.' },
+      { summary: '"Requires approval" reframing', detail: 'Replaced generic "edit/cancel" toggles with copy stating the actual behavior and payroll consequence, after the generic toggles proved unclear about what they actually controlled.' },
+      { summary: 'Belgian special leave sub-types added', detail: 'With their own statutory fields, grouped under clear section headers.', why: '"Special leave" isn\'t one thing legally — it\'s several distinct entitlements, each with its own rules.' },
+      { summary: 'Employee-level exceptions added', detail: "So an admin can override a leave type's default rules for one employee without cloning an entire separate leave type.", why: 'A new leave type per exception doesn\'t scale and obscures that it\'s still the same underlying leave type with a tweak.' },
+      { summary: 'Day limit pattern unified', detail: 'One consistent sub-field style across all leave types, after several inline-input variants were tried along the way.' },
     ],
   },
   {
     date: '28 Jul 2026',
-    title: 'Entity switcher & sidebar',
+    title: 'Entity switcher: one consistent mechanism for multi-entity data',
     items: [
-      { summary: 'Entity switcher rebuilt as a right-side popover', detail: 'Replacing an inline accordion that pushed the rest of the sidebar down when expanded.' },
-      { summary: 'Sidebar widened 216 → 255px', detail: 'More breathing room around the entity switcher and nav once the switcher moved out.' },
-      { summary: 'Screen content animates in on entity switch', detail: 'Instead of instantly refreshing; the old per-screen "time off override" pattern for multi-entity data was removed in favor of one consistent mechanism.' },
-      { summary: 'Documents scope model unified', detail: 'Replaced an "inherited" scope concept with a single explicit scope field, removing ambiguity about which entity a document applied to.' },
+      { summary: 'Entity switcher rebuilt as a right-side popover', detail: 'Replacing an inline accordion that pushed the rest of the sidebar down when expanded.', why: "An always-present, frequently-used control shouldn't reflow the nav around it." },
+      { summary: 'Removed the per-screen "time off override" pattern', detail: 'In favor of one consistent multi-entity mechanism used everywhere.', why: 'Letting one screen handle multi-entity data differently from the rest is exactly the kind of inconsistency that later causes scoping bugs — better to solve it once, centrally.' },
+      { summary: 'Documents scope model unified', detail: 'Replaced an ambiguous "inherited" scope concept with a single explicit scope field.', why: "\"Inherited\" didn't answer the question an admin actually has: which entity does this document apply to, right now." },
     ],
   },
   {
     date: '24–26 Jul 2026',
-    title: 'Team & Access',
+    title: 'Team & Access: settling the admin permission model',
     items: [
-      { summary: 'Admin access management went through the heaviest iteration of any feature in this prototype (~35 commits across three days) before landing on its current shape.' },
+      { summary: 'Admin access management went through the heaviest iteration of any feature in this prototype (~35 commits across three days) before landing on its current shape — worth documenting in full, since several plausible models were tried and rejected before this one stuck.' },
       { summary: 'User/role model unified', detail: 'Admin access now lives on the same employee record via adminAccess, instead of a parallel user list.', why: 'Avoided two sources of truth for "is this person an admin."' },
-      { summary: 'Settled on a single 4-option access model', detail: '(Full admin vs. role-based, with multi-role support for non-full admins) after trying and discarding an owner/admin distinction, a by-department approval option, and a revoke-access flow that didn\'t fit the mental model.' },
-      { summary: 'Grant flow simplified to a two-step modal', detail: 'Pick a person, then configure their access — replacing several earlier attempts (radio-only picker, immediate role config, separate revoke action).' },
-      { summary: 'Employee detail page got a real Team & Access section', detail: 'Read-only status with grant/configure actions, cross-linked to the full settings page instead of duplicating the config UI.' },
+      { summary: 'Settled on a single 4-option access model', detail: '(Full admin vs. role-based, with multi-role support for non-full admins) — after trying and discarding an owner/admin distinction, a by-department approval option, and a revoke-access flow, none of which matched how admins actually think about access.' },
+      { summary: 'Grant flow simplified to a two-step modal', detail: 'Pick a person, then configure their access — replacing several earlier attempts (radio-only picker, immediate role config, separate revoke action) that each solved part of the flow but not the whole thing.' },
+      { summary: 'Employee detail page shows admin status read-only, cross-linked to Team & Access', detail: 'Rather than duplicating the configuration UI in two places.', why: 'There should be exactly one place where access is actually configured.' },
     ],
   },
   {
     date: '22–23 Jul 2026',
     title: 'Team calendar, Expenses, Choices',
     items: [
-      { summary: 'CalendarDrawer overhauled', detail: 'Replaced a separate detail modal: unified request detail, team availability, and overlap warnings into one drawer with clear sectioned rows.', why: 'Admins reviewing a time-off request needed team context (who else is out) without leaving the drawer.' },
-      { summary: 'Team availability indicator redesigned twice', detail: 'Ending on a two-state color system (red tint + count when someone\'s out, green tint + "All available" otherwise) with per-avatar colored border rings instead of background tints.' },
-      { summary: 'Accessibility fix: requests table header contrast raised from 2.6:1 to 7.5:1', detail: 'inkFaint → inkSoft — the original color failed contrast guidelines for body text.' },
-      { summary: 'Link styling standardized', detail: 'Extracted a shared AppLink component (black, underlined) and replaced every accent-colored link across the app with it.' },
-      { summary: 'Expenses added as a new top-level screen', detail: 'List, drawer, filters, search.' },
-      { summary: 'Choices added as a new top-level screen', detail: 'Approve/decline workflow, plus a food-benefit onboarding flow that routes through the social secretariat step Belgian payroll requires.' },
+      { summary: 'CalendarDrawer overhauled', detail: 'To unify request detail, team availability, and overlap warnings into one drawer.', why: 'An admin reviewing a time-off request needs team context — who else is out — to make the call, without leaving the drawer to go find it.' },
+      { summary: 'Team availability indicator settled on a two-state color system', detail: '(red tint + count when someone\'s out, green tint + "All available" otherwise), after an initial red-badge-only version didn\'t communicate the common case — nobody\'s out — as clearly as the exception case.' },
+      { summary: 'Link styling standardized', detail: 'On a shared AppLink component (black, underlined), replacing every accent-colored link app-wide.', why: 'Links were competing visually with primary actions.' },
+      { summary: 'Expenses added as a new top-level screen.', why: 'A scope decision to bring expense management to parity with time-off/choices rather than leave it as an afterthought.' },
+      { summary: 'Choices added as a new top-level screen', detail: 'Including a food-benefit onboarding flow that routes through the social secretariat step Belgian payroll actually requires.', why: 'The flow had to reflect a real compliance step, not just the happy path.' },
     ],
   },
   {
     date: '14–17 Jul 2026',
-    title: 'Time off & employee detail foundation',
+    title: 'Time off & employee detail: matching production reality',
     items: [
-      { summary: 'Employee detail page rebuilt to match the production layout', detail: 'With a dedicated "Leave & absences" tab (renamed from "Time off") and per-employee data instead of shared placeholder content.' },
-      { summary: 'Edit balances modal redesigned', detail: 'Clear sections, a "no limit" toggle, and negative-balance clamping — replacing an earlier flat form that let balances go negative or unbounded.' },
-      { summary: 'Belgian leave types matched to the employee-facing app', detail: 'ADV/RTT, extra-legal leave added; generic "paid/unpaid absence" removed.' },
-      { summary: 'Requests table redesigned', detail: 'Conditional status column, inline approve/decline, and avatar overlap with date tooltips.' },
-      { summary: 'Sheet/drawer animation tuned', detail: 'iOS-style drawer curve with asymmetric open/close timing, after an initial version had a visible cut-off on exit.' },
-      { summary: 'Avatar tooltip clipping fixed', detail: 'Rendered via ReactDOM.createPortal, since the tooltip was getting clipped by overflow: hidden on ancestor containers.' },
+      { summary: 'Belgian leave types matched to the employee-facing app', detail: '(ADV/RTT, extra-legal leave added; generic "paid/unpaid absence" removed).', why: 'HR admin and the employee app need to describe leave the same way, or admins and employees end up talking past each other about the same request.' },
+      { summary: 'Edit balances modal redesigned', detail: 'With a "no limit" toggle and negative-balance clamping.', why: "The previous flat form allowed balances to go negative or unbounded — not a state a leave balance can actually be in." },
+      { summary: 'Requests table redesigned', detail: 'For inline approve/decline, replacing a table that required opening each request just to act on it.', why: "The common action shouldn't require a navigation." },
     ],
   },
   {
     date: '19 Jun – 3 Jul 2026',
-    title: 'Initial HR Admin prototype',
+    title: 'Initial HR Admin prototype: scope and structure',
     items: [
-      { summary: 'HR Admin desktop prototype created from scratch', detail: 'Approval inbox, app switcher (linking to the employee-facing app), and initial navigation.' },
-      { summary: 'Employee app and HR admin connected via localStorage', detail: 'So actions in one reflect in the other during the prototype demo, without a real backend.' },
-      { summary: 'Team absences view added', detail: 'Splitting "Time off" into two sub-items (requests vs. team calendar) to separate "things I need to act on" from "what\'s the team\'s status."' },
-      { summary: 'Employees section added with an Edit balances modal', detail: 'Employee identity fields locked once a record exists, to prevent accidental identity changes mid-edit.' },
-      { summary: 'Half-day support, collective holiday type, and sick-leave document upload added', detail: 'Alongside a broader nav overhaul.' },
+      { summary: 'HR Admin desktop prototype started from scratch', detail: 'Scoped to an approval inbox and core navigation first, with an app switcher linking to the employee-facing app.' },
+      { summary: '"Time off" split into two sub-items', detail: '(requests vs. team calendar).', why: '"Things I need to act on" and "what\'s the team\'s status" are different questions an admin asks — one view was already fighting that distinction.' },
+      { summary: 'Employee identity fields locked once a record exists.', why: 'A deliberate constraint to prevent accidental identity changes to an employee record after creation, not an oversight.' },
     ],
   },
 ];
@@ -8781,7 +8768,7 @@ const CHANGELOG_ENTRIES = [
 function ChangelogScreen() {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
-      <PageHeader title="Changelog" subtitle="What changed in the HR Admin prototype, and why — for the product team." />
+      <PageHeader title="Product Changelog" subtitle="Product and UX decisions behind the HR Admin prototype — what we decided, and why." />
       <div style={{ flex: 1, overflow: 'auto', padding: '28px 28px 60px' }}>
         <div style={{ maxWidth: 680, display: 'flex', flexDirection: 'column', gap: 36 }}>
           {CHANGELOG_ENTRIES.map((entry, i) => (

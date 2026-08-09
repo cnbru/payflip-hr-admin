@@ -52,4 +52,4 @@ const visible = allItems.filter(id => {
 
 ## Documentation
 
-- [CHANGELOG.md](../../CHANGELOG.md) at the repo root — dated log of what changed and why, written for the product team. Also rendered in-app at Sidebar → Changelog (`ChangelogScreen` component, `CHANGELOG_ENTRIES` array). Update both when a batch of related changes lands.
+- [CHANGELOG.md](../../CHANGELOG.md) at the repo root — titled "Product Changelog." Records product/UX decisions and the reasoning behind them, plus design-system/consistency changes — not a bug tracker or commit log; mechanical fixes don't belong here unless they reflect an actual decision. Also rendered in-app at Sidebar → Product changelog (`ChangelogScreen` component, `CHANGELOG_ENTRIES` array). Update both when a batch of related decisions lands.
