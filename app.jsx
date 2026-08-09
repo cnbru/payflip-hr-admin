@@ -7039,16 +7039,29 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                       return emp && (!appEntity || emp.entityId === appEntity);
                     });
                     return <>
-                  {/* List header: count + edit action */}
-                  <div style={{ borderTop: `1px solid ${P.border}`, padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
-                      {visibleAssigned.length === 0 ? 'No employees assigned' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
-                    </span>
-                    <button onClick={() => setPickerOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, padding: '4px 0' }}>
-                      <Icon name={visibleAssigned.length === 0 ? 'plus' : 'pencil'} size={12} color={P.ink} strokeWidth={2.5} />
-                      {visibleAssigned.length === 0 ? 'Add employees' : 'Edit selection'}
-                    </button>
-                  </div>
+                  {/* Truly empty — this allowance currently applies to nobody, not just "nobody visible here" */}
+                  {assignedEmployees.length === 0 ? (
+                    <div style={{ borderTop: `1px solid ${P.border}`, padding: '14px 20px', display: 'flex', alignItems: 'flex-start', gap: 9, background: '#fff7ed' }}>
+                      <Icon name="triangle-alert" size={14} color="#ea580c" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#9a3412', lineHeight: 1.5 }}>This allowance won't apply to anyone until you add at least one employee.</span>
+                        <div style={{ marginTop: 10 }}>
+                          <Button variant="primary" icon="plus" onClick={() => setPickerOpen(true)}>Add employees</Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* List header: count + edit action */
+                    <div style={{ borderTop: `1px solid ${P.border}`, padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
+                        {visibleAssigned.length === 0 ? 'No employees in this entity' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
+                      </span>
+                      <button onClick={() => setPickerOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, padding: '4px 0' }}>
+                        <Icon name="pencil" size={12} color={P.ink} strokeWidth={2.5} />
+                        Edit selection
+                      </button>
+                    </div>
+                  )}
                   {visibleAssigned.map(id => {
                     const emp = EMPLOYEES[id];
                     const subtitle = appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ');
@@ -7089,7 +7102,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
           {active ? (
             <>
               <Button variant="secondary" onClick={onBack} style={{ background: P.white }}>Cancel</Button>
-              <Button variant="primary" onClick={handleSave}>Save changes</Button>
+              <Button variant="primary" onClick={handleSave} disabled={specific && assignedEmployees.length === 0}>Save changes</Button>
             </>
           ) : (
             <Button variant="secondary" onClick={onBack} style={{ background: P.white }}>Cancel</Button>
