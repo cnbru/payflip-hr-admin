@@ -7047,15 +7047,9 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     return <>
                   {/* Truly empty — this allowance currently applies to nobody, not just "nobody visible here" */}
                   {assignedEmployees.length === 0 ? (
-                    <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'flex-start', gap: 9, background: '#fff7ed' }}>
-                      <Icon name="triangle-alert" size={14} color="#ea580c" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#9a3412', lineHeight: 1.5 }}>This allowance won't apply to anyone until you add at least one employee.</span>
-                        <div style={{ marginTop: 10 }}>
-                          <Button variant="primary" icon="plus" onClick={() => setPickerOpen(true)}>Add employees</Button>
-                        </div>
-                      </div>
-                    </div>
+                    <EmptyState icon="users" title="No employees assigned"
+                      description="This allowance won't apply to anyone until you add at least one."
+                      action={<Button variant="primary" icon="plus" onClick={() => setPickerOpen(true)}>Add employees</Button>} />
                   ) : (
                     /* List header: count + edit action */
                     <div style={{ padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${P.border}` }}>
