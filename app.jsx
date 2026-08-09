@@ -1,6 +1,6 @@
 // ── Payflip HR Admin — Desktop Prototype ──────────────────────────────────
 
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
+const { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } = React;
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const P = {
@@ -157,6 +157,42 @@ const PREFERS_REDUCED_MOTION = typeof window !== 'undefined' && window.matchMedi
 const MODAL_CLOSE_DUR = 150;
 const SHEET_CLOSE_DUR = 220;
 
+// ── Settings list — shared card + row for every settings screen ─────────────
+// One canonical row shape (icon box, label, subtitle/value, chevron) so
+// settings screens don't each hand-roll their own version with slightly
+// different padding, icon size, or hover behavior. Reach for these before
+// writing a new row — see CLAUDE.md "Shared components" for the full rule.
+function SettingsCard({ children }) {
+  return <div style={{ border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white }}>{children}</div>;
+}
+
+function SettingsRow({ onClick, icon, iconBadgeColor, dimmed, leading, label, labelColor, subtitle, value, valueColor, trailing, last }) {
+  const [hovered, setHovered] = useState(false);
+  const hasLeading = leading || icon;
+  return (
+    <div onClick={onClick}
+      onMouseEnter={() => onClick && setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ display: 'flex', alignItems: 'center', gap: hasLeading ? 16 : 0, padding: 16, borderBottom: last ? 'none' : `1px solid ${P.border}`, cursor: onClick ? 'pointer' : 'default', background: hovered ? '#fafafa' : 'transparent', transition: PREFERS_REDUCED_MOTION ? 'none' : `background 150ms ${EASE_OUT}` }}>
+      {leading}
+      {!leading && icon && (
+        <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0, opacity: dimmed ? 0.4 : 1 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name={icon} size={17} color="#3d4047" strokeWidth={1.5} />
+          </div>
+          {iconBadgeColor && <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: iconBadgeColor, boxShadow: '0 0 0 1.5px #fff' }} />}
+        </div>
+      )}
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: labelColor || (dimmed ? P.inkSoft : P.ink) }}>{label}</span>
+        {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>}
+      </span>
+      {value != null && <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: valueColor || P.inkSoft, marginRight: 6, whiteSpace: 'nowrap' }}>{value}</span>}
+      {trailing !== undefined ? trailing : <Icon name="chevron-right" size={16} color="#3d4047" strokeWidth={1.75} style={{ flexShrink: 0 }} />}
+    </div>
+  );
+}
+
 // Drives a modal's mount-in / close-out transition. Returns `visible` (drive
 // opacity/transform from this) and `close` (call instead of the raw onClose —
 // it animates out, then fires the real onClose after MODAL_CLOSE_DUR).
@@ -250,7 +286,7 @@ function Switch({ checked, onChange, size = 'md', disabled = false }) {
     <div onClick={disabled ? undefined : onChange} style={{
       width: dims.w, height: dims.h, borderRadius: dims.h / 2, flexShrink: 0,
       cursor: disabled ? 'not-allowed' : 'pointer',
-      background: checked ? P.action : '#d1d5db',
+      background: checked ? P.action : P.borderStrong,
       opacity: disabled ? 0.45 : 1,
       position: 'relative', transition: `background 150ms ${EASE_OUT}, opacity 150ms ${EASE_OUT}`,
     }}>
@@ -824,7 +860,77 @@ const generatedRequests = [
   { id: 'gen-20', employee: 'jana-goossens', type: 'ADV / RTT', startDate: 'Thu 30 Jul', endDate: 'Fri 31 Jul', days: 2, status: 'approved', submittedAt: '11 Jul', note: '', _selectedDates: ['2026-07-30','2026-07-31'] },
 ];
 
-const EXPENSE_CATEGORIES_SEED = ['Taxi', 'Restaurants', 'Travel'];
+const EXPENSE_BUDGET_TYPES = [
+  { id: 'mobility', label: 'Mobility' },
+  { id: 'work',     label: 'Work expense' },
+  { id: 'learning', label: 'Learning & development' },
+];
+
+const EXPENSE_CATEGORIES_SEED = [
+  { name: 'Private transport',      monthlyLimit: null, budgetType: 'mobility' },
+  { name: 'Public transport',       monthlyLimit: null, budgetType: 'mobility' },
+  { name: 'Shared mobility',        monthlyLimit: null, budgetType: 'mobility' },
+  { name: 'Mobility subscription',  monthlyLimit: null, budgetType: 'mobility' },
+  { name: 'Hotel',                  monthlyLimit: null, budgetType: 'work' },
+  { name: 'Restaurant',             monthlyLimit: null, budgetType: 'work' },
+  { name: 'Taxi / Uber',            monthlyLimit: null, budgetType: 'work' },
+  { name: 'Parking',                monthlyLimit: null, budgetType: 'work' },
+  { name: 'Other',                  monthlyLimit: null, budgetType: 'work' },
+  { name: 'Conference fees',        monthlyLimit: null, budgetType: 'learning' },
+  { name: 'Training materials',     monthlyLimit: null, budgetType: 'learning' },
+  { name: 'Online courses',         monthlyLimit: null, budgetType: 'learning' },
+];
+
+const ALLOWANCE_TYPES = [
+  {
+    id: 'mileage',
+    name: 'Mileage',
+    icon: 'car',
+    description: 'Reimburse employees for using their private car for business travel.',
+    submissionType: 'mileage',
+    rateLabel: 'Rate per kilometre',
+    defaultRate: 0.4296,
+    nsssCeiling: null,
+    nsssNote: 'NSSS official rate for 2025: €0.4296/km — no receipt required.',
+    unit: 'km',
+  },
+  {
+    id: 'home-office',
+    name: 'Home office',
+    icon: 'home',
+    description: 'Monthly flat-rate for employees who work from home on a structural basis.',
+    submissionType: 'auto',
+    rateLabel: 'Monthly amount',
+    defaultRate: 151.70,
+    nsssCeiling: 151.70,
+    nsssNote: 'NSSS ceiling 2025: €151.70/month — added to payslip automatically.',
+    unit: 'month',
+  },
+  {
+    id: 'mobile-internet',
+    name: 'Mobile & internet',
+    icon: 'smartphone',
+    description: 'Monthly flat-rate for use of a personal phone and home internet for work.',
+    submissionType: 'auto',
+    rateLabel: 'Monthly amount',
+    defaultRate: 30,
+    nsssCeiling: 30,
+    nsssNote: 'NSSS ceiling 2025: €30/month — added to payslip automatically.',
+    unit: 'month',
+  },
+  {
+    id: 'representation',
+    name: 'Representation',
+    icon: 'briefcase',
+    description: 'Monthly allowance for business entertainment, hospitality and client gifts.',
+    submissionType: 'auto',
+    rateLabel: 'Monthly amount',
+    defaultRate: null,
+    nsssCeiling: null,
+    nsssNote: null,
+    unit: 'month',
+  },
+];
 
 const EXPENSES_SEED = [
   { id: 'exp-1', employee: 'thomas-janssens', category: 'Travel', amount: 124.50, currency: 'EUR', submittedAt: '14 Jul', description: 'Train Brussels–Ghent client visit', receipt: 'sncb_ticket.pdf', status: 'pending' },
@@ -1151,13 +1257,17 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
         <SidebarItem icon="receipt" label="Expenses" isActive={active === 'expenses'} onClick={() => onNav('expenses')} badgeDot={pendingCount?.expenses || null} />
 
         <SidebarItem icon="settings" label="Settings" onClick={onEnterSettings} />
+
+        <div style={{ marginTop: 'auto', paddingTop: 10 }}>
+          <SidebarItem icon="sparkles" label="Changelog" isActive={active === 'changelog'} onClick={() => onNav('changelog')} />
+        </div>
       </nav>
     </React.Fragment>
   );
 }
 
 const PERSONAL_IDS = ['settings-notifications', 'settings-account'];
-const COMPANY_IDS  = ['settings-entities','settings-budgets','settings-benefits','settings-packages','settings-documents','settings-timeoff','settings-payroll','settings-expenses','settings-cardrules','settings-integrations','settings-team'];
+const COMPANY_IDS  = ['settings-entities','settings-budgets','settings-benefits','settings-packages','settings-documents','settings-timeoff','settings-payroll','settings-allowances','settings-expenses','settings-cardrules','settings-integrations','settings-team'];
 
 const ROUTE_MAP = [
   { screen: 'dashboard',              path: '/hr-admin' },
@@ -1177,11 +1287,13 @@ const ROUTE_MAP = [
   { screen: 'settings-documents',     path: '/hr-admin/settings/documents' },
   { screen: 'settings-timeoff',       path: '/hr-admin/settings/time-off' },
   { screen: 'settings-payroll',       path: '/hr-admin/settings/payroll' },
+  { screen: 'settings-allowances',    path: '/hr-admin/settings/allowances' },
   { screen: 'settings-expenses',      path: '/hr-admin/settings/expenses' },
   { screen: 'settings-cardrules',     path: '/hr-admin/settings/card-rules' },
   { screen: 'settings-integrations',  path: '/hr-admin/settings/integrations' },
   { screen: 'settings-team',          path: '/hr-admin/settings/team' },
   { screen: 'settings-billing',       path: '/hr-admin/settings/billing' },
+  { screen: 'changelog',              path: '/hr-admin/changelog' },
 ];
 
 function screenToPath(screen) {
@@ -1224,6 +1336,7 @@ function SettingsModeSidebar({ active, onNav }) {
             { id: 'settings-documents',    label: 'Documents' },
             { id: 'settings-timeoff',      label: 'Time off' },
             { id: 'settings-payroll',      label: 'Payroll' },
+            { id: 'settings-allowances',   label: 'Allowances' },
             { id: 'settings-expenses',     label: 'Expenses' },
             { id: 'settings-cardrules',    label: 'Card rules' },
             { id: 'settings-integrations', label: 'Integrations' },
@@ -6152,6 +6265,11 @@ function AmountModal({ title, label, value, onSave, onClose, nullable }) {
   );
 }
 
+const ELIGIBILITY_OPTS = [
+  { value: 'all',      label: 'All employees',      hint: 'Every employee in this entity is eligible' },
+  { value: 'specific', label: 'Specific employees', hint: 'Assign individually from each employee\'s profile' },
+];
+
 const REIMBURSE_OPTS = [
   { value: 'payroll', label: 'With next payroll run', hint: 'Included in the monthly payroll processing' },
   { value: 'weekly',  label: 'Separate bank transfer', hint: 'Processed independently from the payroll cycle' },
@@ -6163,46 +6281,70 @@ const APPROVAL_OPTS = [
   { value: 'auto',    label: 'Auto-approve under threshold', hint: 'Expenses below the receipt threshold auto-approve' },
 ];
 
+function AllowancesListPage({ allowances, onSaveAllowance, appEntity = null }) {
+  const [allowanceModal, setAllowanceModal] = useState(null);
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
+
+  if (allowanceModal) {
+    const typeInfo = ALLOWANCE_TYPES.find(t => t.id === allowanceModal);
+    const config = allowances.find(a => a.id === allowanceModal) || { id: allowanceModal, active: false, rate: null };
+    return <AllowanceSettingsPage config={config} typeInfo={typeInfo} onSave={onSaveAllowance} onBack={() => setAllowanceModal(null)} backLabel="Allowances" appEntity={appEntity} />;
+  }
+
+  return (
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div>
+          {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+          <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Allowances</h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Belgian flat-rate allowances — enable only what applies to your company</p>
+        </div>
+        <div>
+          <div style={SL}>Allowance types</div>
+          <SettingsCard>
+            {ALLOWANCE_TYPES.map((type, i) => {
+              const config = allowances.find(a => a.id === type.id) || { active: false, rate: null };
+              const valueText = config.active
+                ? (config.rate != null ? `€ ${config.rate % 1 === 0 ? config.rate.toFixed(0) : config.rate.toFixed(2)} / ${type.unit}` : 'Enabled')
+                : 'Not enabled';
+              return (
+                <SettingsRow key={type.id}
+                  onClick={() => setAllowanceModal(type.id)}
+                  icon={type.icon}
+                  label={type.name}
+                  value={valueText}
+                  valueColor={config.active ? P.inkSoft : P.inkFaint}
+                  last={i === ALLOWANCE_TYPES.length - 1}
+                />
+              );
+            })}
+          </SettingsCard>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
   const [items, setItems] = useState(categories);
-  const [catModal, setCatModal] = useState(null);       // { idx: number | 'new' }
-  const [settingModal, setSettingModal] = useState(null); // 'cycle' | 'threshold' | 'approval' | { limit: cat }
-
+  const [catModal, setCatModal] = useState(null);
+  const [settingModal, setSettingModal] = useState(null);
   const [reimburseCycle, setReimburseCycle] = useState('payroll');
   const [receiptThreshold, setReceiptThreshold] = useState(25);
   const [approvalRouting, setApprovalRouting] = useState('manager');
-  const [spendingLimits, setSpendingLimits] = useState({});
 
   const handleCatSave = (val, limit) => {
     const next = catModal.idx === 'new'
-      ? [...items, val]
-      : items.map((c, i) => i === catModal.idx ? val : c);
+      ? [...items, { name: val, monthlyLimit: limit ?? null, budgetType: catModal.budgetType }]
+      : items.map((c, i) => i === catModal.idx ? { ...c, name: val, monthlyLimit: limit ?? null } : c);
     setItems(next); onSave(next);
-    const oldName = catModal.idx !== 'new' ? items[catModal.idx] : val;
-    setSpendingLimits(prev => {
-      const updated = { ...prev };
-      if (catModal.idx !== 'new' && oldName !== val) { updated[val] = updated[oldName]; delete updated[oldName]; }
-      if (limit != null) updated[val] = limit; else delete updated[val];
-      return updated;
-    });
   };
   const handleCatDelete = () => {
-    const name = items[catModal.idx];
     const next = items.filter((_, i) => i !== catModal.idx);
     setItems(next); onSave(next);
-    setSpendingLimits(prev => { const u = { ...prev }; delete u[name]; return u; });
   };
 
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
-  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
-  const settingRow = (onClick, icon, label, value, last) => (
-    <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: last ? 'none' : `1px solid ${P.border}`, cursor: 'pointer' }}>
-      <Icon name={icon} size={18} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-      <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginRight: 6 }}>{value}</span>
-      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-    </div>
-  );
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
 
   const cycleLabel = (REIMBURSE_OPTS.find(o => o.value === reimburseCycle) || {}).label || '';
   const approvalLabel = (APPROVAL_OPTS.find(o => o.value === approvalRouting) || {}).label || '';
@@ -6213,8 +6355,8 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
     {catModal && (
       <CategoryModal
         title={catModal.idx === 'new' ? 'Add category' : 'Edit category'}
-        initialVal={catModal.idx === 'new' ? '' : items[catModal.idx]}
-        initialLimit={catModal.idx === 'new' ? null : (spendingLimits[items[catModal.idx]] ?? null)}
+        initialVal={catModal.idx === 'new' ? '' : items[catModal.idx].name}
+        initialLimit={catModal.idx === 'new' ? null : items[catModal.idx].monthlyLimit}
         onSave={handleCatSave}
         onDelete={catModal.idx !== 'new' ? handleCatDelete : null}
         onClose={() => setCatModal(null)}
@@ -6233,45 +6375,46 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div>
           <div>
-            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 24 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Expenses</h1>
+            {appEntity && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 6, background: P.white, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontWeight: 500, fontSize: 11, color: P.inkSoft, marginBottom: 12 }}>{ENTITIES.find(e => e.id === appEntity)?.name}</span>}
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Expenses</h1>
           </div>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkFaint, margin: '4px 0 0' }}>Manage expense settings for your company</p>
-        </div>
-
-        <div>
-          <div style={SL}>Expense categories</div>
-          <div style={card}>
-            {items.map((cat, idx) => {
-              const lim = spendingLimits[cat];
-              return (
-                <div key={cat + idx} onClick={() => setCatModal({ idx })} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < items.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                  <Icon name="tag" size={18} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                  <span style={{ flex: 1, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{cat}</span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: lim != null ? P.inkSoft : P.inkFaint, marginRight: 6 }}>{lim != null ? `€ ${lim}` : 'No limit'}</span>
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
-              );
-            })}
-          </div>
-          <button onClick={() => setCatModal({ idx: 'new' })} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '9px 14px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>
-            <Icon name="plus" size={14} color={P.ink} strokeWidth={2.5} /> Add category
-          </button>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Configure expense categories and reimbursement rules</p>
         </div>
 
         <div>
           <div style={SL}>Reimbursement</div>
-          <div style={card}>
-            {settingRow(() => setSettingModal('cycle'), 'calendar', 'Reimbursement cycle', cycleLabel, true)}
-          </div>
+          <SettingsCard>
+            <SettingsRow onClick={() => setSettingModal('cycle')} label="Reimbursement cycle" value={cycleLabel} last />
+          </SettingsCard>
         </div>
 
         <div>
           <div style={SL}>Receipt policy</div>
-          <div style={card}>
-            {settingRow(() => setSettingModal('threshold'), 'paperclip', 'Receipt required above', thresholdLabel, true)}
-          </div>
+          <SettingsCard>
+            <SettingsRow onClick={() => setSettingModal('threshold')} label="Require receipt above" value={thresholdLabel} last />
+          </SettingsCard>
         </div>
+
+        {EXPENSE_BUDGET_TYPES.map(bt => {
+          const btItems = items.map((c, i) => ({ c, i })).filter(({ c }) => c.budgetType === bt.id);
+          return (
+            <div key={bt.id}>
+              <div style={SL}>{bt.label}</div>
+              <SettingsCard>
+                {btItems.map(({ c: cat, i: idx }, pos) => (
+                  <SettingsRow key={cat.name + idx}
+                    onClick={() => setCatModal({ idx, budgetType: bt.id })}
+                    icon={getCategoryIcon(cat.name)}
+                    label={cat.name}
+                    value={cat.monthlyLimit != null ? `€ ${cat.monthlyLimit} / mo` : 'No limit'}
+                  />
+                ))}
+                <SettingsRow onClick={() => setCatModal({ idx: 'new', budgetType: bt.id })}
+                  icon="plus" label="Add category" labelColor={P.inkSoft} trailing={null} last />
+              </SettingsCard>
+            </div>
+          );
+        })}
 
       </div>
     </div>
@@ -6283,6 +6426,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
   const { visible, close } = useModalTransition(onClose);
   const [selected, setSelected] = useState(singleSelect ? (value ? [value] : []) : (value || []));
   const [search, setSearch] = useState('');
+  const [deptFilter, setDeptFilter] = useState('all');
   const save = () => { onSave(selected); close(); };
 
   const toggle = (key) => {
@@ -6294,48 +6438,73 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
     .filter(([, e]) => e.adminAccess)
     .map(([key, e]) => ({ value: key, name: e.name, dept: e.department || (e.isEmployee === false ? 'External' : ''), initials: e.initials, color: e.color }));
 
-  const filtered = pool.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || (e.dept || '').toLowerCase().includes(search.toLowerCase()));
+  const depts = [...new Set(pool.map(e => e.dept).filter(Boolean))].sort();
+
+  const filtered = pool.filter(e => {
+    const matchesDept = deptFilter === 'all' || e.dept === deptFilter;
+    const matchesSearch = !search || e.name.toLowerCase().includes(search.toLowerCase()) || (e.dept || '').toLowerCase().includes(search.toLowerCase());
+    return matchesDept && matchesSearch;
+  });
+
 
   return (
     <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, maxHeight: '70vh', boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 480, maxHeight: '70vh', boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
+
+        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</div>
-            {!singleSelect && selected.length > 0 && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{selected.length} selected</div>}
-          </div>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</div>
           <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
             <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: P.bg, borderRadius: 8, padding: '8px 12px' }}>
-            <Icon name="search" size={14} color={P.inkSoft} strokeWidth={2} />
-            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or department"
-              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }} />
+
+        {/* Search + department filter */}
+        <div style={{ padding: '12px 16px', borderBottom: `1px solid ${P.border}`, display: 'flex', gap: 8, flexShrink: 0 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 5, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 11px', background: P.white }}>
+            <Icon name="search" size={12} color={P.inkFaint} strokeWidth={2} />
+            <input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees"
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.ink, lineHeight: 1 }} />
+            {search && (
+              <button onClick={() => setSearch('')} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <Icon name="x" size={10} color={P.inkFaint} strokeWidth={2.5} />
+              </button>
+            )}
           </div>
+          {depts.length > 1 && (
+            <FilterDropdown
+              label="All departments"
+              active={deptFilter}
+              opts={[['all', 'All departments'], ...depts.map(d => [d, d])]}
+              onSelect={setDeptFilter}
+            />
+          )}
         </div>
+
+        {/* List */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
           {filtered.map(emp => {
             const on = selected.includes(emp.value);
             return (
               <div key={emp.value} onClick={() => toggle(emp.value)}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', cursor: 'pointer', borderRadius: 8 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,13,40,0.04)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{emp.name}</div>
+                  {emp.dept && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>{emp.dept}</div>}
+                </div>
                 {singleSelect
                   ? <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${on ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `border-color 120ms` }}>
                       {on && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
                     </div>
-                  : <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${on ? P.action : P.border}`, background: on ? P.action : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `background 120ms, border-color 120ms` }}>
+                  : <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${on ? P.action : P.border}`, background: on ? P.action : P.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: `background 120ms, border-color 120ms` }}>
                       {on && <Icon name="check" size={11} color="#fff" strokeWidth={3} />}
                     </div>
                 }
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
-                </div>
-                <div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{emp.name}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{emp.dept}</div>
-                </div>
               </div>
             );
           })}
@@ -6343,17 +6512,21 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
             <div style={{ padding: '20px 10px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, textAlign: 'center' }}>No results</div>
           )}
         </div>
-        {!singleSelect && (
-          <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0 }}>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          {!singleSelect
+            ? <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: selected.length > 0 ? P.ink : P.inkSoft }}>
+                {selected.length > 0 ? `${selected.length} selected` : 'None selected'}
+              </span>
+            : <span />
+          }
+          <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-            <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+            {!singleSelect && <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Confirm</button>}
           </div>
-        )}
-        {singleSelect && (
-          <div style={{ padding: '10px 22px', borderTop: `1px solid ${P.border}`, flexShrink: 0 }}>
-            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          </div>
-        )}
+        </div>
+
       </div>
     </div>
   );
@@ -6601,15 +6774,15 @@ function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null 
   const admins = useMemo(() =>
     Object.entries(EMPLOYEES)
       .filter(([id, u]) => adminAccess[id] !== 'revoked' && (u.role === 'Admin' || u.isEmployee === false || id in adminAccess))
+      .filter(([, u]) => !appEntity || u.entityId === appEntity)
       .map(([id, u]) => ({ id, name: u.name, initials: u.initials, color: u.color, email: u.email, access: id in adminAccess ? adminAccess[id] : (u.adminAccess || null) })),
-    [adminAccess]
+    [adminAccess, appEntity]
   );
 
   const [adminModal, setAdminModal] = useState(null);
 
   const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
-  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
   return (
     <>
@@ -6635,7 +6808,7 @@ function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null 
 
         <div>
           <div style={SL}>Administrators</div>
-          <div style={card}>
+          <SettingsCard>
             {admins.map((admin, idx) => {
               const areas = Array.isArray(admin.access) ? admin.access : null;
               const badge = admin.access === 'full'
@@ -6644,23 +6817,23 @@ function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null 
                   ? { label: areas.map(a => AREA_LABELS[a] || a).join(' · '), filled: false }
                   : null;
               return (
-                <div key={admin.id}
+                <SettingsRow key={admin.id}
                   onClick={() => setAdminModal(admin.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: idx < admins.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                  <Avatar employeeId={admin.id} size={32} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{admin.name}</div>
-                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{admin.email}</div>
-                  </div>
-                  {badge
-                    ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
-                    : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>No access</span>
-                  }
-                  <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                </div>
+                  leading={<Avatar employeeId={admin.id} size={32} />}
+                  label={admin.name}
+                  subtitle={admin.email}
+                  last={idx === admins.length - 1}
+                  trailing={<>
+                    {badge
+                      ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
+                      : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>No access</span>
+                    }
+                    <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0, marginLeft: 16 }} />
+                  </>}
+                />
               );
             })}
-          </div>
+          </SettingsCard>
           <div style={{ marginTop: 10 }}>
             <span onClick={() => onNav('employees:admin')} style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, textDecoration: 'underline', cursor: 'pointer' }}>Manage admin roles in People</span>
           </div>
@@ -6741,6 +6914,348 @@ const EXTRA_PALETTE_COLORS = [
 ];
 const LEAVE_COLOR_ENTRIES = Object.entries(LEAVE_COLORS);
 
+function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = 'Expenses', appEntity = null }) {
+  const [active, setActive] = useState(config.active);
+  const [rate, setRate] = useState(config.rate != null ? String(config.rate) : (typeInfo.defaultRate != null ? String(typeInfo.defaultRate) : ''));
+  const [specific, setSpecific] = useState((config.eligibility || 'all') === 'specific');
+  const [assignedEmployees, setAssignedEmployees] = useState(config.assignedEmployees || []);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [minKm, setMinKm] = useState(config.minKm != null ? String(config.minKm) : '');
+  const [minHours, setMinHours] = useState(config.minHours != null ? String(config.minHours) : '');
+
+  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
+  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
+  const settingsRowStyle = (last) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: last ? 'none' : `1px solid ${P.border}` });
+
+  const rateNum = parseFloat(rate);
+  const rateValid = !isNaN(rateNum) && rateNum > 0;
+  const overCeiling = typeInfo.nsssCeiling && rateValid && rateNum > typeInfo.nsssCeiling;
+  const rateDiffersFromDefault = typeInfo.defaultRate != null && rateValid && Math.abs(rateNum - typeInfo.defaultRate) > 0.0001;
+
+  const submissionLines = {
+    mileage: ['Employees submit trips from their expense screen — origin, destination and kilometres.', 'Approved amounts are added to the next payroll run. No receipt required.'],
+    auto:    ['Added automatically to the payslip each month. Employees don\'t submit anything.', 'Pro-rata applies for partial months based on start date, end date, and unpaid leave.'],
+    daily:   ['Employees mark the days they worked away from their usual location.', 'Approved days are reimbursed in the next payroll run. No receipt required.'],
+  }[typeInfo.submissionType];
+
+  const handleSave = () => {
+    onSave({
+      id: typeInfo.id, active, rate: rateValid ? rateNum : null,
+      eligibility: specific ? 'specific' : 'all',
+      assignedEmployees: specific ? assignedEmployees : [],
+      minKm: typeInfo.id === 'mileage' && minKm !== '' ? parseFloat(minKm) : undefined,
+      minHours: typeInfo.id === 'meal-allowance' && minHours !== '' ? parseFloat(minHours) : undefined,
+    });
+    onBack();
+  };
+
+  const tabsRef = useRef(null);
+  useLayoutEffect(() => {
+    const bar = tabsRef.current;
+    if (!bar) return;
+    const pill = bar.querySelector('.t-tabs-pill');
+    const activeTab = bar.querySelector('[aria-selected="true"]');
+    if (!pill || !activeTab) return;
+    if (!pill.style.width) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const b = tabsRef.current;
+        if (!b) return;
+        const p = b.querySelector('.t-tabs-pill');
+        const t = b.querySelector('[aria-selected="true"]');
+        if (!p || !t) return;
+        p.style.transition = 'none';
+        p.style.transform = `translateX(${t.offsetLeft}px)`;
+        p.style.width = `${t.offsetWidth}px`;
+        void p.offsetWidth;
+        p.style.transition = '';
+      }));
+    } else {
+      pill.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+      pill.style.width = `${activeTab.offsetWidth}px`;
+    }
+  }, [specific, active]);
+
+  const allCandidates = Object.entries(EMPLOYEES)
+    .filter(([, e]) => e.isEmployee !== false && (!appEntity || e.entityId === appEntity))
+    .map(([id, e]) => ({ value: id, name: e.name, dept: e.department, initials: e.initials, color: e.color }));
+
+  return (
+    <>
+    {pickerOpen && (
+      <PersonPickerModal
+        title="Assign employees"
+        value={assignedEmployees}
+        candidates={allCandidates}
+        singleSelect={false}
+        onSave={ids => setAssignedEmployees(ids)}
+        onClose={() => setPickerOpen(false)}
+      />
+    )}
+    <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 32px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+        <button onClick={onBack} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, alignSelf: 'flex-start' }}>
+          <Icon name="chevron-left" size={14} color={P.inkSoft} strokeWidth={2.5} />
+          {backLabel}
+        </button>
+
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>{typeInfo.name}</h1>
+            <button onClick={() => setInfoOpen(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center', color: P.inkFaint, flexShrink: 0, marginTop: 4 }}>
+              <Icon name="info" size={16} color={P.inkFaint} strokeWidth={1.75} />
+            </button>
+          </div>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: 0 }}>{typeInfo.description}</p>
+        </div>
+
+        {/* Status */}
+        <div>
+          <div style={SL}>Status</div>
+          <div style={card}>
+            <div style={settingsRowStyle(true)}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Enable {typeInfo.name.toLowerCase()} allowance</div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Make this allowance available to eligible employees</div>
+              </div>
+              <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
+            </div>
+          </div>
+        </div>
+
+        {active && (<>
+
+          {/* Rate */}
+          <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
+            <div style={SL}>{typeInfo.rateLabel}</div>
+            <div style={card}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 20px' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Amount per {typeInfo.unit}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>€</span>
+                  <input type="number" step="0.01" min="0" value={rate} onChange={e => setRate(e.target.value)}
+                    style={{ width: 90, padding: '7px 10px', borderRadius: 8, border: `1px solid ${overCeiling ? '#fca5a5' : P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right', background: overCeiling ? '#fff5f5' : P.white }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>/ {typeInfo.unit}</span>
+                </div>
+              </div>
+            </div>
+            {overCeiling ? (
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 9, padding: '10px 14px', borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca' }}>
+                <Icon name="triangle-alert" size={13} color="#dc2626" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#dc2626', lineHeight: 1.5 }}>Exceeds the NSSS ceiling of €{typeInfo.nsssCeiling}/{typeInfo.unit}. The excess is subject to social contributions and personal income tax.</span>
+              </div>
+            ) : (() => {
+              // The field above already shows the rate — restating "the official rate is €X"
+              // is redundant unless the admin has actually changed it away from default.
+              const restatesCurrentValue = !typeInfo.nsssCeiling && typeInfo.defaultRate != null && !rateDiffersFromDefault;
+              const noteText = restatesCurrentValue
+                ? (typeInfo.id === 'mileage' ? 'This rate is not updated automatically — check the NSSS website each January.' : null)
+                : (typeInfo.nsssNote || 'No NSSS ceiling — set any amount.') + (typeInfo.id === 'mileage' ? ' This rate is not updated automatically — check the NSSS website each January.' : '');
+              if (!noteText && !(rateDiffersFromDefault && typeInfo.defaultRate)) return null;
+              return (
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  {noteText && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+                      <Icon name="info" size={13} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, lineHeight: 1.5 }}>{noteText}</span>
+                    </div>
+                  )}
+                  {rateDiffersFromDefault && typeInfo.defaultRate && (
+                    <button onClick={() => setRate(String(typeInfo.defaultRate))}
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 12, color: P.action, whiteSpace: 'nowrap', padding: 0, flexShrink: 0 }}>
+                      Reset to €{typeInfo.defaultRate}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Mileage-specific */}
+          {typeInfo.id === 'mileage' && (
+            <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
+              <div style={SL}>Trip rules</div>
+              <div style={card}>
+                <div style={settingsRowStyle(true)}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum km per trip</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input type="number" step="1" min="0" value={minKm} onChange={e => setMinKm(e.target.value)} placeholder="0"
+                      style={{ width: 72, padding: '7px 10px', borderRadius: 8, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right' }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>km</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+                <Icon name="info" size={13} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Trips below the minimum are rejected automatically. Leave blank to accept all distances.</span>
+              </div>
+            </div>
+          )}
+
+          {/* Meal allowance-specific */}
+          {typeInfo.id === 'meal-allowance' && (
+            <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
+              <div style={SL}>Eligibility rules</div>
+              <div style={card}>
+                <div style={settingsRowStyle(true)}>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum hours away from office</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Only reimburse if employee is away for at least this many hours</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input type="number" step="0.5" min="0" value={minHours} onChange={e => setMinHours(e.target.value)} placeholder="—"
+                      style={{ width: 72, padding: '7px 10px', borderRadius: 8, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right' }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>hrs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Eligibility */}
+          <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
+            <div style={SL}>Eligibility</div>
+            <div style={card}>
+              <div style={{ padding: '14px 20px', borderBottom: specific ? `1px solid ${P.border}` : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Eligible employees</span>
+                <div className="t-tabs" ref={tabsRef}>
+                  <span className="t-tabs-pill" aria-hidden="true" />
+                  {[{ value: false, label: 'All employees' }, { value: true, label: 'Specific employees' }].map(opt => (
+                    <button key={String(opt.value)} className="t-tab"
+                      role="tab" aria-selected={String(specific === opt.value)}
+                      onClick={() => setSpecific(opt.value)}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Revealed employee list — scoped to the selected entity; "All entities" shows every assignment */}
+              <div style={{ display: 'grid', gridTemplateRows: specific ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 220ms ${EASE_OUT}`, overflow: 'hidden' }}>
+                <div style={{ minHeight: 0 }}>
+                  {(() => {
+                    const visibleAssigned = assignedEmployees.filter(id => {
+                      const emp = EMPLOYEES[id];
+                      return emp && (!appEntity || emp.entityId === appEntity);
+                    });
+                    return <>
+                  {/* List header: count + edit action */}
+                  <div style={{ borderTop: `1px solid ${P.border}`, padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
+                      {visibleAssigned.length === 0 ? 'No employees assigned' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
+                    </span>
+                    <button onClick={() => setPickerOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.ink, padding: '4px 0' }}>
+                      <Icon name={visibleAssigned.length === 0 ? 'plus' : 'pencil'} size={12} color={P.ink} strokeWidth={2.5} />
+                      {visibleAssigned.length === 0 ? 'Add employees' : 'Edit selection'}
+                    </button>
+                  </div>
+                  {visibleAssigned.map(id => {
+                    const emp = EMPLOYEES[id];
+                    const subtitle = appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ');
+                    return (
+                      <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px', borderTop: `1px solid ${P.border}` }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 10, color: P.ink }}>{emp.initials}</span>
+                        </div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink }}>{emp.name}</span>
+                          {subtitle && <>
+                            <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkFaint }}>·</span>
+                            <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: P.inkSoft }}>{subtitle}</span>
+                          </>}
+                        </div>
+                        <button
+                          onClick={() => setAssignedEmployees(prev => prev.filter(e => e !== id))}
+                          style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 120ms' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.querySelector('svg').style.stroke = '#dc2626'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.querySelector('svg').style.stroke = P.inkSoft; }}>
+                          <Icon name="x" size={13} color={P.inkSoft} strokeWidth={2} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                  </>;
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </>)}
+
+
+        {/* Footer */}
+        <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          {active ? (
+            <>
+              <button onClick={onBack} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>Cancel</button>
+              <button onClick={handleSave} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save changes</button>
+            </>
+          ) : (
+            <button onClick={onBack} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>Cancel</button>
+          )}
+        </div>
+
+      </div>
+    </div>
+
+    {/* How it works modal */}
+    {infoOpen && (
+      <div onClick={() => setInfoOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 16, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.18)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>How it works</span>
+            <button onClick={() => setInfoOpen(false)} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
+              <Icon name="X" size={13} color={P.ink} strokeWidth={2.5} />
+            </button>
+          </div>
+          <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {(submissionLines || []).map((line, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: P.inkFaint, flexShrink: 0, marginTop: 7 }} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, lineHeight: 1.6 }}>{line}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}
+
+function getCategoryIcon(name) {
+  const n = (name || '').toLowerCase();
+  if (/online cours|e-learning/.test(n)) return 'monitor-smartphone';
+  if (/training|cours|learn|seminar|workshop|education|conference|congress/.test(n)) return 'book-open';
+  if (/shared mobility|e-bike|e-scooter|scooter|villo|blue.?bike|felyx/.test(n)) return 'bike';
+  if (/mobility subscription|transit pass|transport pass|season ticket/.test(n)) return 'credit-card';
+  if (/public transport|nmbs|sncb|de lijn|stib|mivb/.test(n)) return 'train';
+  if (/private transport/.test(n)) return 'car';
+  if (/taxi|cab|uber|bolt|ride/.test(n)) return 'car';
+  if (/restaurant|food|meal|lunch|dinner|eat|café|cafe|bistro|brasserie|snack|catering/.test(n)) return 'utensils';
+  if (/flight|airline|airport|airfare|travel|trip/.test(n)) return 'plane';
+  if (/hotel|accommodation|lodging|hostel|airbnb/.test(n)) return 'building-2';
+  if (/\btrain\b|rail|metro|tram/.test(n)) return 'train';
+  if (/\bbus\b|coach|shuttle/.test(n)) return 'bus';
+  if (/transport|commut/.test(n)) return 'map-pin';
+  if (/coffee|beverage|drink|bar/.test(n)) return 'coffee';
+  if (/fuel|gas|petrol|diesel/.test(n)) return 'fuel';
+  if (/phone|mobile|telecom|internet|broadband/.test(n)) return 'phone';
+  if (/software|saas|license/.test(n)) return 'monitor-smartphone';
+  if (/laptop|computer|hardware|device/.test(n)) return 'laptop';
+  if (/office|supplies|stationery|paper/.test(n)) return 'pencil';
+  if (/print/.test(n)) return 'printer';
+  if (/health|medical|pharma|doctor|hospital/.test(n)) return 'stethoscope';
+  if (/gift|present/.test(n)) return 'gift';
+  if (/entertain|movie|film|cinema/.test(n)) return 'film';
+  if (/shop|retail/.test(n)) return 'shopping-cart';
+  if (/clean|maint|repair/.test(n)) return 'wrench';
+  if (/truck|deliver|freight|shipping|cargo/.test(n)) return 'truck';
+  if (/parking|park/.test(n)) return 'square-parking';
+  return 'receipt';
+}
 
 function initLeaveTypes() {
   return LEAVE_SECTIONS.flatMap(section =>
@@ -6797,7 +7312,7 @@ function ConfirmDeleteModal({ name, onConfirm, onClose }) {
 
 // Set to false to revert to the drawer pattern
 
-function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, onBack, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, onNav }) {
+function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, onBack, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, onNav, appEntity = null }) {
   const isNew = !config;
   const defaults = config || { name: '', color: LEAVE_COLOR_VALUES[0], active: true, requiresApproval: true, declaration: false, adminOnly: false, docRequired: false, limitedDays: false, maxDays: 20, editRequiresApproval: false, cancelRequiresApproval: false, statutory: false, companyPolicy: false, statutoryDays: null, statutoryLabel: null, statutoryNote: null, section: 'time-off', carryover: 'forfeit', allowHalfDay: true, docThresholdDays: 0, deletable: true };
   const [name,                  setName]                  = useState(defaults.name);
@@ -6817,7 +7332,6 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
   const [confirmDelete,         setConfirmDelete]         = useState(false);
   const [tooltip,               setTooltip]               = useState(null);
   const [dayLimitTip,           setDayLimitTip]           = useState(false);
-  const [hoveredExc,            setHoveredExc]            = useState(null);
   const showsAnnualBalance = !defaults.declaration && !defaults.adminOnly && !defaults.statutory && defaults.section !== 'special-leave';
 
   const uniqueColors = [...new Set([...LEAVE_COLOR_VALUES, ...EXTRA_PALETTE_COLORS])];
@@ -6888,7 +7402,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
               </div>
               {audit && <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 6 }}>Last updated by {audit.by} · {audit.at}</div>}
             </div>
-            {!defaults.declaration && !defaults.adminOnly && (
+            {!isNew && !defaults.declaration && !defaults.adminOnly && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 6, flexShrink: 0 }}>
                 <span key={active ? 'active' : 'inactive'} style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, animation: PREFERS_REDUCED_MOTION ? 'none' : `labelFadeIn 120ms ${EASE_OUT}` }}>{active ? 'Active' : 'Inactive'}</span>
                 <Switch size="sm" checked={active} onChange={() => setActive(v => !v)} />
@@ -7053,7 +7567,7 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
           {showsAnnualBalance && (
             <div style={{ ...card, overflow: 'visible' }}>
               <div style={{ padding: '16px 20px', borderBottom: carryover === 'cap' ? `1px solid ${P.border}` : 'none' }}>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>What happens to unused days?</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink, marginBottom: 8 }}>Roll over unused days</div>
                 <SettingsSelect value={carryover} onChange={setCarryover} opts={CARRYOVER_OPTS} />
                 {CARRYOVER_OPTS.find(o => o.value === carryover)?.hint && (
                   <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 6 }}>{CARRYOVER_OPTS.find(o => o.value === carryover)?.hint}</div>
@@ -7114,35 +7628,32 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
 
         </div>{/* end fading sections */}
 
-        {/* Employee exceptions */}
+        {/* Employee exceptions — scoped to the selected entity; "All entities" shows every exception */}
         {!isNew && (() => {
-          const exceptions = LEAVE_TYPE_EXCEPTIONS[defaults.name] || [];
+          const exceptions = (LEAVE_TYPE_EXCEPTIONS[defaults.name] || [])
+            .filter(exc => {
+              const emp = EMPLOYEES[exc.empId];
+              return emp && (!appEntity || emp.entityId === appEntity);
+            });
           if (!exceptions.length) return null;
           return (
             <div>
               <div style={{ ...SL, marginBottom: 12 }}>Employee exceptions</div>
-              <div style={card}>
+              <SettingsCard>
                 {exceptions.map((exc, i) => {
                   const emp = EMPLOYEES[exc.empId];
-                  if (!emp) return null;
-                  const isHovered = hoveredExc === exc.empId;
                   return (
-                    <div key={exc.empId}
-                      onMouseEnter={() => setHoveredExc(exc.empId)}
-                      onMouseLeave={() => setHoveredExc(null)}
+                    <SettingsRow key={exc.empId}
                       onClick={() => onNav?.('employee-detail:' + exc.empId + ':timeoff')}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: i < exceptions.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer', background: isHovered ? P.bg : P.white, transition: `background 120ms ${EASE_OUT}` }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11, color: P.ink, flexShrink: 0 }}>{emp.initials}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>{emp.name}</div>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft, marginTop: 1 }}>{emp.department}</div>
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 13, color: P.ink, flexShrink: 0 }}>{exc.value}</div>
-                      <Icon name="chevron-right" size={14} color={P.inkSoft} strokeWidth={2} />
-                    </div>
+                      leading={<div style={{ width: 32, height: 32, borderRadius: '50%', background: emp.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 11, color: P.ink, flexShrink: 0 }}>{emp.initials}</div>}
+                      label={emp.name}
+                      subtitle={appEntity ? emp.department : [emp.department, emp.entity].filter(Boolean).join(' · ')}
+                      value={exc.value}
+                      last={i === exceptions.length - 1}
+                    />
                   );
                 })}
-              </div>
+              </SettingsCard>
               <div style={{ marginTop: 8, fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Exceptions are set per employee and override these defaults.</div>
             </div>
           );
@@ -7155,10 +7666,15 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
               <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Delete leave type</button>
             )}
           </div>
-          <button onClick={save} disabled={!name.trim()}
-            style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: name.trim() ? P.action : P.bg, color: name.trim() ? '#fff' : P.inkSoft, cursor: name.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-            {isNew ? 'Create leave type' : 'Save changes'}
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {isNew && (
+              <button onClick={onBack} style={{ padding: '9px 20px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+            )}
+            <button onClick={save} disabled={!name.trim()}
+              style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: name.trim() ? 'pointer' : 'default', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
+              {isNew ? 'Create leave type' : 'Save changes'}
+            </button>
+          </div>
         </div>
         {confirmDelete && (
           <ConfirmDeleteModal name={name} onConfirm={onDelete} onClose={() => setConfirmDelete(false)} />
@@ -7172,9 +7688,6 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
 function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFAULTS, onToast, onNav, leaveTypes, setLeaveTypes }) {
   const [leaveModal, setLeaveModal] = useState(null); // index or 'new'
   const [tab, setTab] = useState('active');
-  const [hoveredRow, setHoveredRow] = useState(null);
-
-  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
 
   const handleSave = (updated) => {
     if (leaveModal === 'new') {
@@ -7200,6 +7713,7 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
         companyRegime={companyRegime}
         onToast={onToast}
         onNav={onNav}
+        appEntity={appEntity}
       />
     );
   }
@@ -7248,7 +7762,7 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
             return (
               <div key={section.id}>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>{section.label}</div>
-                <div style={card}>
+                <SettingsCard>
                   {sectionTypes.map((lt, i) => {
                     const globalIdx = leaveTypes.indexOf(lt);
                     const subtitle = (() => {
@@ -7266,27 +7780,18 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
                       return parts.length > 0 ? parts.join(' · ') : null;
                     })();
                     return (
-                      <div key={lt.name + globalIdx} onClick={() => setLeaveModal(globalIdx)}
-                        onMouseEnter={() => setHoveredRow(globalIdx)}
-                        onMouseLeave={() => setHoveredRow(null)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: i < sectionTypes.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer', background: hoveredRow === globalIdx ? '#fafafa' : 'transparent', transition: PREFERS_REDUCED_MOTION ? 'none' : `background 150ms ${EASE_OUT}` }}>
-                        <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0, opacity: lt.active ? 1 : 0.4 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Icon name={LEAVE_SECTION_ICONS[lt.section] || LEAVE_ICONS[lt.name] || 'calendar'} size={17} color="#3d4047" strokeWidth={1.5} />
-                          </div>
-                          <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: lt.color, boxShadow: '0 0 0 1.5px #fff' }} />
-                        </div>
-                        <span style={{ flex: 1 }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: lt.active ? P.ink : P.inkSoft }}>{lt.name}</span>
-                          </span>
-                          {subtitle && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>}
-                        </span>
-                        <Icon name="chevron-right" size={16} color="#3d4047" strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                      </div>
+                      <SettingsRow key={lt.name + globalIdx}
+                        onClick={() => setLeaveModal(globalIdx)}
+                        icon={LEAVE_SECTION_ICONS[lt.section] || LEAVE_ICONS[lt.name] || 'calendar'}
+                        iconBadgeColor={lt.color}
+                        dimmed={!lt.active}
+                        label={lt.name}
+                        subtitle={subtitle}
+                        last={i === sectionTypes.length - 1}
+                      />
                     );
                   })}
-                </div>
+                </SettingsCard>
               </div>
             );
           })}
@@ -8078,7 +8583,6 @@ function BenefitsSettings({ appEntity = null }) {
   const [benefits, setBenefits] = useState(BENEFIT_TYPES_SEED);
   const [modal, setModal] = useState(null); // index or 'new'
 
-  const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
   const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
 
   const handleSave = (updated) => {
@@ -8147,7 +8651,7 @@ function BenefitsSettings({ appEntity = null }) {
             const visible = benefits.filter(b => b.active === (tab === 'active'));
             if (visible.length === 0) return null;
             return (
-              <div style={card}>
+              <SettingsCard>
                 {visible.map((b, visIdx) => {
                   const globalIdx = benefits.indexOf(b);
                   const budgetLabel = b.budgetCap != null ? `€ ${b.budgetCap} / year` : 'No cap';
@@ -8156,20 +8660,17 @@ function BenefitsSettings({ appEntity = null }) {
                   if (b.receiptRequired) rulesParts.push('Receipt required');
                   const subtitle = [budgetLabel, ...rulesParts].join(' · ');
                   return (
-                    <div key={b.id + globalIdx} onClick={() => setModal(globalIdx)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 20px', borderBottom: visIdx < visible.length - 1 ? `1px solid ${P.border}` : 'none', cursor: 'pointer' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: P.bg, border: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, opacity: b.active ? 1 : 0.45 }}>
-                        <Icon name={b.icon} size={16} color={P.inkSoft} strokeWidth={1.75} />
-                      </div>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: b.active ? P.ink : P.inkSoft }}>{b.label}</span>
-                        <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{subtitle}</span>
-                      </span>
-                      <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                    </div>
+                    <SettingsRow key={b.id + globalIdx}
+                      onClick={() => setModal(globalIdx)}
+                      icon={b.icon}
+                      dimmed={!b.active}
+                      label={b.label}
+                      subtitle={subtitle}
+                      last={visIdx === visible.length - 1}
+                    />
                   );
                 })}
-              </div>
+              </SettingsCard>
             );
           })()}
         </div>
@@ -8177,6 +8678,137 @@ function BenefitsSettings({ appEntity = null }) {
       </div>
     </div>
     </>
+  );
+}
+
+// ── Changelog ──────────────────────────────────────────────────────────────
+const CHANGELOG_ENTRIES = [
+  {
+    date: '9 Aug 2026',
+    title: 'Settings screens: shared components, entity scoping fixes, and a changelog page',
+    items: [
+      { summary: 'In-app Changelog page added, linked from the sidebar.', detail: 'Renders the same content as the repo-level CHANGELOG.md so the product team can see what shipped and why without opening a markdown file.' },
+      { summary: 'SettingsCard + SettingsRow extracted as shared components.', detail: 'Migrated into AllowancesListPage, ExpenseCategorySettings, TimeOffSettings, TeamAccessSettings, and BenefitsSettings — five screens that had each independently hand-rolled the same row pattern with details quietly drifting apart (Benefits used a 32px icon box while everywhere else used 36px).', why: 'A padding fix applied to one settings screen wasn’t reaching the others, because there was no actual shared component to fix.' },
+      { summary: 'Entity-scoping bug fixed across three settings screens.', detail: 'Leave type exceptions, Team & access admins, and an allowance’s eligible-employee picker/assignment list were all showing employees from every entity regardless of the sidebar entity switcher — in two of three cases the screen never even received the selected entity as a prop. Filtered with the same pattern used for requests/expenses/choices; "All entities" view now shows department · entity so a cross-entity list is legible.' },
+      { summary: 'Expenses settings: policy settings moved above the category list.', detail: '"Reimbursement cycle" and "Require receipt above" were sitting below a variable-length category list, easy to miss. Moved to the top, split into their own sections, icon boxes dropped so they read as form fields rather than list items.' },
+      { summary: 'Mileage rate hint de-duplicated.', detail: 'The callout was restating a number already visible in the field above it. Now only shows the official rate when the value has actually been changed away from default.' },
+      { summary: 'Design token consistency: Switch track and tabs background unified.', detail: 'Two near-identical one-off grays (#d1d5db, #ebebed) replaced with the existing P.borderStrong / P.border tokens, tuned per role — a switch track needs contrast to read as a control, a tab bar background stays lighter as a passive surface.' },
+    ],
+  },
+  {
+    date: '9 Aug 2026',
+    title: 'Allowances: rate ceiling callouts, employee list & picker polish',
+    items: [
+      { summary: 'NSSS ceiling feedback redesigned as callouts.', detail: "The amount hint below the rate field was plain inline text with no visual weight — easy to miss, and identical whether the rate was fine or over the legal ceiling. It's now a bordered callout: neutral by default, red when the entered rate exceeds the NSSS ceiling.", why: 'Admins set these rates rarely and need the ceiling warning to actually stand out, not blend into body copy.' },
+      { summary: 'Enable/disable toggle bug fixed.', detail: 'The switch for turning an allowance on/off could get stuck in the "on" position — the click handler was passing the raw click event into the state setter instead of toggling the boolean.', why: 'Broke the primary control on every allowance settings page.' },
+      { summary: '"How it works" moved into an on-demand modal.', detail: 'Triggered by a small ⓘ next to the page title, after a white-card version and a card-less inline version both still read as competing with real settings on the page.', why: "This is reference info, not a setting — it shouldn't cost permanent vertical space or look interactive." },
+      { summary: 'Eligible employees list redesigned.', detail: 'Replaced an orphaned "Edit employees" button + raw name list with a header (count + inline edit/add action) and a real remove control per row.' },
+      { summary: 'Employee picker modal rows reworked.', detail: 'Checkbox moved from leading to trailing position to stop crowding the avatar; rows gained a hover state they were missing entirely.' },
+      { summary: 'Copy fix: "Enable home office" → "Enable home office allowance".', detail: 'Clearer when read out of context, e.g. in a settings list.' },
+      { summary: 'Footer button relabeled "Done" → "Cancel".', detail: "It didn't commit anything — it just closed the screen. Relabeled to match its actual behavior." },
+    ],
+  },
+  {
+    date: '7–9 Aug 2026',
+    title: 'Leave type settings: from drawer to full settings page',
+    items: [
+      { summary: 'Drawer replaced with a full settings page per leave type.', detail: 'Matches the pattern later reused for Allowances.', why: 'Leave type configuration grew too many interdependent fields (approval, day limits, document requirements, employee permissions, Belgian statutory sub-types) to fit comfortably in a drawer.' },
+      { summary: 'Day limit pattern unified', detail: 'One consistent sub-field style across all leave types, replacing several ad-hoc inline-input variants tried along the way.' },
+      { summary: 'Belgian special leave sub-types added', detail: 'Grouped under clear section headers, alongside a "Requires approval" reframing that replaced generic "edit/cancel" toggles with copy that states the actual behavior and payroll consequences.' },
+      { summary: 'Employee-level exceptions added', detail: "An admin can override a leave type's default rules for specific employees without creating a whole separate leave type." },
+      { summary: 'Delete flow added with confirmation, and a disabled-state callout', detail: 'A turned-off leave type still explains what disabling it means instead of just graying out.' },
+      { summary: "List view surfaces a type's key properties as a subtitle", detail: '(approval required, doc required, day limit) with dot separators, so admins can scan the list without opening each type.' },
+    ],
+  },
+  {
+    date: '28 Jul 2026',
+    title: 'Entity switcher & sidebar',
+    items: [
+      { summary: 'Entity switcher rebuilt as a right-side popover', detail: 'Replacing an inline accordion that pushed the rest of the sidebar down when expanded.' },
+      { summary: 'Sidebar widened 216 → 255px', detail: 'More breathing room around the entity switcher and nav once the switcher moved out.' },
+      { summary: 'Screen content animates in on entity switch', detail: 'Instead of instantly refreshing; the old per-screen "time off override" pattern for multi-entity data was removed in favor of one consistent mechanism.' },
+      { summary: 'Documents scope model unified', detail: 'Replaced an "inherited" scope concept with a single explicit scope field, removing ambiguity about which entity a document applied to.' },
+    ],
+  },
+  {
+    date: '24–26 Jul 2026',
+    title: 'Team & Access',
+    items: [
+      { summary: 'Admin access management went through the heaviest iteration of any feature in this prototype (~35 commits across three days) before landing on its current shape.' },
+      { summary: 'User/role model unified', detail: 'Admin access now lives on the same employee record via adminAccess, instead of a parallel user list.', why: 'Avoided two sources of truth for "is this person an admin."' },
+      { summary: 'Settled on a single 4-option access model', detail: '(Full admin vs. role-based, with multi-role support for non-full admins) after trying and discarding an owner/admin distinction, a by-department approval option, and a revoke-access flow that didn\'t fit the mental model.' },
+      { summary: 'Grant flow simplified to a two-step modal', detail: 'Pick a person, then configure their access — replacing several earlier attempts (radio-only picker, immediate role config, separate revoke action).' },
+      { summary: 'Employee detail page got a real Team & Access section', detail: 'Read-only status with grant/configure actions, cross-linked to the full settings page instead of duplicating the config UI.' },
+    ],
+  },
+  {
+    date: '22–23 Jul 2026',
+    title: 'Team calendar, Expenses, Choices',
+    items: [
+      { summary: 'CalendarDrawer overhauled', detail: 'Replaced a separate detail modal: unified request detail, team availability, and overlap warnings into one drawer with clear sectioned rows.', why: 'Admins reviewing a time-off request needed team context (who else is out) without leaving the drawer.' },
+      { summary: 'Team availability indicator redesigned twice', detail: 'Ending on a two-state color system (red tint + count when someone\'s out, green tint + "All available" otherwise) with per-avatar colored border rings instead of background tints.' },
+      { summary: 'Accessibility fix: requests table header contrast raised from 2.6:1 to 7.5:1', detail: 'inkFaint → inkSoft — the original color failed contrast guidelines for body text.' },
+      { summary: 'Link styling standardized', detail: 'Extracted a shared AppLink component (black, underlined) and replaced every accent-colored link across the app with it.' },
+      { summary: 'Expenses added as a new top-level screen', detail: 'List, drawer, filters, search.' },
+      { summary: 'Choices added as a new top-level screen', detail: 'Approve/decline workflow, plus a food-benefit onboarding flow that routes through the social secretariat step Belgian payroll requires.' },
+    ],
+  },
+  {
+    date: '14–17 Jul 2026',
+    title: 'Time off & employee detail foundation',
+    items: [
+      { summary: 'Employee detail page rebuilt to match the production layout', detail: 'With a dedicated "Leave & absences" tab (renamed from "Time off") and per-employee data instead of shared placeholder content.' },
+      { summary: 'Edit balances modal redesigned', detail: 'Clear sections, a "no limit" toggle, and negative-balance clamping — replacing an earlier flat form that let balances go negative or unbounded.' },
+      { summary: 'Belgian leave types matched to the employee-facing app', detail: 'ADV/RTT, extra-legal leave added; generic "paid/unpaid absence" removed.' },
+      { summary: 'Requests table redesigned', detail: 'Conditional status column, inline approve/decline, and avatar overlap with date tooltips.' },
+      { summary: 'Sheet/drawer animation tuned', detail: 'iOS-style drawer curve with asymmetric open/close timing, after an initial version had a visible cut-off on exit.' },
+      { summary: 'Avatar tooltip clipping fixed', detail: 'Rendered via ReactDOM.createPortal, since the tooltip was getting clipped by overflow: hidden on ancestor containers.' },
+    ],
+  },
+  {
+    date: '19 Jun – 3 Jul 2026',
+    title: 'Initial HR Admin prototype',
+    items: [
+      { summary: 'HR Admin desktop prototype created from scratch', detail: 'Approval inbox, app switcher (linking to the employee-facing app), and initial navigation.' },
+      { summary: 'Employee app and HR admin connected via localStorage', detail: 'So actions in one reflect in the other during the prototype demo, without a real backend.' },
+      { summary: 'Team absences view added', detail: 'Splitting "Time off" into two sub-items (requests vs. team calendar) to separate "things I need to act on" from "what\'s the team\'s status."' },
+      { summary: 'Employees section added with an Edit balances modal', detail: 'Employee identity fields locked once a record exists, to prevent accidental identity changes mid-edit.' },
+      { summary: 'Half-day support, collective holiday type, and sick-leave document upload added', detail: 'Alongside a broader nav overhaul.' },
+    ],
+  },
+];
+
+function ChangelogScreen() {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <PageHeader title="Changelog" subtitle="What changed in the HR Admin prototype, and why — for the product team." />
+      <div style={{ flex: 1, overflow: 'auto', padding: '28px 28px 60px' }}>
+        <div style={{ maxWidth: 680, display: 'flex', flexDirection: 'column', gap: 36 }}>
+          {CHANGELOG_ENTRIES.map((entry, i) => (
+            <div key={i} style={{ display: 'flex', gap: 24 }}>
+              <div style={{ width: 108, flexShrink: 0, paddingTop: 2 }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, fontWeight: 500 }}>{entry.date}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0, borderLeft: `1px solid ${P.border}`, paddingLeft: 20 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink, margin: '0 0 12px' }}>{entry.title}</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {entry.items.map((item, j) => (
+                    <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <div style={{ width: 4, height: 4, borderRadius: '50%', background: P.inkFaint, flexShrink: 0, marginTop: 7 }} />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.6 }}>
+                        <span style={{ color: P.ink, fontWeight: 500 }}>{item.summary}</span>
+                        {item.detail && ' ' + item.detail}
+                        {item.why && <span style={{ display: 'block', marginTop: 2, color: P.inkFaint }}>Why: {item.why}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -8203,6 +8835,7 @@ const SETTINGS_TITLES = {
   'settings-documents': 'Documents',
   'settings-timeoff': 'Time off',
   'settings-payroll': 'Payroll settings',
+  'settings-allowances': 'Allowances',
   'settings-expenses': 'Expenses',
   'settings-cardrules': 'Card rules',
   'settings-integrations': 'Integrations',
@@ -8753,6 +9386,7 @@ function App() {
 
   const [expenses, setExpenses] = useState(EXPENSES_SEED);
   const [expenseCategories, setExpenseCategories] = useState(EXPENSE_CATEGORIES_SEED);
+  const [allowances, setAllowances] = useState(ALLOWANCE_TYPES.map(t => ({ id: t.id, active: false, rate: t.defaultRate })));
   const [expDetail, setExpDetail] = useState(null);
 
   const approveExpense = (id) => {
@@ -8929,6 +9563,62 @@ function App() {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        :root {
+          --tabs-dur: 250ms;
+          --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
+          --tabs-text-muted: #50545e;
+          --tabs-text-active: rgb(34, 10, 53);
+          --tabs-bar-bg: ${P.border};
+          --tabs-pill-bg: #ffffff;
+        }
+        .t-tabs {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 3px;
+          border-radius: 48px;
+          background: var(--tabs-bar-bg);
+        }
+        .t-tab {
+          position: relative;
+          appearance: none;
+          border: 0;
+          background: transparent;
+          height: 28px;
+          padding: 4px 12px;
+          color: var(--tabs-text-muted);
+          cursor: pointer;
+          border-radius: 48px;
+          z-index: 1;
+          font-family: var(--font-display);
+          font-weight: 600;
+          font-size: 12px;
+          transition: color var(--tabs-dur) var(--tabs-ease);
+          white-space: nowrap;
+        }
+        .t-tab:not([aria-selected="true"]):hover,
+        .t-tab[aria-selected="true"] { color: var(--tabs-text-active); }
+        .t-tabs-pill {
+          position: absolute;
+          top: 3px;
+          left: 0;
+          height: 28px;
+          width: 0;
+          background: var(--tabs-pill-bg);
+          border-radius: 48px;
+          box-shadow: 0 1px 3px rgba(15, 13, 40, 0.12), 0 0 0 0.5px rgba(15, 13, 40, 0.06);
+          transform: translateX(0);
+          transition:
+            transform var(--tabs-dur) var(--tabs-ease),
+            width     var(--tabs-dur) var(--tabs-ease);
+          will-change: transform, width;
+          z-index: 0;
+          pointer-events: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .t-tabs-pill, .t-tab { transition: none !important; }
+        }
         @keyframes tableEnter {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -8969,6 +9659,7 @@ function App() {
         {screen === 'choices' && <ChoicesScreen key={appEntity ?? 'all'} choices={entityFilteredChoices} onApprove={approveChoice} onDecline={declineChoice} onDetail={setChoiceDetail} appEntity={appEntity} />}
         {screen === 'payroll-overview' && <StubScreen title="Payroll Overview" description="Monthly payroll run and submission" />}
         {screen === 'payroll-reports' && <StubScreen title="Payroll Reports" description="Reporting and exports" />}
+        {screen === 'settings-allowances' && <AllowancesListPage key={appEntity ?? 'all'} allowances={allowances} onSaveAllowance={updated => setAllowances(prev => prev.map(a => a.id === updated.id ? updated : a))} appEntity={appEntity} />}
         {screen === 'settings-expenses' && <ExpenseCategorySettings key={appEntity ?? 'all'} categories={expenseCategories} onSave={setExpenseCategories} appEntity={appEntity} />}
         {screen === 'settings-team' && <TeamAccessSettings key={appEntity ?? 'all'} onNav={setScreen} adminAccess={adminAccess} onAdminSave={handleAdminSave} appEntity={appEntity} />}
         {screen === 'settings-entities' && <EntitiesSettings key={appEntity ?? 'all'} onNav={setScreen} appEntity={appEntity} companyRegime={companyRegime} onRegimeChange={setCompanyRegime} />}
@@ -8976,7 +9667,8 @@ function App() {
         {screen === 'settings-documents' && <DocumentsSettings key={appEntity ?? 'all'} appEntity={appEntity} documents={settingsDocuments} onDocumentsChange={setSettingsDocuments} />}
         {screen === 'settings-payroll' && <PayrollSettings companyRegime={companyRegime} onRegimeChange={setCompanyRegime} appEntity={appEntity} onToast={setToast} />}
         {screen === 'settings-benefits' && <BenefitsSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
-        {screen.startsWith('settings-') && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && screen !== 'settings-payroll' && screen !== 'settings-benefits' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
+        {screen === 'changelog' && <ChangelogScreen />}
+        {screen.startsWith('settings-') && screen !== 'settings-allowances' && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && screen !== 'settings-payroll' && screen !== 'settings-benefits' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
       </div>
 
       {calDetail && (
