@@ -15,6 +15,10 @@ const P = {
   action:      '#220A35',
 };
 
+// Uppercase section-label style shared by every settings screen (was
+// redefined locally 9 times with a silent 8px/10px marginBottom split).
+const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
+
 const StatusMeta = {
   pending:  { dot: '#f59e0b', label: 'Pending',  icon: 'Clock', color: '#92400e', bg: '#fde68a' },
   approved: { dot: '#22c55e', label: 'Approved', icon: 'Check', color: '#14532d', bg: '#bbf7d0' },
@@ -277,6 +281,96 @@ function sheetPanelStyle(visible, closing) {
     opacity:   visible ? 1 : 0,
     transition: `transform ${transDur}ms ${EASE_DRAWER}, opacity ${opacDur}ms ${EASE_OUT}`,
   };
+}
+
+// ── Icon button — the circular icon-only button used for modal/drawer close,
+// back navigation, and similar chrome actions. One size/opacity spec so
+// close buttons stop drifting between 28px and 30px screen to screen.
+function IconButton({ icon, onClick, size = 30, iconSize = 14, color = P.ink, blur, style }) {
+  return (
+    <button onClick={onClick} style={{
+      border: 'none', cursor: 'pointer', width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(60,60,67,0.1)',
+      ...(blur ? { backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' } : {}),
+      ...style,
+    }}>
+      <Icon name={icon} size={iconSize} color={color} strokeWidth={2.5} />
+    </button>
+  );
+}
+
+// ── Button — the four sanctioned button treatments. Reach for this instead of
+// a raw <button style={{...}}> — see CLAUDE.md "Shared components".
+const BUTTON_VARIANTS = {
+  primary:   { background: P.action, color: '#fff', border: 'none' },
+  secondary: { background: 'transparent', color: P.ink, border: `1px solid ${P.border}` },
+  danger:    { background: 'transparent', color: '#dc2626', border: 'none' },
+  text:      { background: 'transparent', color: P.ink, border: 'none' },
+};
+function Button({ variant = 'secondary', onClick, children, icon, iconSize = 14, disabled, type = 'button', style }) {
+  const v = BUTTON_VARIANTS[variant] || BUTTON_VARIANTS.secondary;
+  const flush = variant === 'text' || variant === 'danger';
+  return (
+    <button type={type} onClick={onClick} disabled={disabled} style={{
+      display: 'inline-flex', alignItems: 'center', gap: 7,
+      padding: flush ? 0 : '9px 18px',
+      borderRadius: 8,
+      border: v.border, background: v.background, color: v.color,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1,
+      fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
+      ...style,
+    }}>
+      {icon && <Icon name={icon} size={iconSize} color={v.color} strokeWidth={2.5} />}
+      {children}
+    </button>
+  );
+}
+
+// ── Modal shell — the centered-modal wrapper shared by every small dialog
+// (pick a value, confirm a delete, edit a category, ...). Owns the backdrop,
+// panel, and optional title/close header; body/footer are supplied as
+// children/footer, either a plain node or a function receiving `close` (for
+// buttons that need to save-then-close). See CLAUDE.md "Shared components".
+function ModalShell({ onClose, title, width = 420, maxHeight, zIndex = 300, footer, children }) {
+  const { visible, close } = useModalTransition(onClose);
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width, maxHeight, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
+        {title && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</span>
+            <IconButton icon="X" onClick={close} blur />
+          </div>
+        )}
+        {typeof children === 'function' ? children(close) : children}
+        {footer && (typeof footer === 'function' ? footer(close) : footer)}
+      </div>
+    </div>
+  );
+}
+
+// ── Drawer shell — the right-side-drawer wrapper shared by every detail/edit
+// drawer. Owns the backdrop, panel, and pinned header (title, optional back
+// button for two-step flows, close button); body is supplied as children,
+// either a plain node or a function receiving `close`. See CLAUDE.md.
+function DrawerShell({ onClose, title, onBack, width = 480, children }) {
+  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
+  return (
+    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
+      <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 16, bottom: 16, right: 16, width, background: P.white, borderRadius: 20, boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)', display: 'flex', flexDirection: 'column', overflow: 'hidden', ...sheetPanelStyle(visible, closing) }}>
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {onBack && <IconButton icon="arrow-left" onClick={onBack} />}
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>{title}</span>
+          </div>
+          <IconButton icon="X" onClick={close} blur />
+        </div>
+        {typeof children === 'function' ? children(close) : children}
+      </div>
+    </div>
+  );
 }
 
 // ── Shared toggle switch ─────────────────────────────────────────────────────
@@ -1031,10 +1125,16 @@ function StatusBadge({ status }) {
   );
 }
 
-function DotPill({ bg, color, children }) {
+function DotPill({ bg, color, children, filled, dot = true, border, size = 12, padding, whiteSpace }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: bg, color, borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12 }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      background: filled ? color : bg, color: filled ? '#fff' : color,
+      border: border ? `1px solid ${border}` : 'none',
+      borderRadius: 20, padding: padding || (size === 11 ? '1px 7px' : '2px 8px'), fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: size,
+      whiteSpace, flexShrink: 0,
+    }}>
+      {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />}
       {children}
     </span>
   );
@@ -1259,6 +1359,7 @@ function AppModeSidebar({ active, onNav, pendingCount, onEnterSettings }) {
         <SidebarItem icon="settings" label="Settings" onClick={onEnterSettings} />
 
         <div style={{ marginTop: 'auto', paddingTop: 10 }}>
+          <SidebarItem icon="blocks" label="Components" isActive={active === 'components'} onClick={() => onNav('components')} />
           <SidebarItem icon="sparkles" label="Product changelog" isActive={active === 'changelog'} onClick={() => onNav('changelog')} />
         </div>
       </nav>
@@ -1294,6 +1395,7 @@ const ROUTE_MAP = [
   { screen: 'settings-team',          path: '/hr-admin/settings/team' },
   { screen: 'settings-billing',       path: '/hr-admin/settings/billing' },
   { screen: 'changelog',              path: '/hr-admin/changelog' },
+  { screen: 'components',             path: '/hr-admin/components' },
 ];
 
 function screenToPath(screen) {
@@ -1460,75 +1562,43 @@ function ActionMenu({ req, onApprove, onDecline, onViewDetails, onEdit, onCancel
 }
 
 // ── Reason modal (decline / cancel) ───────────────────────────────────────
-function ReasonModal({ title, description, confirmLabel, confirmColor = '#b91c1c', onConfirm, onClose }) {
+function ReasonModal({ title, description, confirmLabel, confirmColor = '#dc2626', onConfirm, onClose }) {
   const [reason, setReason] = useState('');
-  const { visible, close } = useModalTransition(onClose);
   return (
-    <div onClick={close} style={{
-      position: 'fixed', inset: 0, zIndex: 300,
-      background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      ...modalBackdropStyle(visible),
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: P.white, borderRadius: 14, width: 420,
-        boxShadow: '0 8px 40px rgba(15,13,40,0.2)',
-        display: 'flex', flexDirection: 'column',
-        ...modalPanelStyle(visible),
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</span>
-          <button onClick={close} style={{
-            border: 'none', cursor: 'pointer',
-            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(60,60,67,0.1)',
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-          }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-        <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {description && (
-            <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>{description}</p>
-          )}
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 }}>
-              Reason <span style={{ fontWeight: 400, color: P.inkFaint }}>(required)</span>
-            </label>
-            <textarea
-              autoFocus
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-              rows={3}
-              placeholder="Explain why this absence is being declined or cancelled…"
-              style={{
-                width: '100%', padding: '8px 10px', borderRadius: 7,
-                border: `1px solid ${reason.trim() ? P.border : P.border}`,
-                fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink,
-                outline: 'none', resize: 'none', lineHeight: 1.5,
-              }}
-            />
-          </div>
-        </div>
+    <ModalShell title={title} onClose={onClose}
+      footer={close => (
         <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={close} style={{
-            padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent',
-            color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
-          }}>Back</button>
-          <button
-            disabled={!reason.trim()}
-            onClick={() => { onConfirm(reason.trim()); close(); }}
+          <Button variant="secondary" onClick={close}>Back</Button>
+          <Button variant="primary" disabled={!reason.trim()} onClick={() => { onConfirm(reason.trim()); close(); }}
+            style={{ padding: '8px 20px', background: reason.trim() ? confirmColor : P.border, color: reason.trim() ? '#fff' : P.inkFaint }}>
+            {confirmLabel}
+          </Button>
+        </div>
+      )}>
+      <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {description && (
+          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>{description}</p>
+        )}
+        <div>
+          <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 }}>
+            Reason <span style={{ fontWeight: 400, color: P.inkFaint }}>(required)</span>
+          </label>
+          <textarea
+            autoFocus
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            rows={3}
+            placeholder="Explain why this absence is being declined or cancelled…"
             style={{
-              padding: '8px 20px', borderRadius: 8, border: 'none',
-              background: reason.trim() ? confirmColor : P.border,
-              color: reason.trim() ? '#fff' : P.inkFaint,
-              cursor: reason.trim() ? 'pointer' : 'not-allowed',
-              fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
+              width: '100%', padding: '8px 10px', borderRadius: 7,
+              border: `1px solid ${P.border}`,
+              fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink,
+              outline: 'none', resize: 'none', lineHeight: 1.5,
             }}
-          >{confirmLabel}</button>
+          />
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
@@ -1719,7 +1789,7 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
                 <AppLink>{req.document}</AppLink>
               ) : (
                 <>
-                  <span style={{ fontWeight: 600, fontSize: 12, color: '#92400e', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: 20, padding: '2px 8px' }}>Missing</span>
+                  <DotPill dot={false} color="#92400e" bg="#fef9c3" border="#fde68a">Missing</DotPill>
                   <span style={{ fontWeight: 400, color: P.inkSoft }}>{ATTACHMENT_RULES[req.type].label}</span>
                 </>
               )}
@@ -1824,38 +1894,11 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
   const editDurStr = editDays === 0.5 ? '½ day' : editDays === 1 ? '1 day' : `${editDays} days`;
 
   return (
-    <React.Fragment>
-      <div onClick={close} style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(15,13,40,0.25)',
-        ...modalBackdropStyle(visible),
-      }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white,
-        borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-
-        {/* Pinned header — stays fixed across both states */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {secondPanel && (
-              <button onClick={editMode ? exitEdit : cancelMode ? exitCancel : exitDecline} style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: 'rgba(60,60,67,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="arrow-left" size={15} color={P.ink} strokeWidth={2} />
-              </button>
-            )}
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-              {editMode ? 'Edit request' : cancelMode ? 'Cancel absence' : declineMode ? 'Decline request' : 'Request details'}
-            </span>
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <DrawerShell onClose={onClose}
+      title={editMode ? 'Edit request' : cancelMode ? 'Cancel absence' : declineMode ? 'Decline request' : 'Request details'}
+      onBack={secondPanel ? (editMode ? exitEdit : cancelMode ? exitCancel : exitDecline) : undefined}>
+      {close => (
+        <>
         {/* Clipping window for the two sliding panels */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
 
@@ -1963,23 +2006,23 @@ function CalendarDrawer({ req, requests, onClose, onApprove, onDecline, onCancel
           </div>
 
         </div>
-      </div>
-      </div>
 
-      {avatarTip && ReactDOM.createPortal(
-        <div style={{ position: 'fixed', zIndex: 9999, left: avatarTip.x, top: avatarTip.y - 8, transform: 'translate(-50%, -100%)', background: P.ink, color: P.white, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, padding: '6px 10px', borderRadius: 8, pointerEvents: 'none', whiteSpace: 'nowrap', lineHeight: 1.5 }}>
-          <div>{avatarTip.name}</div>
-          {avatarTip.offReq ? (
-            <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontSize: 11, marginTop: 1 }}>
-              {avatarTip.offReq.type} · {avatarTip.offReq.startDate === avatarTip.offReq.endDate ? avatarTip.offReq.startDate : `${avatarTip.offReq.startDate} – ${avatarTip.offReq.endDate}`}
-            </div>
-          ) : (
-            <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontSize: 11, marginTop: 1 }}>Available</div>
-          )}
-        </div>,
-        document.body
+        {avatarTip && ReactDOM.createPortal(
+          <div style={{ position: 'fixed', zIndex: 9999, left: avatarTip.x, top: avatarTip.y - 8, transform: 'translate(-50%, -100%)', background: P.ink, color: P.white, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, padding: '6px 10px', borderRadius: 8, pointerEvents: 'none', whiteSpace: 'nowrap', lineHeight: 1.5 }}>
+            <div>{avatarTip.name}</div>
+            {avatarTip.offReq ? (
+              <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontSize: 11, marginTop: 1 }}>
+                {avatarTip.offReq.type} · {avatarTip.offReq.startDate === avatarTip.offReq.endDate ? avatarTip.offReq.startDate : `${avatarTip.offReq.startDate} – ${avatarTip.offReq.endDate}`}
+              </div>
+            ) : (
+              <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.65)', fontSize: 11, marginTop: 1 }}>Available</div>
+            )}
+          </div>,
+          document.body
+        )}
+        </>
       )}
-    </React.Fragment>
+    </DrawerShell>
   );
 }
 
@@ -2057,7 +2100,7 @@ function EmployeeCombobox({ value, onChange, employees, error, autoFocus }) {
     const q = query.trim().toLowerCase();
     if (!q) return employees;
     return employees.filter(([, emp]) =>
-      emp.name.toLowerCase().includes(q) || emp.department.toLowerCase().includes(q)
+      emp.name.toLowerCase().includes(q) || (emp.department || '').toLowerCase().includes(q)
     );
   }, [query, employees]);
 
@@ -2422,7 +2465,7 @@ function AddTimeOffModal({ existing, onClose, onSave, requests = [], defaultDate
 
   const fmtDisplay = (d) => d ? d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
 
-  const handleSave = () => {
+  const handleSave = (close) => {
     const errs = {};
     if (!allEmployees && !empId) errs.employee = 'Please select an employee';
     if (pickedDates.size === 0) errs.dates = 'Please select dates';
@@ -2460,44 +2503,17 @@ function AddTimeOffModal({ existing, onClose, onSave, requests = [], defaultDate
     fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, outline: 'none', background: P.white,
   };
 
-  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
-
   React.useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') close(); };
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [close]);
+  }, [onClose]);
 
   return (
-    <div onClick={close} style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(15,13,40,0.25)',
-      ...modalBackdropStyle(visible),
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white,
-        borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        {/* Header */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-            {isEdit ? (allEmployees ? 'Edit company closure' : 'Edit time off') : (allEmployees ? 'Add company closure' : 'Add time off')}
-          </span>
-          <button onClick={close} style={{
-            border: 'none', cursor: 'pointer',
-            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(60,60,67,0.1)',
-            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-          }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <DrawerShell onClose={onClose}
+      title={isEdit ? (allEmployees ? 'Edit company closure' : 'Edit time off') : (allEmployees ? 'Add company closure' : 'Add time off')}>
+      {close => (
+        <>
         {/* Past-record warning — only in edit mode for past absences */}
         {isEdit && (() => {
           const today = new Date(); today.setHours(0,0,0,0);
@@ -2769,14 +2785,15 @@ function AddTimeOffModal({ existing, onClose, onSave, requests = [], defaultDate
             color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
           }}>Cancel</button>
           <div style={{ flex: 1 }} />
-          <button onClick={handleSave} style={{
+          <button onClick={() => handleSave(close)} style={{
             padding: '8px 20px', borderRadius: 8, border: 'none',
             background: P.action, color: '#fff', cursor: 'pointer',
             fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13,
           }}>{isEdit ? (allEmployees ? 'Save closure' : 'Save changes') : (allEmployees ? 'Add closure' : 'Confirm absence')}</button>
         </div>
-      </div>
-    </div>
+        </>
+      )}
+    </DrawerShell>
   );
 }
 
@@ -2947,9 +2964,7 @@ function OverlapPopover({ req, overlapping, empDept }) {
                 {empDept} also off
               </span>
               {sameDept.length >= 2 && (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 20, padding: '1px 7px' }}>
-                  ⚠ {sameDept.length} overlaps
-                </span>
+                <DotPill dot={false} size={11} color="#dc2626" bg="#fef2f2" border="#fecaca">⚠ {sameDept.length} overlaps</DotPill>
               )}
             </div>
             {sameDept.map(r => {
@@ -2980,7 +2995,6 @@ function ExpenseDrawer({ expense, onClose, onApprove, onReject }) {
   const emp = EMPLOYEES[expense.employee] || { name: expense.employee, initials: '?', color: '#e5e7eb' };
   const isPending = expense.status === 'pending';
 
-  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
   const [rejectMode, setRejectMode] = React.useState(false);
   const [rejectReason, setRejectReason] = React.useState('');
 
@@ -3022,7 +3036,6 @@ function ExpenseDrawer({ expense, onClose, onApprove, onReject }) {
   };
 
   const amountStr = `€ ${expense.amount.toFixed(2).replace('.', ',')}`;
-  const sm = StatusMeta[expense.status] || StatusMeta.pending;
 
   const detailContent = (
     <div>
@@ -3056,10 +3069,7 @@ function ExpenseDrawer({ expense, onClose, onApprove, onReject }) {
       <SectionHeader>Admin</SectionHeader>
       <Group>
         <TableRow label="Status" icon="circle-dot">
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: sm.bg, color: sm.color, borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12 }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />
-            {sm.label}
-          </span>
+          <StatusPill status={expense.status} />
         </TableRow>
         <TableRow label="Submitted" icon="calendar">
           {expense.submittedAt}
@@ -3074,36 +3084,8 @@ function ExpenseDrawer({ expense, onClose, onApprove, onReject }) {
   );
 
   return (
-    <React.Fragment>
-      <div onClick={close} style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(15,13,40,0.25)',
-        ...modalBackdropStyle(visible),
-      }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white,
-        borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {secondPanel && (
-              <button onClick={() => setRejectMode(false)} style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: 'rgba(60,60,67,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="arrow-left" size={15} color={P.ink} strokeWidth={2} />
-              </button>
-            )}
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-              {rejectMode ? 'Reject expense' : 'Expense details'}
-            </span>
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <DrawerShell onClose={onClose} title={rejectMode ? 'Reject expense' : 'Expense details'} onBack={secondPanel ? () => setRejectMode(false) : undefined}>
+      {close => (
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', transform: detailSlide, transition: slideTransition }}>
             <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -3137,9 +3119,8 @@ function ExpenseDrawer({ expense, onClose, onApprove, onReject }) {
             </div>
           </div>
         </div>
-      </div>
-      </div>
-    </React.Fragment>
+      )}
+    </DrawerShell>
   );
 }
 
@@ -3148,7 +3129,6 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
   const emp = EMPLOYEES[choice.empId] || { name: choice.empId, initials: '?', color: '#e5e7eb' };
   const isPending = choice.status === 'pending';
   const isApproved = choice.status === 'approved';
-  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
 
   // null | 'decline' | 'payslip' | 'activity' | 'terminate'
   const [activePanel, setActivePanel] = React.useState(null);
@@ -3235,32 +3215,8 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
   };
 
   return (
-    <React.Fragment>
-      <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white, borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        {/* Header */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {isSecondary && (
-              <button onClick={() => setActivePanel(null)} style={{ flexShrink: 0, width: 30, height: 30, borderRadius: '50%', background: 'rgba(60,60,67,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="arrow-left" size={15} color={P.ink} strokeWidth={2} />
-              </button>
-            )}
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-              {headerTitle}
-            </span>
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <DrawerShell onClose={onClose} title={headerTitle} onBack={isSecondary ? () => setActivePanel(null) : undefined}>
+      {close => (
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           {/* Panel 1 — Detail */}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', transform: detailSlide, transition: slideTransition }}>
@@ -3519,9 +3475,8 @@ function ChoiceDrawer({ choice, onClose, onApprove, onDecline }) {
 
           </div>
         </div>
-      </div>
-      </div>
-    </React.Fragment>
+      )}
+    </DrawerShell>
   );
 }
 
@@ -3609,7 +3564,6 @@ function RequestRow({ req, requests, onApprove, onDecline, onDetail, onDeclineDi
 
 // ── Add expense modal ──────────────────────────────────────────────────────
 function AddExpenseModal({ categories, onClose, onSave }) {
-  const { visible, closing, close } = useModalTransition(onClose, SHEET_CLOSE_DUR);
   const [empId, setEmpId] = useState('');
   const [category, setCategory] = useState(categories[0] || '');
   const [amount, setAmount] = useState('');
@@ -3631,10 +3585,10 @@ function AddExpenseModal({ categories, onClose, onSave }) {
   };
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') close(); };
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [close]);
+  }, [onClose]);
 
   const validate = () => {
     const errs = {};
@@ -3643,15 +3597,6 @@ function AddExpenseModal({ categories, onClose, onSave }) {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) errs.amount = true;
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  };
-
-  const submit = () => {
-    if (!validate()) return;
-    const today = new Date();
-    const day = today.getDate();
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    onSave({ employee: empId, category, amount: parseFloat(amount), currency: 'EUR', description: note, receipt: receiptFile ? receiptFile.name : '', submittedAt: `${day} ${months[today.getMonth()]}` });
-    close();
   };
 
   const selectStyle = (hasErr) => ({
@@ -3670,20 +3615,18 @@ function AddExpenseModal({ categories, onClose, onSave }) {
   const sortedEmps = Object.entries(EMPLOYEES).sort((a,b) => a[1].name.localeCompare(b[1].name));
 
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white, borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>Add expense</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
+    <DrawerShell onClose={onClose} title="Add expense">
+      {close => {
+        const submit = () => {
+          if (!validate()) return;
+          const today = new Date();
+          const day = today.getDate();
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          onSave({ employee: empId, category, amount: parseFloat(amount), currency: 'EUR', description: note, receipt: receiptFile ? receiptFile.name : '', submittedAt: `${day} ${months[today.getMonth()]}` });
+          close();
+        };
+        return (
+          <>
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
             <label style={labelStyle}>Employee <span style={{ color: '#ef4444' }}>*</span></label>
@@ -3746,11 +3689,13 @@ function AddExpenseModal({ categories, onClose, onSave }) {
           </div>
         </div>
         <div style={{ flexShrink: 0, display: 'flex', gap: 10, padding: '16px 24px', borderTop: `1px solid ${P.border}` }}>
-          <button onClick={close} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft }}>Cancel</button>
-          <button onClick={submit} style={{ flex: 2, padding: '10px 0', borderRadius: 8, border: 'none', background: P.action, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: '#fff' }}>Add expense</button>
+          <Button variant="secondary" onClick={close} style={{ flex: 1, padding: '10px 0', color: P.inkSoft }}>Cancel</Button>
+          <Button variant="primary" onClick={submit} style={{ flex: 2, padding: '10px 0' }}>Add expense</Button>
         </div>
-      </div>
-    </div>
+          </>
+        );
+      }}
+    </DrawerShell>
   );
 }
 
@@ -3866,9 +3811,7 @@ function ExpensesScreen({ expenses, categories, onApprove, onDetail, onAdd, appE
           />
         }
       >
-        <button onClick={() => setAddOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-          <Icon name="Plus" size={14} color="#fff" strokeWidth={2.5} /> Add expense
-        </button>
+        <Button variant="primary" icon="Plus" onClick={() => setAddOpen(true)}>Add expense</Button>
       </PageHeader>
       <FilterToolbar
         searchText={searchText} onSearch={v => { setSearchText(v); setSelected(new Set()); }}
@@ -4025,9 +3968,7 @@ function RequestsScreen({ requests, onApprove, onDecline, onSave, onCancel, onVi
           />
         }
       >
-        <button onClick={() => setAddOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-          <Icon name="Plus" size={14} color="#fff" strokeWidth={2.5} /> Add time off
-        </button>
+        <Button variant="primary" icon="Plus" onClick={() => setAddOpen(true)}>Add time off</Button>
       </PageHeader>
       <FilterToolbar
         searchText={searchText} onSearch={v => { setSearchText(v); setPage(1); }}
@@ -5362,10 +5303,7 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
             <div style={{ marginBottom: 36 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>Requested time off</span>
-                <button onClick={() => setAddModal('add')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-                  <Icon name="Plus" size={14} color="#fff" strokeWidth={2.5} />
-                  Add time off
-                </button>
+                <Button variant="primary" icon="Plus" onClick={() => setAddModal('add')}>Add time off</Button>
               </div>
               {empReqs.filter(r => r.status === 'pending').length > 0 ? (
                 <div style={{ background: P.white, border: `1px solid ${P.border}`, borderRadius: 12, overflow: 'visible' }}>
@@ -5593,31 +5531,25 @@ function EmployeeDetailScreen({ employeeId, requests, onNav, onSave, onCancel, o
       )}
 
       {deactivateConfirm && (
-        <div onClick={() => setDeactivateConfirm(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 300,
-          background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: P.white, borderRadius: 14, width: 400, padding: '28px 28px 24px',
-            boxShadow: '0 8px 40px rgba(15,13,40,0.2)',
-          }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-              <Icon name="user-x" size={18} color="#dc2626" strokeWidth={1.75} />
+        <ModalShell onClose={() => setDeactivateConfirm(false)} width={400}>
+          {close => (
+            <div style={{ padding: '28px 28px 24px' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Icon name="user-x" size={18} color="#dc2626" strokeWidth={1.75} />
+              </div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, marginBottom: 6 }}>Deactivate {emp.name}?</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginBottom: 24, lineHeight: 1.5 }}>
+                {emp.name.split(' ')[0]} will lose access to Payflip immediately. Their data and history will be preserved.
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <Button variant="secondary" onClick={close} style={{ padding: '8px 16px', color: P.inkSoft }}>Cancel</Button>
+                <Button variant="primary" onClick={() => { close(); onToast && onToast({ message: `${emp.name.split(' ')[0]} deactivated`, type: 'decline' }); }} style={{ padding: '8px 16px', background: '#dc2626' }}>
+                  Deactivate
+                </Button>
+              </div>
             </div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, marginBottom: 6 }}>Deactivate {emp.name}?</div>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginBottom: 24, lineHeight: 1.5 }}>
-              {emp.name.split(' ')[0]} will lose access to Payflip immediately. Their data and history will be preserved.
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button onClick={() => setDeactivateConfirm(false)} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, color: P.inkSoft, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-                Cancel
-              </button>
-              <button onClick={() => { setDeactivateConfirm(false); onToast && onToast({ message: `${emp.name.split(' ')[0]} deactivated`, type: 'decline' }); }} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
-                Deactivate
-              </button>
-            </div>
-          </div>
-        </div>
+          )}
+        </ModalShell>
       )}
     </div>
   );
@@ -6130,138 +6062,127 @@ function DashboardScreen({ requests, onNav, onToast, appEntity = null }) {
 // ── Stub screens ──────────────────────────────────────────────────────────
 // ── Expense category settings ──────────────────────────────────────────────
 function CategoryModal({ title, initialVal, initialLimit, onSave, onDelete, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
   const [val, setVal] = useState(initialVal);
   const [limitVal, setLimitVal] = useState(initialLimit != null ? String(initialLimit) : '');
-  const save = () => {
-    const t = val.trim();
-    if (!t) return;
-    const n = parseFloat(limitVal);
-    onSave(t, isNaN(n) ? null : n);
-    close();
-  };
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-        <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>Name</label>
-            <input autoFocus value={val} onChange={e => setVal(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
-              placeholder="Category name"
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 7, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>Spending limit</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 10px' }}>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
-              <input type="number" min="0" value={limitVal} onChange={e => setLimitVal(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
-                placeholder="No limit"
-                style={{ flex: 1, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent' }} />
+    <ModalShell title={title} onClose={onClose}>
+      {close => {
+        const save = () => {
+          const t = val.trim();
+          if (!t) return;
+          const n = parseFloat(limitVal);
+          onSave(t, isNaN(n) ? null : n);
+          close();
+        };
+        return (
+          <>
+            <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>Name</label>
+                <input autoFocus value={val} onChange={e => setVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
+                  placeholder="Category name"
+                  style={{ width: '100%', padding: '8px 10px', borderRadius: 7, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>Spending limit</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 10px' }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
+                  <input type="number" min="0" value={limitVal} onChange={e => setLimitVal(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
+                    placeholder="No limit"
+                    style={{ flex: 1, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent' }} />
+                </div>
+                <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint }}>Leave blank for no limit.</p>
+              </div>
             </div>
-            <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint }}>Leave blank for no limit.</p>
-          </div>
-        </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
-          {onDelete && (
-            <button onClick={() => { onDelete(); close(); }} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0, marginRight: 'auto' }}>
-              Delete
-            </button>
-          )}
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-        </div>
-      </div>
-    </div>
+            <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+              {onDelete && (
+                <Button variant="danger" onClick={() => { onDelete(); close(); }} style={{ marginRight: 'auto' }}>Delete</Button>
+              )}
+              <Button variant="secondary" onClick={close}>Cancel</Button>
+              <Button variant="primary" onClick={save}>Save</Button>
+            </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
 function PickModal({ title, options, value, onSave, onClose, extraField }) {
-  const { visible, close } = useModalTransition(onClose);
   const [selected, setSelected] = useState(value);
   const [extraVal, setExtraVal] = useState(extraField ? String(extraField.defaultValue) : '');
-  const save = () => { const n = parseFloat(extraVal); onSave(selected, extraField && selected === extraField.forValue ? (isNaN(n) ? extraField.defaultValue : n) : undefined); close(); };
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-        <div style={{ padding: '8px 14px' }}>
-          {options.map(opt => (
-            <React.Fragment key={opt.value}>
-            <div onClick={() => setSelected(opt.value)}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selected === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {selected === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
-              </div>
-              <div>
-                <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
-                {opt.hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>}
-              </div>
-            </div>
-            {extraField && opt.value === extraField.forValue && selected === extraField.forValue && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 10px 8px 42px' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{extraField.label}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 7, padding: '5px 8px', background: P.bg }}>
-                  <input type="number" min={extraField.min || 1} value={extraVal} onChange={e => setExtraVal(e.target.value)}
-                    style={{ width: 48, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent', textAlign: 'right' }} />
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{extraField.suffix}</span>
+    <ModalShell title={title} onClose={onClose}>
+      {close => {
+        const save = () => { const n = parseFloat(extraVal); onSave(selected, extraField && selected === extraField.forValue ? (isNaN(n) ? extraField.defaultValue : n) : undefined); close(); };
+        return (
+          <>
+            <div style={{ padding: '8px 14px' }}>
+              {options.map(opt => (
+                <React.Fragment key={opt.value}>
+                <div onClick={() => setSelected(opt.value)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 10px', cursor: 'pointer', borderRadius: 8 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${selected === opt.value ? P.action : P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {selected === opt.value && <div style={{ width: 8, height: 8, borderRadius: '50%', background: P.action }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink }}>{opt.label}</div>
+                    {opt.hint && <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 2 }}>{opt.hint}</div>}
+                  </div>
                 </div>
-              </div>
-            )}
-            </React.Fragment>
-          ))}
-        </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-        </div>
-      </div>
-    </div>
+                {extraField && opt.value === extraField.forValue && selected === extraField.forValue && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 10px 8px 42px' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{extraField.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 7, padding: '5px 8px', background: P.bg }}>
+                      <input type="number" min={extraField.min || 1} value={extraVal} onChange={e => setExtraVal(e.target.value)}
+                        style={{ width: 48, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent', textAlign: 'right' }} />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>{extraField.suffix}</span>
+                    </div>
+                  </div>
+                )}
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={close}>Cancel</Button>
+              <Button variant="primary" onClick={save}>Save</Button>
+            </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
 function AmountModal({ title, label, value, onSave, onClose, nullable }) {
-  const { visible, close } = useModalTransition(onClose);
   const [val, setVal] = useState(value != null ? String(value) : '');
-  const save = () => { const n = parseFloat(val); onSave(isNaN(n) ? null : n); close(); };
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-        <div style={{ padding: '18px 22px' }}>
-          <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>{label}</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 10px' }}>
-            <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
-            <input autoFocus type="number" min="0" value={val} onChange={e => setVal(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
-              placeholder="0"
-              style={{ flex: 1, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent' }} />
-          </div>
-          {nullable && <p style={{ margin: '6px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint }}>Leave blank for no limit.</p>}
-        </div>
-        <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-        </div>
-      </div>
-    </div>
+    <ModalShell title={title} onClose={onClose}>
+      {close => {
+        const save = () => { const n = parseFloat(val); onSave(isNaN(n) ? null : n); close(); };
+        return (
+          <>
+            <div style={{ padding: '18px 22px' }}>
+              <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.inkSoft, marginBottom: 6 }}>{label}</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 10px' }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft }}>€</span>
+                <input autoFocus type="number" min="0" value={val} onChange={e => setVal(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') close(); }}
+                  placeholder="0"
+                  style={{ flex: 1, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, background: 'transparent' }} />
+              </div>
+              {nullable && <p style={{ margin: '6px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint }}>Leave blank for no limit.</p>}
+            </div>
+            <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={close}>Cancel</Button>
+              <Button variant="primary" onClick={save}>Save</Button>
+            </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
@@ -6283,7 +6204,6 @@ const APPROVAL_OPTS = [
 
 function AllowancesListPage({ allowances, onSaveAllowance, appEntity = null }) {
   const [allowanceModal, setAllowanceModal] = useState(null);
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
 
   if (allowanceModal) {
     const typeInfo = ALLOWANCE_TYPES.find(t => t.id === allowanceModal);
@@ -6344,7 +6264,6 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
     setItems(next); onSave(next);
   };
 
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
 
   const cycleLabel = (REIMBURSE_OPTS.find(o => o.value === reimburseCycle) || {}).label || '';
   const approvalLabel = (APPROVAL_OPTS.find(o => o.value === approvalRouting) || {}).label || '';
@@ -6423,13 +6342,11 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
 }
 
 function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
   const [selected, setSelected] = useState(singleSelect ? (value ? [value] : []) : (value || []));
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
-  const save = () => { onSave(selected); close(); };
 
-  const toggle = (key) => {
+  const toggle = (key, close) => {
     if (singleSelect) { onSave(key); close(); return; }
     setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
   };
@@ -6446,19 +6363,12 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
     return matchesDept && matchesSearch;
   });
 
-
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 480, maxHeight: '70vh', boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink }}>{title}</div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <ModalShell title={title} onClose={onClose} width={480} maxHeight="70vh">
+      {close => {
+        const save = () => { onSave(selected); close(); };
+        return (
+          <>
         {/* Search + department filter */}
         <div style={{ padding: '12px 16px', borderBottom: `1px solid ${P.border}`, display: 'flex', gap: 8, flexShrink: 0 }}>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 5, border: `1px solid ${P.border}`, borderRadius: 7, padding: '8px 11px', background: P.white }}>
@@ -6486,7 +6396,7 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
           {filtered.map(emp => {
             const on = selected.includes(emp.value);
             return (
-              <div key={emp.value} onClick={() => toggle(emp.value)}
+              <div key={emp.value} onClick={() => toggle(emp.value, close)}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', cursor: 'pointer', borderRadius: 8 }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,13,40,0.04)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
@@ -6522,13 +6432,14 @@ function PersonPickerModal({ title, value, candidates, singleSelect, onSave, onC
             : <span />
           }
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-            {!singleSelect && <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Confirm</button>}
+            <Button variant="secondary" onClick={close}>Cancel</Button>
+            {!singleSelect && <Button variant="primary" onClick={save}>Confirm</Button>}
           </div>
         </div>
-
-      </div>
-    </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
@@ -6550,7 +6461,6 @@ const ADMIN_AREAS = [
 ];
 
 function AdminAccessModal({ admin, access, onSave, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
   const [step, setStep] = useState(Array.isArray(access) ? 2 : 1);
   const [selectedAreas, setSelectedAreas] = useState(Array.isArray(access) ? access : []);
 
@@ -6576,24 +6486,27 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
   );
 
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 420, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', display: 'flex', flexDirection: 'column', ...modalPanelStyle(visible) }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {step === 2 && (
-              <button onClick={() => setStep(1)} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)', flexShrink: 0 }}>
-                <Icon name="chevron-left" size={15} color={P.ink} strokeWidth={2.5} />
-              </button>
-            )}
-            {headerAvatarAndName}
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
+    <ModalShell onClose={onClose}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {step === 2 && <IconButton icon="chevron-left" onClick={() => setStep(1)} size={28} />}
+          {headerAvatarAndName}
         </div>
-
+      }
+      footer={close => (
+        <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          <Button variant="secondary" onClick={close}>Cancel</Button>
+          {step === 2 && (
+            <Button variant="primary" disabled={selectedAreas.length === 0}
+              onClick={() => { if (selectedAreas.length > 0) { onSave(selectedAreas); close(); } }}
+              style={{ background: selectedAreas.length > 0 ? P.action : P.border, color: selectedAreas.length > 0 ? '#fff' : P.inkSoft }}>
+              Save
+            </Button>
+          )}
+        </div>
+      )}>
+      {close => (
+        <>
         {/* Sliding content area — height morphs between step 1 and step 2 natural heights */}
         <div style={{ position: 'relative', overflow: 'hidden', height: onStep2 ? 180 : 132, transition: `height ${SLIDE_DUR}ms ${EASE_DRAWER}` }}>
 
@@ -6644,16 +6557,9 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div style={{ padding: '12px 22px 16px', borderTop: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          {step === 2 && (
-            <button onClick={() => { if (selectedAreas.length > 0) { onSave(selectedAreas); close(); } }} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: selectedAreas.length > 0 ? P.action : P.border, color: selectedAreas.length > 0 ? '#fff' : P.inkSoft, cursor: selectedAreas.length > 0 ? 'pointer' : 'default', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
-          )}
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </ModalShell>
   );
 }
 
@@ -6662,24 +6568,17 @@ function AdminAccessModal({ admin, access, onSave, onClose }) {
 // Ghost trigger button + searchable modal. Resets on page navigation.
 function EntityPickerModal({ value, onChange, onClose }) {
   const [search, setSearch] = useState('');
-  const { visible, close } = useModalTransition(onClose);
 
   const filtered = ENTITIES.filter(e =>
     !search.trim() || e.name.toLowerCase().includes(search.trim().toLowerCase())
   );
 
-  const pick = (id) => { onChange(id); close(); };
-
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 400, maxHeight: 560, display: 'flex', flexDirection: 'column', boxShadow: '0 8px 40px rgba(15,13,40,0.18)', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 12px', borderBottom: `1px solid ${P.border}`, flexShrink: 0 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>Switch entity</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)' }}>
-            <Icon name="X" size={13} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
-
+    <ModalShell title="Switch entity" onClose={onClose} width={400} maxHeight={560}>
+      {close => {
+        const pick = (id) => { onChange(id); close(); };
+        return (
+          <>
         <div style={{ padding: '10px 12px 6px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px', background: P.bg }}>
             <Icon name="search" size={14} color={P.inkFaint} strokeWidth={1.75} />
@@ -6739,8 +6638,10 @@ function EntityPickerModal({ value, onChange, onClose }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
@@ -6782,7 +6683,6 @@ function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null 
   const [adminModal, setAdminModal] = useState(null);
 
   const AREA_LABELS = { 'time-off': 'Time off', 'expenses': 'Expenses', 'payroll': 'Payroll' };
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
 
   return (
     <>
@@ -6825,7 +6725,7 @@ function TeamAccessSettings({ onNav, adminAccess, onAdminSave, appEntity = null 
                   last={idx === admins.length - 1}
                   trailing={<>
                     {badge
-                      ? <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: badge.filled ? '#fff' : P.inkSoft, background: badge.filled ? P.action : P.bg, padding: '3px 10px', borderRadius: 20, border: badge.filled ? 'none' : `1px solid ${P.border}`, whiteSpace: 'nowrap', flexShrink: 0 }}>{badge.label}</span>
+                      ? <DotPill dot={false} filled={badge.filled} color={badge.filled ? P.action : P.inkSoft} bg={P.bg} border={badge.filled ? null : P.border} padding="3px 10px" whiteSpace="nowrap">{badge.label}</DotPill>
                       : <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkFaint, whiteSpace: 'nowrap', flexShrink: 0 }}>No access</span>
                     }
                     <Icon name="chevron-right" size={16} color={P.inkFaint} strokeWidth={1.75} style={{ flexShrink: 0, marginLeft: 16 }} />
@@ -6924,7 +6824,6 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
   const [minKm, setMinKm] = useState(config.minKm != null ? String(config.minKm) : '');
   const [minHours, setMinHours] = useState(config.minHours != null ? String(config.minHours) : '');
 
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
   const settingsRowStyle = (last) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: last ? 'none' : `1px solid ${P.border}` });
 
@@ -7189,11 +7088,11 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
         <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           {active ? (
             <>
-              <button onClick={onBack} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>Cancel</button>
-              <button onClick={handleSave} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save changes</button>
+              <Button variant="secondary" onClick={onBack} style={{ background: P.white }}>Cancel</Button>
+              <Button variant="primary" onClick={handleSave}>Save changes</Button>
             </>
           ) : (
-            <button onClick={onBack} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink }}>Cancel</button>
+            <Button variant="secondary" onClick={onBack} style={{ background: P.white }}>Cancel</Button>
           )}
         </div>
 
@@ -7291,22 +7190,21 @@ function initLeaveTypes() {
 }
 
 function ConfirmDeleteModal({ name, onConfirm, onClose }) {
-  const { visible, close } = useModalTransition(onClose);
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 380, boxShadow: '0 8px 40px rgba(15,13,40,0.2)', ...modalPanelStyle(visible) }}>
-        <div style={{ padding: '24px 24px 20px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, marginBottom: 8 }}>Delete {name}?</div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>
-            This will permanently remove the leave type. Existing leave records won't be affected, but employees can no longer request it.
-          </div>
-        </div>
+    <ModalShell onClose={onClose} width={380} zIndex={400}
+      footer={close => (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '0 16px 16px' }}>
-          <button onClick={close} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${P.border}`, background: P.white, color: P.ink, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Cancel</button>
-          <button onClick={onConfirm} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#dc2626', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Delete leave type</button>
+          <Button variant="secondary" onClick={close} style={{ padding: '8px 16px', background: P.white }}>Cancel</Button>
+          <Button variant="primary" onClick={onConfirm} style={{ padding: '8px 16px', background: '#dc2626' }}>Delete leave type</Button>
+        </div>
+      )}>
+      <div style={{ padding: '24px 24px 20px' }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, marginBottom: 8 }}>Delete {name}?</div>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>
+          This will permanently remove the leave type. Existing leave records won't be affected, but employees can no longer request it.
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
@@ -7352,7 +7250,6 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
     onBack();
   };
 
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 };
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
   const audit = !isNew ? LEAVE_TYPE_AUDIT[defaults.name] : null;
 
@@ -7663,17 +7560,16 @@ function LeaveTypeSettingsPage({ config, allLeaveTypes = [], onSave, onDelete, o
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 8 }}>
           <div>
             {!isNew && onDelete && defaults.deletable && (
-              <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0 }}>Delete leave type</button>
+              <Button variant="danger" onClick={() => setConfirmDelete(true)}>Delete leave type</Button>
             )}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             {isNew && (
-              <button onClick={onBack} style={{ padding: '9px 20px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
+              <Button variant="secondary" onClick={onBack} style={{ padding: '9px 20px' }}>Cancel</Button>
             )}
-            <button onClick={save} disabled={!name.trim()}
-              style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: name.trim() ? 'pointer' : 'default', opacity: name.trim() ? 1 : 0.4, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>
+            <Button variant="primary" onClick={save} disabled={!name.trim()} style={{ padding: '9px 20px' }}>
               {isNew ? 'Create leave type' : 'Save changes'}
-            </button>
+            </Button>
           </div>
         </div>
         {confirmDelete && (
@@ -7732,10 +7628,7 @@ function TimeOffSettings({ appEntity = null, companyRegime = COMPANY_REGIME_DEFA
             <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Time off</h1>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Configure the leave types available to your employees</p>
           </div>
-          <button onClick={() => setLeaveModal('new')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
-            <Icon name="plus" size={14} color="#fff" strokeWidth={2.5} />
-            Add leave type
-          </button>
+          <Button variant="primary" icon="plus" onClick={() => setLeaveModal('new')} style={{ flexShrink: 0 }}>Add leave type</Button>
         </div>
 
         <div style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -7940,7 +7833,6 @@ function EntitiesSettings({ onNav, appEntity = null, companyRegime = COMPANY_REG
   };
 
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
 
   return (
     <div style={{ flex: 1, overflow: 'auto', animation: `screenEnter 180ms ${EASE_OUT}` }}>
@@ -8062,7 +7954,6 @@ function AddDocumentModal({ appEntity, title, saveLabel, onSave, onClose, initia
   const [type, setType] = useState(initialValues?.type || 'File');
   const [scope, setScope] = useState(initialValues?.scope !== undefined ? initialValues.scope : (appEntity || ''));
   const [file, setFile] = useState(initialValues?.fileName ? { name: initialValues.fileName, size: 0 } : null);
-  const { visible, close } = useModalTransition(onClose);
 
   const fakeUpload = () => {
     if (file) { setFile(null); return; }
@@ -8070,22 +7961,17 @@ function AddDocumentModal({ appEntity, title, saveLabel, onSave, onClose, initia
     setFile({ name: `${slug}.pdf`, size: (0.8 + Math.random() * 2.4) * 1024 * 1024 });
   };
 
-  const handleSave = () => {
-    if (!name.trim()) return;
-    const id = initialValues?.id || `doc-${Date.now()}`;
-    onSave({ ...(initialValues || {}), id, name: name.trim(), language: language || '—', type, fileName: file?.name, scope: scope || null });
-    close();
-  };
-
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(15,13,40,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: P.white, borderRadius: 14, width: 440, boxShadow: '0 8px 40px rgba(15,13,40,0.18)', ...modalPanelStyle(visible) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: `1px solid ${P.border}` }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: P.ink }}>{title || `Add document${entityName ? ` for ${entityName}` : ''}`}</span>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.08)' }}>
-            <Icon name="X" size={13} color={P.ink} strokeWidth={2.5} />
-          </button>
-        </div>
+    <ModalShell title={title || `Add document${entityName ? ` for ${entityName}` : ''}`} onClose={onClose} width={440}>
+      {close => {
+        const handleSave = () => {
+          if (!name.trim()) return;
+          const id = initialValues?.id || `doc-${Date.now()}`;
+          onSave({ ...(initialValues || {}), id, name: name.trim(), language: language || '—', type, fileName: file?.name, scope: scope || null });
+          close();
+        };
+        return (
+          <>
         <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <label style={{ display: 'block', fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 12, color: P.inkSoft, marginBottom: 6 }}>Name</label>
@@ -8145,12 +8031,18 @@ function AddDocumentModal({ appEntity, title, saveLabel, onSave, onClose, initia
             )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={close} style={{ padding: '7px 16px', border: `1px solid ${P.border}`, borderRadius: 8, background: P.white, fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, cursor: 'pointer' }}>{readOnly ? 'Close' : 'Cancel'}</button>
-            {!readOnly && <button onClick={handleSave} disabled={!name.trim()} style={{ padding: '7px 16px', border: 'none', borderRadius: 8, background: name.trim() ? P.action : P.border, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, color: name.trim() ? '#fff' : P.inkFaint, cursor: name.trim() ? 'pointer' : 'default' }}>{saveLabel || (title ? title.split(' for ')[0] : 'Add document')}</button>}
+            <Button variant="secondary" onClick={close} style={{ padding: '7px 16px', background: P.white }}>{readOnly ? 'Close' : 'Cancel'}</Button>
+            {!readOnly && (
+              <Button variant="primary" onClick={handleSave} disabled={!name.trim()} style={{ padding: '7px 16px' }}>
+                {saveLabel || (title ? title.split(' for ')[0] : 'Add document')}
+              </Button>
+            )}
           </div>
         </div>
-      </div>
-    </div>
+          </>
+        );
+      }}
+    </ModalShell>
   );
 }
 
@@ -8392,7 +8284,6 @@ function DocumentsSettings({ appEntity = null, documents = [], onDocumentsChange
 
 function PayrollSettings({ companyRegime, onRegimeChange, appEntity = null, onToast }) {
   const card = { border: `1px solid ${P.border}`, borderRadius: 16, overflow: 'clip', background: P.white };
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const advDays = Math.max(0, ((companyRegime.contractedHours - 38) / 2) * 12);
   const HOUR_OPTIONS = [
     { value: 38, label: '38h / week', sub: 'Standard — no ADV days' },
@@ -8452,21 +8343,12 @@ function BenefitTypeDrawer({ config, onSave, onDelete, onClose }) {
   const [budgetCap, setBudgetCap] = useState(defaults.budgetCap ?? 500);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const { visible, close, closing } = useModalTransition(onClose, SHEET_CLOSE_DUR);
-
   React.useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') close(); };
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [close]);
+  }, [onClose]);
 
-  const save = () => {
-    if (!label.trim()) return;
-    onSave({ ...defaults, label: label.trim(), hint: hint.trim(), active, requiresApproval, receiptRequired, budgetCap: hasBudget ? (budgetCap || 1) : null });
-    close();
-  };
-
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
   const labelStyle = { display: 'block', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14, color: P.inkSoft, marginBottom: 6 };
   const inputStyle = { width: '100%', border: `1px solid ${P.border}`, borderRadius: 8, padding: '9px 12px', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box' };
   const toggleRow = (rowLabel, rowHint, checked, onChange, last) => (
@@ -8480,26 +8362,23 @@ function BenefitTypeDrawer({ config, onSave, onDelete, onClose }) {
   );
 
   return (
-    <div onClick={close} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,13,40,0.25)', ...modalBackdropStyle(visible) }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        position: 'absolute', top: 16, bottom: 16, right: 16, width: 480,
-        background: P.white, borderRadius: 20,
-        boxShadow: '0 24px 64px rgba(15,13,40,0.22), 0 0 0 1px rgba(15,13,40,0.06)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        ...sheetPanelStyle(visible, closing),
-      }}>
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${P.border}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Icon name={defaults.icon} size={18} color={P.inkSoft} strokeWidth={1.75} />
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
-              {isNew ? 'New benefit type' : (label || defaults.label)}
-            </span>
-          </div>
-          <button onClick={close} style={{ border: 'none', cursor: 'pointer', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(60,60,67,0.1)' }}>
-            <Icon name="X" size={14} color={P.ink} strokeWidth={2.5} />
-          </button>
+    <DrawerShell onClose={onClose}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Icon name={defaults.icon} size={18} color={P.inkSoft} strokeWidth={1.75} />
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: P.ink }}>
+            {isNew ? 'New benefit type' : (label || defaults.label)}
+          </span>
         </div>
-
+      }>
+      {close => {
+        const save = () => {
+          if (!label.trim()) return;
+          onSave({ ...defaults, label: label.trim(), hint: hint.trim(), active, requiresApproval, receiptRequired, budgetCap: hasBudget ? (budgetCap || 1) : null });
+          close();
+        };
+        return (
+          <>
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {/* Enabled */}
           <div style={{ paddingBottom: 20, marginBottom: 20, borderBottom: `1px solid ${P.border}` }}>
@@ -8571,11 +8450,13 @@ function BenefitTypeDrawer({ config, onSave, onDelete, onClose }) {
               <button onClick={() => setConfirmDelete(true)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: '#dc2626', padding: 0, marginRight: 'auto' }}>Delete</button>
             )
           )}
-          <button onClick={close} style={{ padding: '8px 18px', borderRadius: 8, border: `1px solid ${P.border}`, background: 'transparent', color: P.ink, cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-          <button onClick={save} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13 }}>Save</button>
+          <Button variant="secondary" onClick={close}>Cancel</Button>
+          <Button variant="primary" onClick={save}>Save</Button>
         </div>
-      </div>
-    </div>
+          </>
+        );
+      }}
+    </DrawerShell>
   );
 }
 
@@ -8583,7 +8464,6 @@ function BenefitsSettings({ appEntity = null }) {
   const [benefits, setBenefits] = useState(BENEFIT_TYPES_SEED);
   const [modal, setModal] = useState(null); // index or 'new'
 
-  const SL = { fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 11, color: P.inkSoft, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 };
 
   const handleSave = (updated) => {
     if (modal === 'new') {
@@ -8623,10 +8503,7 @@ function BenefitsSettings({ appEntity = null }) {
             <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, color: P.ink, margin: 0, letterSpacing: '-0.02em' }}>Benefits</h1>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.inkSoft, margin: '4px 0 0' }}>Configure the benefit types employees can request</p>
           </div>
-          <button onClick={() => setModal('new')} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 8, border: 'none', background: P.action, color: '#fff', cursor: 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
-            <Icon name="plus" size={14} color="#fff" strokeWidth={2.5} />
-            Add benefit type
-          </button>
+          <Button variant="primary" icon="plus" onClick={() => setModal('new')} style={{ flexShrink: 0 }}>Add benefit type</Button>
         </div>
 
         <div style={{ borderBottom: `1px solid ${P.border}` }}>
@@ -8683,6 +8560,18 @@ function BenefitsSettings({ appEntity = null }) {
 
 // ── Changelog ──────────────────────────────────────────────────────────────
 const CHANGELOG_ENTRIES = [
+  {
+    date: '9 Aug 2026',
+    title: 'Design system: consolidating on shared components, and a Components page',
+    items: [
+      { summary: 'Every centered modal and side drawer now shares one wrapper component', detail: '(ModalShell, DrawerShell), replacing 16 independently hand-copied backdrop/panel/header implementations.', why: 'These were pixel-identical markup blocks, mechanically copy-pasted every time — one had no animation at all, since it was the one place someone forgot to wire up the shared transition hook.' },
+      { summary: 'A real Button and IconButton system', detail: 'Replacing dozens of independently-styled buttons that had drifted into at least 5 different "Cancel" treatments and 2 different close-button sizes with no rule for which screens got which.', why: 'Buttons are the highest-frequency UI element in the app — inconsistency here is the most visible kind of "this doesn\'t feel like one product."' },
+      { summary: 'Settings section labels (SL) hoisted to one shared constant', detail: 'Removing 9 local redefinitions — including inside screens already migrated to shared row components, where the row got fixed but the label above it didn\'t.' },
+      { summary: 'Badge/pill treatments consolidated onto DotPill/StatusPill', detail: 'Extended with filled/border/size props to absorb ad-hoc pills that had been built from scratch instead of reusing them.' },
+      { summary: 'New in-app Components page added, linked from the sidebar', detail: 'A live interactive reference for every shared component — click a button to see its states, open a real example modal/drawer, toggle a real switch.', why: '"Does this already exist" needs a fast, visual answer, not a file search.' },
+      { summary: 'Deliberately deferred: two cases needing a UX decision, not just extraction', detail: 'The native-select vs. custom-popover pattern, and the sidebar-popover vs. centered-modal entity picker. Documented as open decisions in CLAUDE.md rather than resolved by assumption.' },
+    ],
+  },
   {
     date: '9 Aug 2026',
     title: 'Allowances: surfacing legal ceiling risk, and where reference info belongs',
@@ -8795,6 +8684,158 @@ function ChangelogScreen() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Component library — live reference for every shared component. Check
+// here before building a new row/button/modal/badge — see CLAUDE.md.
+function LibrarySection({ title, usage, children }) {
+  return (
+    <div style={{ marginBottom: 40 }}>
+      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: P.ink, margin: '0 0 4px' }}>{title}</h3>
+      {usage && <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, margin: '0 0 16px' }}>{usage}</p>}
+      <div style={{ border: `1px solid ${P.border}`, borderRadius: 12, padding: 24, background: P.white }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ComponentLibraryScreen() {
+  const [switchOn, setSwitchOn] = useState(true);
+  const [switchOnSm, setSwitchOnSm] = useState(false);
+  const [exampleModalOpen, setExampleModalOpen] = useState(false);
+  const [exampleDrawerOpen, setExampleDrawerOpen] = useState(false);
+  const [rowValue, setRowValue] = useState('');
+  const inputStyle = { width: '100%', padding: '9px 12px', borderRadius: 8, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', boxSizing: 'border-box', background: P.white };
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', animation: `screenEnter 180ms ${EASE_OUT}` }}>
+      <PageHeader title="Components" subtitle="Live reference for every shared component — check here before building a new one from scratch." />
+      <div style={{ flex: 1, overflow: 'auto', padding: '28px 28px 60px' }}>
+        <div style={{ maxWidth: 680 }}>
+
+          <LibrarySection title="Buttons" usage="Used everywhere an action is taken — modal/drawer footers, page headers, form submissions. Never a raw <button style={{...}}>.">
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="danger">Danger</Button>
+              <Button variant="text">Text</Button>
+              <Button variant="primary" icon="plus">With icon</Button>
+              <Button variant="primary" disabled>Disabled</Button>
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Icon buttons" usage="Circular icon-only button — modal/drawer close, back navigation. One size (30px) and opacity everywhere.">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <IconButton icon="X" onClick={() => {}} />
+              <IconButton icon="arrow-left" onClick={() => {}} />
+              <IconButton icon="chevron-left" onClick={() => {}} />
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Switch" usage="Toggle for on/off settings. sm size for inline settings rows, md for standalone use.">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Switch size="md" checked={switchOn} onChange={() => setSwitchOn(v => !v)} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>md</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Switch size="sm" checked={switchOnSm} onChange={() => setSwitchOnSm(v => !v)} />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>sm</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Switch size="sm" checked={true} onChange={() => {}} disabled />
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>disabled</span>
+              </div>
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Badges & pills" usage="Three sanctioned status treatments, all driven by the same StatusMeta table — don't add a fourth.">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginBottom: 8 }}>StatusDot</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                  {Object.keys(StatusMeta).map(s => <StatusDot key={s} status={s} />)}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginBottom: 8 }}>StatusPill</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {Object.keys(StatusMeta).map(s => <StatusPill key={s} status={s} />)}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkFaint, marginBottom: 8 }}>DotPill — unfilled and filled variants</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <DotPill bg="#fde68a" color="#92400e">Unfilled</DotPill>
+                  <DotPill dot={false} filled color={P.action}>Filled</DotPill>
+                  <DotPill dot={false} color="#dc2626" bg="#fef2f2" border="#fecaca">Bordered</DotPill>
+                </div>
+              </div>
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Settings rows" usage="SettingsCard + SettingsRow — the canonical settings-list pattern used by Allowances, Expenses, Time off, Team & access, Benefits.">
+            <SettingsCard>
+              <SettingsRow icon="calendar" label="With a value" value="With next payroll run" />
+              <SettingsRow icon="users" iconBadgeColor="#a7f3d0" label="With a colored badge + subtitle" subtitle="Approval required · 20 days" />
+              <SettingsRow leading={<Avatar employeeId="emma-martens" size={32} />} label="With a custom leading element" subtitle="emma.martens@lumiogroup.be" last />
+            </SettingsCard>
+          </LibrarySection>
+
+          <LibrarySection title="Avatar" usage="Circular avatar — photo if available, initials-on-color otherwise.">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <Avatar employeeId="emma-martens" size={22} />
+              <Avatar employeeId="emma-martens" size={32} />
+              <Avatar employeeId="emma-martens" size={44} />
+              <Avatar employeeId="unknown-id" size={32} />
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Empty state" usage="Centered icon + title + description for empty lists — e.g. no inactive leave types.">
+            <EmptyState icon="moon" title="No results" description="Nothing to show here yet." />
+          </LibrarySection>
+
+          <LibrarySection title="Form inputs" usage="Canonical text input styling used across settings screens.">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 280 }}>
+              <label style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12, color: P.inkSoft }}>Label</label>
+              <input value={rowValue} onChange={e => setRowValue(e.target.value)} placeholder="Placeholder text" style={inputStyle} />
+            </div>
+          </LibrarySection>
+
+          <LibrarySection title="Modals & drawers" usage="ModalShell for centered dialogs, DrawerShell for right-side panels. Both own their own open/close animation — pass onClose, title, and children.">
+            <div style={{ display: 'flex', gap: 10 }}>
+              <Button variant="secondary" onClick={() => setExampleModalOpen(true)}>Open example modal</Button>
+              <Button variant="secondary" onClick={() => setExampleDrawerOpen(true)}>Open example drawer</Button>
+            </div>
+          </LibrarySection>
+
+        </div>
+      </div>
+
+      {exampleModalOpen && (
+        <ModalShell title="Example modal" onClose={() => setExampleModalOpen(false)}
+          footer={close => (
+            <div style={{ padding: '14px 22px', borderTop: `1px solid ${P.border}`, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <Button variant="secondary" onClick={close}>Cancel</Button>
+              <Button variant="primary" onClick={close}>Save</Button>
+            </div>
+          )}>
+          <div style={{ padding: '18px 22px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>
+            This is a live ModalShell instance — the same backdrop, panel, and header chrome used by every centered dialog in the app.
+          </div>
+        </ModalShell>
+      )}
+
+      {exampleDrawerOpen && (
+        <DrawerShell title="Example drawer" onClose={() => setExampleDrawerOpen(false)}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, lineHeight: 1.5 }}>
+            This is a live DrawerShell instance — the same right-side panel chrome used by every drawer in the app (request details, add expense, benefit types, etc).
+          </div>
+        </DrawerShell>
+      )}
     </div>
   );
 }
@@ -9655,6 +9696,7 @@ function App() {
         {screen === 'settings-payroll' && <PayrollSettings companyRegime={companyRegime} onRegimeChange={setCompanyRegime} appEntity={appEntity} onToast={setToast} />}
         {screen === 'settings-benefits' && <BenefitsSettings key={appEntity ?? 'all'} appEntity={appEntity} />}
         {screen === 'changelog' && <ChangelogScreen />}
+        {screen === 'components' && <ComponentLibraryScreen />}
         {screen.startsWith('settings-') && screen !== 'settings-allowances' && screen !== 'settings-expenses' && screen !== 'settings-team' && screen !== 'settings-timeoff' && screen !== 'settings-entities' && screen !== 'settings-documents' && screen !== 'settings-payroll' && screen !== 'settings-benefits' && <StubScreen title={SETTINGS_TITLES[screen] || 'Settings'} description={`Configure ${(SETTINGS_TITLES[screen] || 'settings').toLowerCase()}`} />}
       </div>
 
