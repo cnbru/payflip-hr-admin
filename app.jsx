@@ -7069,7 +7069,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
                         {visibleAssigned.length === 0 ? 'No employees in this entity' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
                       </span>
-                      <Button variant="text" icon="pencil" iconSize={12} onClick={() => setPickerOpen(true)} style={{ color: P.inkSoft, fontSize: 12 }}>Edit selection</Button>
+                      <AppLink onClick={() => setPickerOpen(true)} style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 12 }}>Edit selection</AppLink>
                     </div>
                   )}
                   {visibleAssigned.map((id, i) => {
