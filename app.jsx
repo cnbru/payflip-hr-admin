@@ -7065,7 +7065,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                       action={<Button variant="primary" icon="plus" onClick={() => setPickerOpen(true)}>Add employees</Button>} />
                   ) : (
                     /* List header: count + edit action */
-                    <div style={{ padding: '9px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${P.border}` }}>
+                    <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${P.border}` }}>
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500, color: P.inkSoft }}>
                         {visibleAssigned.length === 0 ? 'No employees in this entity' : `${visibleAssigned.length} employee${visibleAssigned.length === 1 ? '' : 's'}`}
                       </span>
