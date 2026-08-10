@@ -6833,6 +6833,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
   const [assignedEmployees, setAssignedEmployees] = useState(config.assignedEmployees || []);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [hasMinKm, setHasMinKm] = useState(config.minKm != null);
   const [minKm, setMinKm] = useState(config.minKm != null ? String(config.minKm) : '');
   const [minHours, setMinHours] = useState(config.minHours != null ? String(config.minHours) : '');
 
@@ -6855,7 +6856,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
       id: typeInfo.id, active, rate: rateValid ? rateNum : null,
       eligibility: specific ? 'specific' : 'all',
       assignedEmployees: specific ? assignedEmployees : [],
-      minKm: typeInfo.id === 'mileage' && minKm !== '' ? parseFloat(minKm) : undefined,
+      minKm: typeInfo.id === 'mileage' && hasMinKm && minKm !== '' ? parseFloat(minKm) : undefined,
       minHours: typeInfo.id === 'meal-allowance' && minHours !== '' ? parseFloat(minHours) : undefined,
     });
     onBack();
@@ -6989,19 +6990,32 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
             <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
               <div style={SL}>Trip rules</div>
               <div style={card}>
-                <div style={settingsRowStyle(true)}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum km per trip</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
-                    <input type="number" step="1" min="0" value={minKm} onChange={e => setMinKm(e.target.value)} placeholder="0"
-                      style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>km</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 20px', borderBottom: hasMinKm ? `1px solid ${P.border}` : 'none' }}>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum trip distance</div>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Reject trips shorter than a set distance</div>
+                  </div>
+                  <Switch size="sm" checked={hasMinKm} onChange={() => setHasMinKm(v => !v)} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateRows: hasMinKm ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+                  <div style={{ minHeight: 0 }}>
+                    <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Minimum km per trip</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
+                        <input type="number" step="1" min="0" value={minKm} onChange={e => setMinKm(e.target.value)} placeholder="0"
+                          style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>km</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
-                <Icon name="info" size={13} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Trips below the minimum are rejected automatically. Leave blank to accept all distances.</span>
-              </div>
+              {hasMinKm && (
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+                  <Icon name="info" size={13} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>Trips shorter than this are rejected automatically.</span>
+                </div>
+              )}
             </div>
           )}
 
