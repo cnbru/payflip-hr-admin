@@ -5139,7 +5139,7 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
                           value={values[type]}
                           onChange={e => setValues(v => ({ ...v, [type]: e.target.value }))}
                           placeholder="0"
-                          style={{ width: 32, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: P.ink, textAlign: 'center', background: 'transparent' }}
+                          style={{ width: 46, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: P.ink, textAlign: 'center', background: 'transparent' }}
                         />
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>days</span>
                       </div>
@@ -6947,7 +6947,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${overCeiling ? '#fca5a5' : P.border}`, borderRadius: 8, padding: '7px 10px', background: overCeiling ? '#fff5f5' : P.white }}>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>€</span>
                   <input type="number" step="0.01" min="0" value={rate} onChange={e => setRate(e.target.value)}
-                    style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
+                    style={{ width: 74, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>/ {typeInfo.unit}</span>
                 </div>
               </div>
@@ -6993,7 +6993,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum km per trip</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
                     <input type="number" step="1" min="0" value={minKm} onChange={e => setMinKm(e.target.value)} placeholder="0"
-                      style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
+                      style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>km</span>
                   </div>
                 </div>
@@ -7017,7 +7017,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
                     <input type="number" step="0.5" min="0" value={minHours} onChange={e => setMinHours(e.target.value)} placeholder="—"
-                      style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
+                      style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>hrs</span>
                   </div>
                 </div>
@@ -9318,7 +9318,7 @@ function AddEmployeeWizard({ onClose, onCreated, companyRegime }) {
                             value={row.value}
                             onChange={e => row.set(e.target.value)}
                             type="number" min="0" max="100" step="0.01"
-                            style={{ width: 44, border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, background: 'transparent', textAlign: 'right' }}
+                            style={{ width: 64, border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, background: 'transparent', textAlign: 'right' }}
                           />
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>%</span>
                         </div>
