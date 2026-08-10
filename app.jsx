@@ -7029,7 +7029,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
           <div style={{ animation: PREFERS_REDUCED_MOTION ? 'none' : `screenEnter 150ms ${EASE_OUT}` }}>
             <div style={SL}>Eligibility</div>
             <div style={card}>
-              <div style={{ padding: '14px 20px', borderBottom: specific ? `1px solid ${P.border}` : 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div style={{ padding: '14px 20px', borderBottom: `1px solid ${P.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Eligible employees</span>
                 <div className="t-tabs" ref={tabsRef}>
                   <span className="t-tabs-pill" aria-hidden="true" />
