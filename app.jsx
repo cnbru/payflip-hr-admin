@@ -6256,7 +6256,7 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
   const [catModal, setCatModal] = useState(null);
   const [settingModal, setSettingModal] = useState(null);
   const [reimburseCycle, setReimburseCycle] = useState('payroll');
-  const [requireReceipt, setRequireReceipt] = useState(true);
+  const [hasReceiptThreshold, setHasReceiptThreshold] = useState(true);
   const [receiptThreshold, setReceiptThreshold] = useState(25);
   const [approvalRouting, setApprovalRouting] = useState('manager');
 
@@ -6318,17 +6318,23 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
           <div style={SL}>Receipt policy</div>
           <SettingsCard>
             <SettingsRow
-              label="Require a receipt"
-              subtitle="Employees must attach a receipt for expenses above a set amount"
-              trailing={<Switch size="sm" checked={requireReceipt} onChange={() => setRequireReceipt(v => !v)} />}
-              last={!requireReceipt}
+              label="Set a receipt threshold"
+              subtitle="Skip the receipt requirement for expenses below a set amount"
+              trailing={<Switch size="sm" checked={hasReceiptThreshold} onChange={() => setHasReceiptThreshold(v => !v)} />}
+              last={!hasReceiptThreshold}
             />
-            <div style={{ display: 'grid', gridTemplateRows: requireReceipt ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+            <div style={{ display: 'grid', gridTemplateRows: hasReceiptThreshold ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
               <div style={{ minHeight: 0 }}>
                 <SettingsRow onClick={() => setSettingModal('threshold')} label="Require receipt above" value={thresholdLabel} last />
               </div>
             </div>
           </SettingsCard>
+          {!hasReceiptThreshold && (
+            <div style={{ marginTop: 8, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+              <Icon name="info" size={13} color={P.inkSoft} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: P.inkSoft }}>A receipt is required for every expense, regardless of amount.</span>
+            </div>
+          )}
         </div>
 
         {EXPENSE_BUDGET_TYPES.map(bt => {
