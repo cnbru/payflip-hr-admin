@@ -6274,7 +6274,6 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
 
   const cycleLabel = (REIMBURSE_OPTS.find(o => o.value === reimburseCycle) || {}).label || '';
   const approvalLabel = (APPROVAL_OPTS.find(o => o.value === approvalRouting) || {}).label || '';
-  const thresholdLabel = receiptThreshold != null ? `€ ${receiptThreshold}` : 'No threshold';
 
   return (
     <>
@@ -6290,9 +6289,6 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
     )}
     {settingModal === 'cycle' && (
       <PickModal title="Reimbursement cycle" options={REIMBURSE_OPTS} value={reimburseCycle} onSave={setReimburseCycle} onClose={() => setSettingModal(null)} />
-    )}
-    {settingModal === 'threshold' && (
-      <AmountModal title="Receipt threshold" label="Require receipt above" value={receiptThreshold} onSave={setReceiptThreshold} onClose={() => setSettingModal(null)} nullable />
     )}
     {settingModal === 'approval' && (
       <PickModal title="Approval routing" options={APPROVAL_OPTS} value={approvalRouting} onSave={setApprovalRouting} onClose={() => setSettingModal(null)} />
@@ -6325,7 +6321,14 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
             />
             <div style={{ display: 'grid', gridTemplateRows: hasReceiptThreshold ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
               <div style={{ minHeight: 0 }}>
-                <SettingsRow onClick={() => setSettingModal('threshold')} label="Require receipt above" value={thresholdLabel} last />
+                <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>Require receipt above</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>€</span>
+                    <input type="number" step="1" min="0" value={receiptThreshold ?? ''} onChange={e => setReceiptThreshold(e.target.value === '' ? null : parseFloat(e.target.value))} placeholder="0"
+                      style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
+                  </div>
+                </div>
               </div>
             </div>
           </SettingsCard>
