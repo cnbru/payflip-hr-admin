@@ -5133,13 +5133,13 @@ function EditBalancesModal({ emp, balances, onSave, onClose, isNewEmployee, onCo
                     <div key={type} style={{ display: 'flex', alignItems: 'center', padding: '10px 22px', borderTop: ti > 0 ? `1px solid ${P.border}` : 'none' }}>
                       <span style={{ width: 9, height: 9, borderRadius: '50%', background: dot, flexShrink: 0, marginRight: 10 }} />
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, flex: 1 }}>{type}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 7, padding: '5px 8px', background: P.bg }}>
                         <input
                           type="number" min="0"
                           value={values[type]}
                           onChange={e => setValues(v => ({ ...v, [type]: e.target.value }))}
                           placeholder="0"
-                          style={{ width: 56, padding: '5px 8px', borderRadius: 7, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: P.ink, outline: 'none', textAlign: 'center', background: P.bg }}
+                          style={{ width: 32, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, color: P.ink, textAlign: 'center', background: 'transparent' }}
                         />
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>days</span>
                       </div>
@@ -6944,10 +6944,10 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
             <div style={card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 20px' }}>
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Amount per {typeInfo.unit}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${overCeiling ? '#fca5a5' : P.border}`, borderRadius: 8, padding: '7px 10px', background: overCeiling ? '#fff5f5' : P.white }}>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>€</span>
                   <input type="number" step="0.01" min="0" value={rate} onChange={e => setRate(e.target.value)}
-                    style={{ width: 90, padding: '7px 10px', borderRadius: 8, border: `1px solid ${overCeiling ? '#fca5a5' : P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right', background: overCeiling ? '#fff5f5' : P.white }} />
+                    style={{ width: 60, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>/ {typeInfo.unit}</span>
                 </div>
               </div>
@@ -6991,9 +6991,9 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
               <div style={card}>
                 <div style={settingsRowStyle(true)}>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum km per trip</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
                     <input type="number" step="1" min="0" value={minKm} onChange={e => setMinKm(e.target.value)} placeholder="0"
-                      style={{ width: 72, padding: '7px 10px', borderRadius: 8, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right' }} />
+                      style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>km</span>
                   </div>
                 </div>
@@ -7015,9 +7015,9 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 500, fontSize: 14, color: P.ink }}>Minimum hours away from office</div>
                     <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft, marginTop: 3 }}>Only reimburse if employee is away for at least this many hours</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, border: `1px solid ${P.border}`, borderRadius: 8, padding: '7px 10px' }}>
                     <input type="number" step="0.5" min="0" value={minHours} onChange={e => setMinHours(e.target.value)} placeholder="—"
-                      style={{ width: 72, padding: '7px 10px', borderRadius: 8, border: `1px solid ${P.border}`, fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, outline: 'none', textAlign: 'right' }} />
+                      style={{ width: 40, border: 'none', outline: 'none', fontFamily: 'var(--font-body)', fontSize: 14, color: P.ink, textAlign: 'right', background: 'transparent' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>hrs</span>
                   </div>
                 </div>
@@ -9312,13 +9312,13 @@ function AddEmployeeWizard({ onClose, onCreated, companyRegime }) {
                     ].map((row, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderTop: i > 0 ? `1px solid ${P.border}` : 'none', background: P.bg, gap: 12 }}>
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.ink, whiteSpace: 'nowrap' }}>{row.label}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, border: `1px solid ${P.border}`, borderRadius: 6, padding: '4px 8px', background: P.white }}>
                           <input
                             autoComplete="off"
                             value={row.value}
                             onChange={e => row.set(e.target.value)}
                             type="number" min="0" max="100" step="0.01"
-                            style={{ width: 72, border: `1px solid ${P.border}`, borderRadius: 6, padding: '4px 8px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, outline: 'none', background: P.white, textAlign: 'right' }}
+                            style={{ width: 44, border: 'none', outline: 'none', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 13, color: P.ink, background: 'transparent', textAlign: 'right' }}
                           />
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: P.inkSoft }}>%</span>
                         </div>
