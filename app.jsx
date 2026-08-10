@@ -7106,7 +7106,7 @@ function AllowanceSettingsPage({ config, typeInfo, onSave, onBack, backLabel = '
 
 
         {/* Footer */}
-        <div style={{ borderTop: `1px solid ${P.border}`, paddingTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+        <div style={{ paddingTop: 24, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
           {active ? (
             <>
               <Button variant="secondary" onClick={onBack} style={{ background: P.white }}>Cancel</Button>
