@@ -6256,6 +6256,7 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
   const [catModal, setCatModal] = useState(null);
   const [settingModal, setSettingModal] = useState(null);
   const [reimburseCycle, setReimburseCycle] = useState('payroll');
+  const [requireReceipt, setRequireReceipt] = useState(true);
   const [receiptThreshold, setReceiptThreshold] = useState(25);
   const [approvalRouting, setApprovalRouting] = useState('manager');
 
@@ -6316,7 +6317,17 @@ function ExpenseCategorySettings({ categories, onSave, appEntity = null }) {
         <div>
           <div style={SL}>Receipt policy</div>
           <SettingsCard>
-            <SettingsRow onClick={() => setSettingModal('threshold')} label="Require receipt above" value={thresholdLabel} last />
+            <SettingsRow
+              label="Require a receipt"
+              subtitle="Employees must attach a receipt for expenses above a set amount"
+              trailing={<Switch size="sm" checked={requireReceipt} onChange={() => setRequireReceipt(v => !v)} />}
+              last={!requireReceipt}
+            />
+            <div style={{ display: 'grid', gridTemplateRows: requireReceipt ? '1fr' : '0fr', transition: PREFERS_REDUCED_MOTION ? 'none' : `grid-template-rows 200ms ${EASE_OUT}`, overflow: 'hidden' }}>
+              <div style={{ minHeight: 0 }}>
+                <SettingsRow onClick={() => setSettingModal('threshold')} label="Require receipt above" value={thresholdLabel} last />
+              </div>
+            </div>
           </SettingsCard>
         </div>
 
